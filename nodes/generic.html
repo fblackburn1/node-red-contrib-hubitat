@@ -1,0 +1,47 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat generic',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: {value:""},
+      server: {type: "hubitat auth", required: true},
+      device_id: {value:"", required: true},
+      command: {value:"", required: true},
+      command_args: {value:""},
+    },
+    inputs:1,
+    outputs:1,
+    icon: "icons/hubitat.png",
+    label: function() {
+        return this.name || "generic";
+    },
+    paletteLabel: "generic",
+  });
+</script>
+
+<script type="text/html" data-template-name="hubitat generic">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-device_id"><i class="icon-tag"></i> Device ID</label>
+    <input type="text" id="node-input-device_id">
+  </div>
+  <div class="form-row">
+    <label for="node-input-command"><i class="icon-tag"></i> Command</label>
+    <input type="text" id="node-input-command" placeholder="setLevel">
+  </div>
+  <div class="form-row">
+    <label for="node-input-command_args"><i class="icon-tag"></i> Arguments</label>
+    <input type="text" id="node-input-command_args" placeholder="100,60">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat generic">
+  <p>A simple generic node that send command to Hubitat</p>
+</script>
