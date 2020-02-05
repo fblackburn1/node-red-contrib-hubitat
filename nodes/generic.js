@@ -23,10 +23,7 @@ module.exports = function(RED) {
       }
       let scheme = ((this.usetls) ? 'https': 'http');
       const url = `${this.base_url}/devices/${this.device_id}/${command_with_args}?access_token=${this.token}`;
-      const options = {
-        method: 'GET',
-        headers: {'content-type': 'application/json'}
-      };
+      const options = {method: 'GET'};
 
       try {
         const response = await fetch(url, options);
@@ -39,6 +36,19 @@ module.exports = function(RED) {
       node.send(msg);
     });
   }
+
+  RED.httpAdmin.get('/hubitat/:config_node_id/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    let node = RED.nodes.getNode(req.params.config_node_id);
+    const url = `${node.base_url}/devices?access_token=${node.token}`;
+    const options = {method: 'GET'}
+    try {
+      const response = await fetch(url, options);
+      res.json(await response.json());
+    }
+    catch(err) {
+      res.send(err);
+    }
+  });
 
   RED.nodes.registerType("hubitat generic", Generic);
 }
