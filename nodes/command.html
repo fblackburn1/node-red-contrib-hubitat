@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat generic',{
+  RED.nodes.registerType('hubitat command',{
     category: 'hubitat',
     color: '#a6bbcf',
     defaults: {
@@ -13,9 +13,9 @@
     outputs:1,
     icon: "icons/hubitat.png",
     label: function() {
-        return this.name || "generic";
+        return this.name || "command";
     },
-    paletteLabel: "generic",
+    paletteLabel: "command",
     oneditprepare: function() {
       $("document").ready(() => {
         $('#node-input-server').change(() => {
@@ -89,7 +89,7 @@
 
 </script>
 
-<script type="text/html" data-template-name="hubitat generic">
+<script type="text/html" data-template-name="hubitat command">
   <div class="form-row">
     <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
     <input type="text" id="node-input-server">
@@ -112,6 +112,6 @@
   </div>
 </script>
 
-<script type="text/html" data-help-name="hubitat generic">
-  <p>A simple generic node that send command to Hubitat</p>
+<script type="text/html" data-help-name="hubitat command">
+  <p>A simple command node that send command to Hubitat</p>
 </script>

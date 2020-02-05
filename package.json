@@ -25,7 +25,7 @@
   "homepage": "https://github.com/fblackburn1/node-red-contrib-hubitat#readme",
   "node-red" : {
     "nodes": {
-      "generic": "nodes/generic.js",
+      "command": "nodes/command.js",
       "auth": "nodes/auth.js"
     }
   }
