@@ -15,6 +15,10 @@
   "dependencies": {
     "node-fetch": "^2.6.0"
   },
+  "keywords": [
+    "node-red",
+    "hubitat"
+  ],
   "bugs": {
     "url": "https://github.com/fblackburn1/node-red-contrib-hubitat/issues"
   },
