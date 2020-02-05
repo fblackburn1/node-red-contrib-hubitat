@@ -3,6 +3,7 @@ module.exports = function(RED) {
 
   function authentication(config) {
     RED.nodes.createNode(this,config);
+    this.name = config.name;
     this.usetls = config.usetls;
     this.server = config.server;
     this.port = config.port;
