@@ -21,27 +21,52 @@
         $('#node-input-server').change(() => {
           let server_id = $('#node-input-server option:selected').val();
           if (server_id) {
-            listDevices(server_id, this.device_id);
+            listHubitatDevices(server_id, this.device_id);
+          }
+        });
+        $('#node-input-device_id').change(() => {
+          let server_id = $('#node-input-server option:selected').val();
+          let device_id = $('#node-input-device_id option:selected').val();
+          if (server_id && device_id) {
+            listHubitatDeviceCommands(server_id, device_id, this.command);
           }
         });
       });
     }
   });
 
-  function listDevices(server_id, device_id) {
+  function listHubitatDevices(server_id, device_id) {
     $('#node-input-device_id').find('option').remove().end();
     let select_menu = $("#node-input-device_id");
     let option = $('<option>', {value: "", text: "Choose device..."});
     select_menu.append(option);
 
-
     $.getJSON(`/hubitat/${server_id}/devices`, (res) => {
       res.map(item => {
-        let selected = false;
-        if (device_id == item.id) { selected = true; }
-        let select_menu = $("#node-input-device_id");
-        let option = $('<option>', {value: item.id, text: item.label, selected: selected});
+        let selected = device_id == item.id;
+        let option = $('<option>', {value: item.id, text: item.label});
         select_menu.append(option);
+        if (selected) { select_menu.val(item.id).trigger('change'); }
+      });
+    });
+  }
+
+  function listHubitatDeviceCommands(server_id, device_id, command) {
+    $('#node-input-command').find('option').remove().end();
+    let select_menu = $("#node-input-command");
+    let option = $('<option>', {value: "", text: "Choose command..."});
+    select_menu.append(option);
+    let commands = []
+
+    $.getJSON(`/hubitat/${server_id}/devices/${device_id}/commands`, (res) => {
+      res.map(item => {
+        let selected = command == item.command;
+        let option = $('<option>', {value: item.command, text: item.command, selected: selected});
+        // Avoid list duplicate command returned by Hubitat API
+        if (!commands.includes(item.command)) {
+          select_menu.append(option);
+          commands.push(item.command);
+        }
       });
     });
   }
@@ -59,11 +84,11 @@
   </div>
   <div class="form-row">
     <label for="node-input-command"><i class="fa fa-hashtag"></i> Command</label>
-    <input type="text" id="node-input-command" placeholder="setLevel">
+    <select id="node-input-command"></select>
   </div>
   <div class="form-row">
     <label for="node-input-command_args"><i class="fa fa-bars"></i> Arguments</label>
-    <input type="text" id="node-input-command_args" placeholder="100,60">
+    <input type="text" id="node-input-command_args">
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>

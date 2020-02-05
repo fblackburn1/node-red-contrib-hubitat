@@ -39,8 +39,21 @@ module.exports = function(RED) {
 
   RED.httpAdmin.get('/hubitat/:config_node_id/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     let node = RED.nodes.getNode(req.params.config_node_id);
-    const url = `${node.base_url}/devices?access_token=${node.token}`;
-    const options = {method: 'GET'}
+    let url = `${node.base_url}/devices?access_token=${node.token}`;
+    let options = {method: 'GET'}
+    try {
+      const response = await fetch(url, options);
+      res.json(await response.json());
+    }
+    catch(err) {
+      res.send(err);
+    }
+  });
+
+  RED.httpAdmin.get('/hubitat/:config_node_id/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    let node = RED.nodes.getNode(req.params.config_node_id);
+    let url = `${node.base_url}/devices/${req.params.device_id}/commands?access_token=${node.token}`;
+    let options = {method: 'GET'}
     try {
       const response = await fetch(url, options);
       res.json(await response.json());
