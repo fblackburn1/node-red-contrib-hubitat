@@ -31,6 +31,17 @@
             listHubitatDeviceCommands(server_id, device_id, this.command);
           }
         });
+        $('#node-input-command').change(() => {
+          let placeholder = $('#node-input-command option:selected').attr('args_placeholder');
+          let command_args_input = $('#node-input-command_args');
+          if (placeholder === 'n/a') {
+            command_args_input.val('');
+            command_args_input.prop('disabled', true);
+          } else {
+            command_args_input.prop('disabled', false);
+          }
+          command_args_input.attr('placeholder', placeholder);
+        });
       });
     }
   });
@@ -61,11 +72,16 @@
     $.getJSON(`/hubitat/${server_id}/devices/${device_id}/commands`, (res) => {
       res.map(item => {
         let selected = command == item.command;
-        let option = $('<option>', {value: item.command, text: item.command, selected: selected});
+        let option = $('<option>', {
+          value: item.command,
+          text: item.command,
+          args_placeholder: item.type.join(","),
+        });
         // Avoid list duplicate command returned by Hubitat API
         if (!commands.includes(item.command)) {
           select_menu.append(option);
           commands.push(item.command);
+          if (selected) { select_menu.val(item.command).trigger('change'); }
         }
       });
     });
