@@ -37,9 +37,10 @@ module.exports = function(RED) {
     });
   }
 
-  RED.httpAdmin.get('/hubitat/:config_node_id/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
-    const node = RED.nodes.getNode(req.params.config_node_id);
-    const url = `${node.base_url}/devices?access_token=${node.token}`;
+  RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    const scheme = ((req.query.usetls) ? 'https': 'http');
+    const base_url = `${scheme}://${req.query.server}:${req.query.port}/apps/api/${req.query.api_id}`;
+    const url = `${base_url}/devices?access_token=${req.query.token}`;
     const options = {method: 'GET'}
     try {
       const response = await fetch(url, options);
@@ -50,9 +51,10 @@ module.exports = function(RED) {
     }
   });
 
-  RED.httpAdmin.get('/hubitat/:config_node_id/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
-    const node = RED.nodes.getNode(req.params.config_node_id);
-    const url = `${node.base_url}/devices/${req.params.device_id}/commands?access_token=${node.token}`;
+  RED.httpAdmin.get('/hubitat/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    const scheme = ((req.query.usetls) ? 'https': 'http');
+    const base_url = `${scheme}://${req.query.server}:${req.query.port}/apps/api/${req.query.api_id}`;
+    const url = `${base_url}/devices/${req.params.device_id}/commands?access_token=${req.query.token}`;
     const options = {method: 'GET'}
     try {
       const response = await fetch(url, options);

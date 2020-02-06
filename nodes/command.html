@@ -20,8 +20,9 @@
       $("document").ready(() => {
         $('#node-input-server').change(() => {
           const server_id = $('#node-input-server option:selected').val();
-          if (server_id !== '_ADD_') {
-            listHubitatDevices(server_id, this.device_id);
+          server = RED.nodes.node(server_id);
+          if (server) {
+            listHubitatDevices(server, this.device_id);
           } else {
             cleanHubitatDevices();
           }
@@ -29,8 +30,9 @@
         $('#node-input-device_id').change(() => {
           const server_id = $('#node-input-server option:selected').val();
           const device_id = $('#node-input-device_id option:selected').val();
-          if ((server_id !== '_ADD_') && device_id ) {
-            listHubitatDeviceCommands(server_id, device_id, this.command);
+          server = RED.nodes.node(server_id);
+          if (server && device_id ) {
+            listHubitatDeviceCommands(server, device_id, this.command);
           } else {
             cleanHubitatDeviceCommands();
           }
@@ -50,13 +52,20 @@
     }
   });
 
-  function listHubitatDevices(server_id, device_id) {
+  function listHubitatDevices(server, device_id) {
     $('#node-input-device_id').find('option').remove().end();
     const select_menu = $("#node-input-device_id");
     const option = $('<option>', {value: "", text: "Choose device..."});
     select_menu.append(option);
+    const params = {
+      usetls: server.usetls,
+      server: server.server,
+      port: server.port,
+      api_id: server.api_id,
+      token: server.token,
+    };
 
-    $.getJSON(`/hubitat/${server_id}/devices`, (res) => {
+    $.getJSON(`/hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = device_id == item.id;
         const option = $('<option>', {value: item.id, text: item.label});
@@ -66,14 +75,21 @@
     });
   }
 
-  function listHubitatDeviceCommands(server_id, device_id, command) {
+  function listHubitatDeviceCommands(server, device_id, command) {
     const select_menu = $("#node-input-command");
     select_menu.find('option').remove().end();
     const option = $('<option>', {value: "", text: "Choose command..."});
     select_menu.append(option);
+    const params = {
+      usetls: server.usetls,
+      server: server.server,
+      port: server.port,
+      api_id: server.api_id,
+      token: server.token,
+    };
     let commands = []
 
-    $.getJSON(`/hubitat/${server_id}/devices/${device_id}/commands`, (res) => {
+    $.getJSON(`/hubitat/devices/${device_id}/commands`, params, (res) => {
       res.map(item => {
         const selected = command == item.command;
         const option = $('<option>', {
