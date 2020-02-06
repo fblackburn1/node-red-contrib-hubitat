@@ -8,7 +8,7 @@ module.exports = function(RED) {
     this.token = config.token;
     this.api_id = config.api_id;
 
-    let scheme = ((this.usetls) ? 'https': 'http');
+    const scheme = ((this.usetls) ? 'https': 'http');
     this.base_url = `${scheme}://${this.server}:${this.port}/apps/api/${this.api_id}`;
   }
 

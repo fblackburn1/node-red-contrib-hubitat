@@ -13,7 +13,7 @@
       if (this.name) {
         return this.name;
       }
-      let scheme = ((this.usetls) ? 'https': 'http');
+      const scheme = ((this.usetls) ? 'https': 'http');
       if ((this.port === "80") || (this.port === "443")) {
         return `${scheme}://${this.server}`;
       } else {

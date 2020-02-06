@@ -19,7 +19,7 @@
     oneditprepare: function() {
       $("document").ready(() => {
         $('#node-input-server').change(() => {
-          let server_id = $('#node-input-server option:selected').val();
+          const server_id = $('#node-input-server option:selected').val();
           if (server_id !== '_ADD_') {
             listHubitatDevices(server_id, this.device_id);
           } else {
@@ -27,8 +27,8 @@
           }
         });
         $('#node-input-device_id').change(() => {
-          let server_id = $('#node-input-server option:selected').val();
-          let device_id = $('#node-input-device_id option:selected').val();
+          const server_id = $('#node-input-server option:selected').val();
+          const device_id = $('#node-input-device_id option:selected').val();
           if ((server_id !== '_ADD_') && device_id ) {
             listHubitatDeviceCommands(server_id, device_id, this.command);
           } else {
@@ -36,8 +36,8 @@
           }
         });
         $('#node-input-command').change(() => {
-          let placeholder = $('#node-input-command option:selected').attr('args_placeholder');
-          let command_args_input = $('#node-input-command_args');
+          const placeholder = $('#node-input-command option:selected').attr('args_placeholder');
+          const command_args_input = $('#node-input-command_args');
           if (placeholder === 'n/a') {
             command_args_input.val('');
             command_args_input.prop('disabled', true);
@@ -52,14 +52,14 @@
 
   function listHubitatDevices(server_id, device_id) {
     $('#node-input-device_id').find('option').remove().end();
-    let select_menu = $("#node-input-device_id");
-    let option = $('<option>', {value: "", text: "Choose device..."});
+    const select_menu = $("#node-input-device_id");
+    const option = $('<option>', {value: "", text: "Choose device..."});
     select_menu.append(option);
 
     $.getJSON(`/hubitat/${server_id}/devices`, (res) => {
       res.map(item => {
-        let selected = device_id == item.id;
-        let option = $('<option>', {value: item.id, text: item.label});
+        const selected = device_id == item.id;
+        const option = $('<option>', {value: item.id, text: item.label});
         select_menu.append(option);
         if (selected) { select_menu.val(item.id).trigger('change'); }
       });
@@ -67,16 +67,16 @@
   }
 
   function listHubitatDeviceCommands(server_id, device_id, command) {
-    let select_menu = $("#node-input-command");
+    const select_menu = $("#node-input-command");
     select_menu.find('option').remove().end();
-    let option = $('<option>', {value: "", text: "Choose command..."});
+    const option = $('<option>', {value: "", text: "Choose command..."});
     select_menu.append(option);
     let commands = []
 
     $.getJSON(`/hubitat/${server_id}/devices/${device_id}/commands`, (res) => {
       res.map(item => {
-        let selected = command == item.command;
-        let option = $('<option>', {
+        const selected = command == item.command;
+        const option = $('<option>', {
           value: item.command,
           text: item.command,
           args_placeholder: item.type.join(","),
@@ -92,17 +92,17 @@
   }
 
   function cleanHubitatDevices() {
-    let select_menu = $("#node-input-device_id");
+    const select_menu = $("#node-input-device_id");
     select_menu.find('option').remove().end();
-    let option = $('<option>', {value: "", text: "Choose device..."});
+    const option = $('<option>', {value: "", text: "Choose device..."});
     select_menu.append(option);
     select_menu.val("").trigger('change');
   }
 
   function cleanHubitatDeviceCommands() {
-    let select_menu = $("#node-input-command");
+    const select_menu = $("#node-input-command");
     select_menu.find('option').remove().end();
-    let option = $('<option>', {value: "", text: "Choose command..."});
+    const option = $('<option>', {value: "", text: "Choose command..."});
     select_menu.append(option);
     select_menu.val("").trigger('change');
   }
