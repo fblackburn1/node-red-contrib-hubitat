@@ -20,15 +20,19 @@
       $("document").ready(() => {
         $('#node-input-server').change(() => {
           let server_id = $('#node-input-server option:selected').val();
-          if (server_id) {
+          if (server_id !== '_ADD_') {
             listHubitatDevices(server_id, this.device_id);
+          } else {
+            cleanHubitatDevices();
           }
         });
         $('#node-input-device_id').change(() => {
           let server_id = $('#node-input-server option:selected').val();
           let device_id = $('#node-input-device_id option:selected').val();
-          if (server_id && device_id) {
+          if ((server_id !== '_ADD_') && device_id ) {
             listHubitatDeviceCommands(server_id, device_id, this.command);
+          } else {
+            cleanHubitatDeviceCommands();
           }
         });
         $('#node-input-command').change(() => {
@@ -63,8 +67,8 @@
   }
 
   function listHubitatDeviceCommands(server_id, device_id, command) {
-    $('#node-input-command').find('option').remove().end();
     let select_menu = $("#node-input-command");
+    select_menu.find('option').remove().end();
     let option = $('<option>', {value: "", text: "Choose command..."});
     select_menu.append(option);
     let commands = []
@@ -87,6 +91,21 @@
     });
   }
 
+  function cleanHubitatDevices() {
+    let select_menu = $("#node-input-device_id");
+    select_menu.find('option').remove().end();
+    let option = $('<option>', {value: "", text: "Choose device..."});
+    select_menu.append(option);
+    select_menu.val("").trigger('change');
+  }
+
+  function cleanHubitatDeviceCommands() {
+    let select_menu = $("#node-input-command");
+    select_menu.find('option').remove().end();
+    let option = $('<option>', {value: "", text: "Choose command..."});
+    select_menu.append(option);
+    select_menu.val("").trigger('change');
+  }
 </script>
 
 <script type="text/html" data-template-name="hubitat command">
