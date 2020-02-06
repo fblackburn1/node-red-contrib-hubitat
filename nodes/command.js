@@ -21,7 +21,6 @@ module.exports = function(RED) {
       if (this.command_args) {
         command_with_args = `${this.command}/${this.command_args}`;
       }
-      const scheme = ((this.usetls) ? 'https': 'http');
       const url = `${this.base_url}/devices/${this.device_id}/${command_with_args}?access_token=${this.token}`;
       const options = {method: 'GET'};
 
