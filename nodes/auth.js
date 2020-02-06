@@ -1,6 +1,4 @@
 module.exports = function(RED) {
-  const fetch = require('node-fetch');
-
   function authentication(config) {
     RED.nodes.createNode(this,config);
     this.name = config.name;
