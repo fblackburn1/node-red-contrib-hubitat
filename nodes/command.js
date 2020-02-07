@@ -14,7 +14,7 @@ module.exports = function(RED) {
 
     let node = this;
 
-    node.on('input', async function(msg) {
+    node.on('input', async function(msg, send, done) {
       node.status({fill:"blue", shape:"dot", text:"requesting"});
 
       let command_with_args = this.command;
@@ -30,9 +30,12 @@ module.exports = function(RED) {
       }
       catch(err) {
         node.status({fill:"red", shape:"ring", text:err.code});
+        done(err);
+        return;
       }
       node.status({});
-      node.send(msg);
+      send(msg);
+      done();
     });
   }
 
