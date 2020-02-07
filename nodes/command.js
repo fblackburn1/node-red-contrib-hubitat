@@ -12,7 +12,7 @@ module.exports = function(RED) {
     this.command = config.command;
     this.command_args = config.command_args;
 
-    var node = this;
+    let node = this;
 
     node.on('input', async function(msg) {
       node.status({fill:"blue", shape:"dot", text:"requesting"});
