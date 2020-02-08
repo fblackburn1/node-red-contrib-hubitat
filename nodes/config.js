@@ -1,5 +1,5 @@
 module.exports = function(RED) {
-  function authentication(config) {
+  function HubitatConfigNode(config) {
     RED.nodes.createNode(this,config);
     this.name = config.name;
     this.usetls = config.usetls;
@@ -12,5 +12,5 @@ module.exports = function(RED) {
     this.base_url = `${scheme}://${this.host}:${this.port}/apps/api/${this.api_id}`;
   }
 
-  RED.nodes.registerType("hubitat auth", authentication);
+  RED.nodes.registerType("hubitat config", HubitatConfigNode);
 }
