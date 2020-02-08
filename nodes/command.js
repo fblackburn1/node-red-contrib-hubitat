@@ -39,20 +39,6 @@ module.exports = function(RED) {
     });
   }
 
-  RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
-    const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.api_id}`;
-    const url = `${base_url}/devices?access_token=${req.query.token}`;
-    const options = {method: 'GET'}
-    try {
-      const response = await fetch(url, options);
-      res.json(await response.json());
-    }
-    catch(err) {
-      res.send(err);
-    }
-  });
-
   RED.httpAdmin.get('/hubitat/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
     const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.api_id}`;
