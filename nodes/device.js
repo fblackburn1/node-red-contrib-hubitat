@@ -37,25 +37,15 @@ module.exports = function(RED) {
     node.reportStatus = function(original, send) {
       let msg = {
         payload: {
-          // add deviceId
+          deviceId: node.deviceId,
           attributes: node.currentAttributes
         }
       };
       original.payload = msg.payload;
       Object.assign(msg, original);
-
-      // TODO check why we need this
-      if (send === undefined) { 
-        this.send(msg);
-      } else {
-        send(msg);
-      }
+      send(msg);
     }
 
-    node.updateStatus = (currentAttributes) => {
-      this.currentAttributes = currentAttributes;
-      this.reportStatus({});
-    }
 
     const callback = (event) => {
       console.debug("Device(" + node.name + "): Callback called");
@@ -79,14 +69,14 @@ module.exports = function(RED) {
         node.status({fill:"red", shape:"dot", text:"Unknown event: " + event["name"]});
         return;
       }
-      this.reportStatus({});
+      this.send({payload: event});
     }
 
-    node.hubitat.registerCallback(node, node.device, callback);
+    node.hubitat.registerCallback(node, node.deviceId, callback);
 
     node.hubitat.getDevice(node.deviceId).then( (device) => {
       console.debug("Device(" + node.name + "): Status refreshed");
-      node.updateStatus(device.attributes);
+      node.currentAttributes = device.attributes;
       node.status({});
     }).catch( err => {
       console.log(err);
