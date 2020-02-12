@@ -1,7 +1,7 @@
 module.exports = function(RED) {
   const fetch = require('node-fetch');
 
-  function Command(config) {
+  function HubitatCommandNode(config) {
     RED.nodes.createNode(this, config);
 
     hubitat = RED.nodes.getNode(config.server);
@@ -39,5 +39,5 @@ module.exports = function(RED) {
     });
   }
 
-  RED.nodes.registerType("hubitat command", Command);
+  RED.nodes.registerType("hubitat command", HubitatCommandNode);
 }
