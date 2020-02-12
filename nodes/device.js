@@ -5,6 +5,8 @@ module.exports = function(RED) {
     switch(dataType) {
       case "STRING":
         return value;
+      case "ENUM":
+        return value;
       case "NUMBER":
         return parseFloat(value);
       case "BOOL":
