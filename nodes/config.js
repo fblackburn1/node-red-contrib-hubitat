@@ -14,7 +14,7 @@ module.exports = function(RED) {
     this.apiId = config.apiId;
 
     const scheme = ((this.usetls) ? 'https': 'http');
-    this.base_url = `${scheme}://${this.host}:${this.port}/apps/api/${this.apiId}`;
+    this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.apiId}`;
 
     let node = this;
 
@@ -22,15 +22,15 @@ module.exports = function(RED) {
       return;
     }
 
-    node.getDevice = async function(device_id, type) {
-      const url = `${node.base_url}/devices/${device_id}?access_token=${node.token}`;
+    node.getDevice = async function(deviceId, type) {
+      const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
       const options = {method: 'GET'};
       try {
         const response = await fetch(url, options);
         device = await response.json();
       }
       catch(err) {
-        console.log("unable to fetch device: " + device_id);
+        console.log("unable to fetch device: " + deviceId);
         return;
       }
       console.log("HubitatConfigNode: Device:");
@@ -38,24 +38,24 @@ module.exports = function(RED) {
       return device;
     };
 
-    node.unregisterCallback = function(parent, device_id, callback) {
-      if (callbacks[device_id]) {
-        callbacks[device_id].filter( (c) => c !== callback );
+    node.unregisterCallback = function(parent, deviceId, callback) {
+      if (callbacks[deviceId]) {
+        callbacks[deviceId].filter( (c) => c !== callback );
       }
     };
 
-    node.registerCallback = function(parent, device_id, callback) {
-      if (!(device_id in callbacks)) {
-        callbacks[device_id] = [];
+    node.registerCallback = function(parent, deviceId, callback) {
+      if (!(deviceId in callbacks)) {
+        callbacks[deviceId] = [];
       }
 
-      callbacks[device_id].push({
+      callbacks[deviceId].push({
         parent: parent,
         callback: callback
       });
     };
 
-    nodes[node.base_url] = node;
+    nodes[node.baseUrl] = node;
   }
 
   RED.nodes.registerType("hubitat config", HubitatConfigNode);
@@ -67,9 +67,9 @@ module.exports = function(RED) {
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
     const options = {method: 'GET'}
-    let url = `${base_url}/devices`;
+    let url = `${baseUrl}/devices`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.query.token}`;
 
@@ -82,19 +82,19 @@ module.exports = function(RED) {
       console.log(err);
       res.send(err);
     }
-    // Check if the result should not be [{device_id: 1, label: light}, ...]
+    // Check if the result should not be [{deviceId: 1, label: light}, ...]
   });
 
-  RED.httpAdmin.get('/hubitat/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
-    console.log("GET /hubitat/devices/" + req.params.device_id + "/commands");
+  RED.httpAdmin.get('/hubitat/devices/:deviceId/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    console.log("GET /hubitat/devices/" + req.params.deviceId + "/commands");
     if ((!req.query.host) || (!req.query.port) || (!req.query.apiId) || (!req.query.token)) {
       res.sendStatus(404);
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
     const options = {method: 'GET'}
-    let url = `${base_url}/devices/${req.params.device_id}/commands`;
+    let url = `${baseUrl}/devices/${req.params.deviceId}/commands`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.query.token}`;
 
@@ -103,7 +103,7 @@ module.exports = function(RED) {
       res.json(await response.json());
     }
     catch(err) {
-      console.log("ERROR /hubitat/devices/" + req.params.device_id + "/commands:");
+      console.log("ERROR /hubitat/devices/" + req.params.deviceId + "/commands:");
       console.log(err);
       res.send(err);
     }

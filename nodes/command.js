@@ -5,23 +5,23 @@ module.exports = function(RED) {
     RED.nodes.createNode(this, config);
 
     hubitat = RED.nodes.getNode(config.server);
-    this.base_url = hubitat.base_url;
+    this.baseUrl = hubitat.baseUrl;
     this.token = hubitat.token;
 
-    this.device_id = config.device_id;
+    this.deviceId = config.deviceId;
     this.command = config.command;
-    this.command_args = config.command_args;
+    this.commandArgs = config.commandArgs;
 
     let node = this;
 
     node.on('input', async function(msg, send, done) {
       node.status({fill:"blue", shape:"dot", text:"requesting"});
 
-      let command_with_args = this.command;
-      if (this.command_args) {
-        command_with_args = `${this.command}/${this.command_args}`;
+      let commandWithArgs = this.command;
+      if (this.commandArgs) {
+        commandWithArgs = `${this.command}/${this.commandArgs}`;
       }
-      const url = `${this.base_url}/devices/${this.device_id}/${command_with_args}?access_token=${this.token}`;
+      const url = `${this.baseUrl}/devices/${this.deviceId}/${commandWithArgs}?access_token=${this.token}`;
       const options = {method: 'GET'};
 
       try {

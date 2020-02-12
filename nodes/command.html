@@ -5,9 +5,9 @@
     defaults: {
       name: {value:""},
       server: {type: "hubitat config", required: true},
-      device_id: {value:"", required: true},
+      deviceId: {value:"", required: true},
       command: {value:"", required: true},
-      command_args: {value:""},
+      commandArgs: {value:""},
     },
     inputs:1,
     outputs:1,
@@ -19,44 +19,44 @@
     oneditprepare: function() {
       $("document").ready(() => {
         $('#node-input-server').change(() => {
-          const server_id = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(server_id);
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
           if (server) {
-            listHubitatDevices(server, this.device_id);
+            listHubitatDevices(server, this.deviceId);
           } else {
             cleanHubitatDevices();
           }
         });
-        $('#node-input-device_id').change(() => {
-          const server_id = $('#node-input-server option:selected').val();
-          const device_id = $('#node-input-device_id option:selected').val();
-          server = RED.nodes.node(server_id);
-          if (server && device_id ) {
-            listHubitatDeviceCommands(server, device_id, this.command);
+        $('#node-input-deviceId').change(() => {
+          const serverId = $('#node-input-server option:selected').val();
+          const deviceId = $('#node-input-deviceId option:selected').val();
+          server = RED.nodes.node(serverId);
+          if (server && deviceId ) {
+            listHubitatDeviceCommands(server, deviceId, this.command);
           } else {
             cleanHubitatDeviceCommands();
           }
         });
         $('#node-input-command').change(() => {
           const placeholder = $('#node-input-command option:selected').attr('args_placeholder');
-          const command_args_input = $('#node-input-command_args');
+          const commandArgsInput = $('#node-input-commandArgs');
           if (placeholder === 'n/a') {
-            command_args_input.val('');
-            command_args_input.prop('disabled', true);
+            commandArgsInput.val('');
+            commandArgsInput.prop('disabled', true);
           } else {
-            command_args_input.prop('disabled', false);
+            commandArgsInput.prop('disabled', false);
           }
-          command_args_input.attr('placeholder', placeholder);
+          commandArgsInput.attr('placeholder', placeholder);
         });
       });
     }
   });
 
-  function listHubitatDevices(server, device_id) {
-    $('#node-input-device_id').find('option').remove().end();
-    const select_menu = $("#node-input-device_id");
+  function listHubitatDevices(server, deviceId) {
+    $('#node-input-deviceId').find('option').remove().end();
+    const selectMenu = $("#node-input-deviceId");
     const option = $('<option>', {value: "", text: "Choose device..."});
-    select_menu.append(option);
+    selectMenu.append(option);
     const params = {
       usetls: server.usetls,
       host: server.host,
@@ -67,19 +67,19 @@
 
     $.getJSON(`/hubitat/devices`, params, (res) => {
       res.map(item => {
-        const selected = device_id == item.id;
+        const selected = deviceId == item.id;
         const option = $('<option>', {value: item.id, text: item.label});
-        select_menu.append(option);
-        if (selected) { select_menu.val(item.id).trigger('change'); }
+        selectMenu.append(option);
+        if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
     });
   }
 
-  function listHubitatDeviceCommands(server, device_id, command) {
-    const select_menu = $("#node-input-command");
-    select_menu.find('option').remove().end();
+  function listHubitatDeviceCommands(server, deviceId, command) {
+    const selectMenu = $("#node-input-command");
+    selectMenu.find('option').remove().end();
     const option = $('<option>', {value: "", text: "Choose command..."});
-    select_menu.append(option);
+    selectMenu.append(option);
     const params = {
       usetls: server.usetls,
       host: server.host,
@@ -89,7 +89,7 @@
     };
     let commands = []
 
-    $.getJSON(`/hubitat/devices/${device_id}/commands`, params, (res) => {
+    $.getJSON(`/hubitat/devices/${deviceId}/commands`, params, (res) => {
       res.map(item => {
         const selected = command == item.command;
         const option = $('<option>', {
@@ -99,28 +99,28 @@
         });
         // Avoid list duplicate command returned by Hubitat API
         if (!commands.includes(item.command)) {
-          select_menu.append(option);
+          selectMenu.append(option);
           commands.push(item.command);
-          if (selected) { select_menu.val(item.command).trigger('change'); }
+          if (selected) { selectMenu.val(item.command).trigger('change'); }
         }
       });
     });
   }
 
   function cleanHubitatDevices() {
-    const select_menu = $("#node-input-device_id");
-    select_menu.find('option').remove().end();
+    const selectMenu = $("#node-input-deviceId");
+    selectMenu.find('option').remove().end();
     const option = $('<option>', {value: "", text: "Choose device..."});
-    select_menu.append(option);
-    select_menu.val("").trigger('change');
+    selectMenu.append(option);
+    selectMenu.val("").trigger('change');
   }
 
   function cleanHubitatDeviceCommands() {
-    const select_menu = $("#node-input-command");
-    select_menu.find('option').remove().end();
+    const selectMenu = $("#node-input-command");
+    selectMenu.find('option').remove().end();
     const option = $('<option>', {value: "", text: "Choose command..."});
-    select_menu.append(option);
-    select_menu.val("").trigger('change');
+    selectMenu.append(option);
+    selectMenu.val("").trigger('change');
   }
 </script>
 
@@ -130,16 +130,16 @@
     <input type="text" id="node-input-server">
   </div>
   <div class="form-row">
-    <label for="node-input-device_id"><i class="fa fa-lightbulb-o"></i> Device</label>
-    <select id="node-input-device_id"></select>
+    <label for="node-input-deviceId"><i class="fa fa-lightbulb-o"></i> Device</label>
+    <select id="node-input-deviceId"></select>
   </div>
   <div class="form-row">
     <label for="node-input-command"><i class="fa fa-hashtag"></i> Command</label>
     <select id="node-input-command"></select>
   </div>
   <div class="form-row">
-    <label for="node-input-command_args"><i class="fa fa-bars"></i> Arguments</label>
-    <input type="text" id="node-input-command_args">
+    <label for="node-input-commandArgs"><i class="fa fa-bars"></i> Arguments</label>
+    <input type="text" id="node-input-commandArgs">
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
