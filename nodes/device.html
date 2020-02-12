@@ -20,16 +20,16 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server) {
-            listHubitatDevices(server, this.deviceId);
+            listHubitatDevicesForDeviceNode(server, this.deviceId);
           } else {
-            cleanHubitatDevices();
+            cleanHubitatDevicesForDeviceNode();
           }
         });
       });
     }
   });
 
-  function listHubitatDevices(server, deviceId) {
+  function listHubitatDevicesForDeviceNode(server, deviceId) {
     $('#node-input-deviceId').find('option').remove().end();
     const selectMenu = $("#node-input-deviceId");
     const option = $('<option>', {value: "", text: "Choose device..."});
@@ -53,7 +53,7 @@
     });
   }
 
-  function cleanHubitatDevices() {
+  function cleanHubitatDevicesForDeviceNode() {
     const selectMenu = $("#node-input-deviceId");
     selectMenu.find('option').remove().end();
     const option = $('<option>', {value: "", text: "Choose device..."});
