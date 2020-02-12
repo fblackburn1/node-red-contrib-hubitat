@@ -118,7 +118,7 @@ module.exports = function(RED) {
       return;
     }
 
-    const callback = callbacks[req.body.content["deviceid"]];
+    const callback = callbacks[req.body.content["deviceId"]];
 
     if(callback){
       callback.forEach( (c) => {
