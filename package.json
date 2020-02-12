@@ -26,7 +26,8 @@
   "node-red": {
     "nodes": {
       "command": "nodes/command.js",
-      "config": "nodes/config.js"
+      "config": "nodes/config.js",
+      "device": "nodes/device.js"
     }
   }
 }

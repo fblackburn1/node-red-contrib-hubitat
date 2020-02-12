@@ -1,0 +1,81 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat device',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: {value:""},
+      server: {type: "hubitat config", required: true},
+      deviceId: {value:"", required: true},
+    },
+    inputs:1,
+    outputs:1,
+    icon: "icons/hubitat.png",
+    label: function() {
+        return this.name || "device";
+    },
+    paletteLabel: "device",
+    oneditprepare: function() {
+      $("document").ready(() => {
+        $('#node-input-server').change(() => {
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
+          if (server) {
+            listHubitatDevices(server, this.deviceId);
+          } else {
+            cleanHubitatDevices();
+          }
+        });
+      });
+    }
+  });
+
+  function listHubitatDevices(server, deviceId) {
+    $('#node-input-deviceId').find('option').remove().end();
+    const selectMenu = $("#node-input-deviceId");
+    const option = $('<option>', {value: "", text: "Choose device..."});
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      api_id: server.api_id,
+      token: server.token,
+    };
+
+    $.getJSON(`/hubitat/devices`, params, (res) => {
+      res.map(item => {
+        const selected = deviceId == item.id;
+        const option = $('<option>', {value: item.id, text: item.label});
+        selectMenu.append(option);
+        if (selected) { selectMenu.val(item.id).trigger('change'); }
+      });
+    });
+  }
+
+  function cleanHubitatDevices() {
+    const selectMenu = $("#node-input-deviceId");
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', {value: "", text: "Choose device..."});
+    selectMenu.append(option);
+    selectMenu.val("").trigger('change');
+  }
+
+</script>
+
+<script type="text/html" data-template-name="hubitat device">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-lightbulb-o"></i> Device</label>
+    <select id="node-input-deviceId"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat device">
+</script>
