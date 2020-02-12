@@ -11,14 +11,14 @@ module.exports = function(RED) {
     this.host = config.host;
     this.port = config.port;
     this.token = config.token;
-    this.api_id = config.api_id;
+    this.apiId = config.apiId;
 
     const scheme = ((this.usetls) ? 'https': 'http');
-    this.base_url = `${scheme}://${this.host}:${this.port}/apps/api/${this.api_id}`;
+    this.base_url = `${scheme}://${this.host}:${this.port}/apps/api/${this.apiId}`;
 
     let node = this;
 
-    if ((!node.host) || (!node.port) || (!node.token) || (!node.api_id)) {
+    if ((!node.host) || (!node.port) || (!node.token) || (!node.apiId)) {
       return;
     }
 
@@ -62,12 +62,12 @@ module.exports = function(RED) {
 
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     console.log("GET /hubitat/devices");
-    if ((!req.query.host) || (!req.query.port) || (!req.query.api_id) || (!req.query.token)) {
+    if ((!req.query.host) || (!req.query.port) || (!req.query.apiId) || (!req.query.token)) {
       res.send(404);
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.api_id}`;
+    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
     const options = {method: 'GET'}
     let url = `${base_url}/devices`;
     console.log(`GET ${url}`);
@@ -82,16 +82,17 @@ module.exports = function(RED) {
       console.log(err);
       res.send(err);
     }
+    // Check if the result should not be [{device_id: 1, label: light}, ...]
   });
 
   RED.httpAdmin.get('/hubitat/devices/:device_id/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     console.log("GET /hubitat/devices/" + req.params.device_id + "/commands");
-    if ((!req.query.host) || (!req.query.port) || (!req.query.api_id) || (!req.query.token)) {
-      res.send(404);
+    if ((!req.query.host) || (!req.query.port) || (!req.query.apiId) || (!req.query.token)) {
+      res.sendStatus(404);
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.api_id}`;
+    const base_url = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
     const options = {method: 'GET'}
     let url = `${base_url}/devices/${req.params.device_id}/commands`;
     console.log(`GET ${url}`);
