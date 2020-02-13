@@ -34,19 +34,6 @@ module.exports = function(RED) {
       return;
     }
 
-    node.reportStatus = function(original, send) {
-      let msg = {
-        payload: {
-          deviceId: node.deviceId,
-          attributes: node.currentAttributes
-        }
-      };
-      original.payload = msg.payload;
-      Object.assign(msg, original);
-      send(msg);
-    }
-
-
     const callback = (event) => {
       console.debug("Device(" + node.name + "): Callback called");
       console.debug(event);
@@ -61,15 +48,14 @@ module.exports = function(RED) {
         if (event["name"] === attribute["name"]) {
           attribute["currentValue"] = castHubitatValue(attribute["dataType"], event["value"]);
           node.status({});
+          this.send({payload: attribute});
           found = true;
         }
       });
 
       if (!found) {
         node.status({fill:"red", shape:"dot", text:"Unknown event: " + event["name"]});
-        return;
       }
-      this.send({payload: event});
     }
 
     node.hubitat.registerCallback(node, node.deviceId, callback);
@@ -85,7 +71,23 @@ module.exports = function(RED) {
 
     node.on('input', async function(msg, send, done) {
       console.debug("HubitatDeviceNode: Input received");
-      node.reportStatus(msg, send);
+      if (msg.attribute === undefined) {
+        node.status({fill:"red", shape:"dot", text:"Undefined attribute"});
+        return;
+      }
+      let found = false;
+      node.currentAttributes.forEach( (attribute) => {
+        if (msg.attribute === attribute["name"]) {
+          node.status({});
+          msg.payload = attribute;
+          send(msg);
+          found = true;
+        }
+      });
+
+      if (!found) {
+        node.status({fill:"red", shape:"dot", text:"Invalid attribute: " + msg.attribute});
+      }
       done();
     });
 
