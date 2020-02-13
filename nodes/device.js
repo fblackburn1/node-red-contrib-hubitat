@@ -15,7 +15,7 @@ module.exports = function(RED) {
         console.warn("Unable to cast to dataType. Open an issue to report back the following output:");
         console.warn(dataType);
         console.warn(value);
-        return;
+        return value;
     }
   }
 
