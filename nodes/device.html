@@ -84,4 +84,33 @@
 </script>
 
 <script type="text/html" data-help-name="hubitat device">
+  <p>A node that keep the current state of Hubitat device.</p>
+
+  <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt class="optional">attribute <span class="property-type">string</span></dt>
+      <dd><code>&lt;device-attribute-name&gt;</code> allow to force the node to ouput the current state of this attribute</dd>
+    </dl>
+
+  <h3>Output</h3>
+    <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">string</span></dt>
+      <dd>The attribute values. example:
+        <code>
+          {
+              payload: {
+                  name: "switch",
+                  currentValue: "on",
+                  dataType: "ENUM"
+              }
+          }
+      </code>
+      </dd>
+    </dl>
+
+  <h3>Details</h3>
+    <p>This node will keep device state. Every time the device state changes at Hubitat, the webhook will send us the current status.</p>
+    <p><b>Device</b> dropdown is populated when the server is reachable.</p>
+    <p><b>Send event</b> allow to send or not event when it receive one from Hubitat.</p>
+    <p>This node is not compatible with Node-RED 0.x</p>
 </script>
