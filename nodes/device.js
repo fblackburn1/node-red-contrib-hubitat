@@ -25,6 +25,7 @@ module.exports = function(RED) {
     this.hubitat = RED.nodes.getNode(config.server);
     this.name = config.name;
     this.deviceId = config.deviceId;
+    this.sendEvent = config.sendEvent;
     this.currentAttributes = undefined;
 
     let node = this;
@@ -48,7 +49,9 @@ module.exports = function(RED) {
         if (event["name"] === attribute["name"]) {
           attribute["currentValue"] = castHubitatValue(attribute["dataType"], event["value"]);
           node.status({});
-          this.send({payload: attribute});
+          if (this.sendEvent) {
+            this.send({payload: attribute});
+          }
           found = true;
         }
       });
