@@ -75,13 +75,17 @@ module.exports = function(RED) {
 
     try {
       const response = await fetch(url, options);
-      res.json(await response.json());
+      var devices = await response.json();
     }
     catch(err) {
       console.log("ERROR /hubitat/devices:");
       console.log(err);
       res.send(err);
     }
+    devices.sort(function(first, second) {
+      return second.label < first.label;
+    });
+    res.json(devices);
     // Check if the result should not be [{deviceId: 1, label: light}, ...]
   });
 
