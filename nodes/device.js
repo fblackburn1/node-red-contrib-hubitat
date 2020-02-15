@@ -72,7 +72,7 @@ module.exports = function(RED) {
       node.status({fill:"red", shape:"dot", text:"Uninitialized"});
     });
 
-    node.on('input', async function(msg, send, done) {
+    node.on('input', function(msg, send, done) {
       console.debug("HubitatDeviceNode: Input received");
       if (msg.attribute === undefined) {
         node.status({fill:"red", shape:"dot", text:"Undefined attribute"});
