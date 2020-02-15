@@ -45,7 +45,10 @@ module.exports = function(RED) {
 
     node.unregisterCallback = function(parent, deviceId, callback) {
       if (callbacks[deviceId]) {
-        callbacks[deviceId].filter( (c) => c !== callback );
+        callbacks[deviceId] = callbacks[deviceId].filter( (c) => c.callback !== callback );
+        if (callbacks[deviceId].length  == 0) {
+          delete callbacks[deviceId];
+        }
       }
     };
 
