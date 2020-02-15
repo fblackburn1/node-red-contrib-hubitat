@@ -27,12 +27,17 @@ module.exports = function(RED) {
       const options = {method: 'GET'};
       try {
         const response = await fetch(url, options);
-        device = await response.json();
+        var device = await response.json();
       }
       catch(err) {
         console.log("unable to fetch device: " + deviceId);
         return;
       }
+      device.attributes = device.attributes.filter((attribute, index, self) =>
+        index === self.findIndex((t) => (
+          t.name === attribute.name
+        ))
+      )
       console.log("HubitatConfigNode: Device:");
       console.log(device);
       return device;
