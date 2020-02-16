@@ -91,7 +91,9 @@ module.exports = function(RED) {
       res.send(err);
     }
     devices.sort(function(first, second) {
-      return second.label < first.label;
+      if (first.label < second.label) { return -1; }
+      if (first.label > second.label) { return 1; }
+      return 0;
     });
     res.json(devices);
     // Check if the result should not be [{deviceId: 1, label: light}, ...]
