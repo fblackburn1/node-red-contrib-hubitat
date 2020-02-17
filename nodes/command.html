@@ -151,7 +151,14 @@
   <p>A node that send command to Hubitat.</p>
 
   <h3>Inputs</h3>
-    No attribute from the input will affect this node.
+    <dl class="message-properties">
+      <dt class="optional">command <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the command sent.</dd>
+    </dl>
+    <dl class="message-properties">
+      <dt class="optional">arguments <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the command arguments sent. You must remove this property if you send a command that doesn't require an argument</dd>
+    </dl>
 
   <h3>Output</h3>
     The same message as the input.

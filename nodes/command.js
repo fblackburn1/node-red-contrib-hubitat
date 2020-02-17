@@ -17,9 +17,12 @@ module.exports = function(RED) {
     node.on('input', async function(msg, send, done) {
       node.status({fill:"blue", shape:"dot", text:"requesting"});
 
-      let commandWithArgs = this.command;
-      if (this.commandArgs) {
-        commandWithArgs = `${this.command}/${this.commandArgs}`;
+      let command = ((msg.command === undefined)? this.command: msg.command);
+      let arguments = ((msg.arguments === undefined)? this.commandArgs: msg.arguments);
+
+      let commandWithArgs = command;
+      if (arguments) {
+        commandWithArgs = `${command}/${arguments}`;
       }
       const url = `${this.baseUrl}/devices/${this.deviceId}/${commandWithArgs}?access_token=${this.token}`;
       const options = {method: 'GET'};
