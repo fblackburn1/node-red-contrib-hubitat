@@ -11,14 +11,14 @@ module.exports = function(RED) {
     this.host = config.host;
     this.port = config.port;
     this.token = config.token;
-    this.apiId = config.apiId;
+    this.appId = config.appId;
 
     const scheme = ((this.usetls) ? 'https': 'http');
-    this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.apiId}`;
+    this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
 
     let node = this;
 
-    if ((!node.host) || (!node.port) || (!node.token) || (!node.apiId)) {
+    if ((!node.host) || (!node.port) || (!node.token) || (!node.appId)) {
       return;
     }
 
@@ -70,12 +70,12 @@ module.exports = function(RED) {
 
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     console.log("GET /hubitat/devices");
-    if ((!req.query.host) || (!req.query.port) || (!req.query.apiId) || (!req.query.token)) {
+    if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
       res.send(404);
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.appId}`;
     const options = {method: 'GET'}
     let url = `${baseUrl}/devices`;
     console.log(`GET ${url}`);
@@ -101,12 +101,12 @@ module.exports = function(RED) {
 
   RED.httpAdmin.get('/hubitat/devices/:deviceId/commands', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
     console.log("GET /hubitat/devices/" + req.params.deviceId + "/commands");
-    if ((!req.query.host) || (!req.query.port) || (!req.query.apiId) || (!req.query.token)) {
+    if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
       res.sendStatus(404);
       return;
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
-    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.apiId}`;
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.appId}`;
     const options = {method: 'GET'}
     let url = `${baseUrl}/devices/${req.params.deviceId}/commands`;
     console.log(`GET ${url}`);
