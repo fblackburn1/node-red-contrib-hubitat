@@ -11,11 +11,13 @@ npm install node-red-contrib-hubitat
 
 ## Quick Start
 
-This package contains two nodes:
+This package contains three nodes:
 
-  * Configuration node to setup server and token
-  * Command node to execute commands supported by your devices
-  * Device node to keep current state synced with a device
+  * `command`: To send command to Hubitat
+  * `device`: To keep a device state. It fetch the device state when deployed and then listen for webhook events.
+
+  * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat
+    to dispatch events to other nodes.
 
 ## Thanks
 
