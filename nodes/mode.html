@@ -1,0 +1,72 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat mode',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: {value:""},
+      server: {type: "hubitat config", required: true},
+      sendEvent: {value: true},
+    },
+    inputs:1,
+    outputs:1,
+    icon: "icons/hubitat.png",
+    label: function() {
+        return this.name || "mode";
+    },
+    paletteLabel: "mode",
+    oneditprepare: function() {
+      $("document").ready(() => {
+        $('#node-input-server').change(() => {
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
+        });
+      });
+    }
+  });
+
+
+</script>
+
+<script type="text/html" data-template-name="hubitat mode">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-sendEvent" style="width: auto"><i class="fa fa-rocket"></i> Send events </label>
+    <input type="checkbox" id="node-input-sendEvent" style="display: inline-block; width: auto; vertical-align: top;" checked>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat mode">
+  <p>A node that stores and can send the current mode of your Hubitat hub.</p>
+
+  <h3>Inputs</h3>
+    <p>Any input will cause the node to update itself with the current mode from the hub.</p>
+
+  <h3>Output</h3>
+    <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">object</span></dt>
+      <dd>Information about the current hub mode.
+        <br>
+        <p><strong>Note:</strong> The <code>displayName</code> and <code>descriptionText</code> fields are sent only when the hub generates a mode event.  If this node is used to request the current hub mode, these fields are omitted.</p>
+        <p>Example:</p>
+<pre>payload: {
+    name: "mode",
+    value: "Day",
+    displayName: "My Home",
+    descriptionText: "My Home is now in Day mode"
+}</pre>
+      </dd>
+    </dl>
+
+  <h3>Details</h3>
+    <p>This node will store the current hub mode. When a mode change occurs at the hub, the Maker API app sends the event to Node-RED via HTTP POST.</p>
+    <p>This node requires that you have enabled the "Include location events to be sent by POST?" option in the Maker API app and that the URL be configured to point to <code>/hubitat/webhook</code> on your Node-RED server.</p>
+    <p><b>Send events:</b> Enables output of this node as described above.</p>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>

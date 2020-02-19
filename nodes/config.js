@@ -22,6 +22,23 @@ module.exports = function(RED) {
       return;
     }
 
+    node.getMode = async function() {
+      const url = `${node.baseUrl}/modes?access_token=${node.token}`;
+      const options = {method: 'GET'};
+      try {
+        const response = await fetch(url, options);
+        var mode = await response.json();
+      }
+      catch(err) {
+        console.log(err);
+        console.log("unable to fetch modes.");
+      }
+
+      console.log("HubitatConfigNode: Mode:");
+      console.log(mode);
+      return mode;
+    };
+
     node.getDevice = async function(deviceId, type) {
       const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
       const options = {method: 'GET'};
@@ -132,7 +149,11 @@ module.exports = function(RED) {
       return;
     }
 
-    const callback = callbacks[req.body.content["deviceId"]];
+    if(req.body.content["deviceId"] != null) {
+      var callback = callbacks[req.body.content["deviceId"]];
+    } else if (req.body.content["name"] == "mode") {
+      var callback = callbacks[0];
+    }
 
     if(callback){
       callback.forEach( (c) => {
