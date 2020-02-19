@@ -8,7 +8,7 @@ module.exports = function(RED) {
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
-    this.deviceId = 0;
+    this.deviceId = 0;  // fake the deviceId to be able to register on callback
 
     let node = this;
 
@@ -28,11 +28,12 @@ module.exports = function(RED) {
 
       this.currentMode = event["value"];
 
-      outgoingEvent = {};
-      outgoingEvent["name"] = "mode";
-      outgoingEvent["value"] = node.currentMode;
-      outgoingEvent["displayName"] = event["displayName"];
-      outgoingEvent["descriptionText"] = event["descriptionText"];
+      outgoingEvent = {
+        name: "mode",
+        value: this.currentMode,
+        displayName: event["displayName"],
+        descriptionText: event["descriptionText"],
+      };
 
       if (this.sendEvent) {
         this.send({payload: outgoingEvent});
@@ -59,9 +60,10 @@ module.exports = function(RED) {
       console.debug("HubitatModeNode: Input received");
       console.debug(msg);
 
-      msg.payload = {};
-      msg.payload["name"] = "mode";
-      msg.payload["value"] = node.currentMode;
+      msg.payload = {
+        name: "mode",
+        value: node.currentMode,
+      };
       send(msg);
 
       done();
