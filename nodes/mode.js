@@ -1,24 +1,6 @@
 module.exports = function(RED) {
   const fetch = require('node-fetch');
 
-  function castHubitatValue(dataType, value) {
-    switch(dataType) {
-      case "STRING":
-        return value;
-      case "ENUM":
-        return value;
-      case "NUMBER":
-        return parseFloat(value);
-      case "BOOL":
-        return value == "true";
-      default:
-        console.warn("Unable to cast to dataType. Open an issue to report back the following output:");
-        console.warn(dataType);
-        console.warn(value);
-        return value;
-    }
-  }
-
   function HubitatModeNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -44,11 +26,18 @@ module.exports = function(RED) {
         return;
       }
 
+      this.currentMode = event["value"];
+
+      outgoingEvent = {};
+      outgoingEvent["name"] = "mode";
+      outgoingEvent["value"] = node.currentMode;
+      outgoingEvent["displayName"] = event["displayName"];
+      outgoingEvent["descriptionText"] = event["descriptionText"];
+
       if (this.sendEvent) {
-        this.send({payload: event});
+        this.send({payload: outgoingEvent});
       }
 
-      this.currentMode = event["value"];
       node.status({fill:"blue", shape:"dot", text: this.currentMode});
     }
 

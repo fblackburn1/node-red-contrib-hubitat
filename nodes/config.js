@@ -151,7 +151,7 @@ module.exports = function(RED) {
 
     if(req.body.content["deviceId"] != null) {
       var callback = callbacks[req.body.content["deviceId"]];
-    } else if (req.body.content["deviceId"] == null && req.body.content["name"] == "mode") {
+    } else if (req.body.content["name"] == "mode") {
       var callback = callbacks[0];
     }
 
