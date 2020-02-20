@@ -8,6 +8,7 @@
       deviceId: {value:"", required: true},
       command: {value:"", required: true},
       commandArgs: {value:""},
+      commandArgsType: {value:"str"},
     },
     inputs:1,
     outputs:1,
@@ -43,17 +44,22 @@
             $('#node-input-name').val(deviceLabel);
           }
         });
+
+        const commandArgsInput = $('#node-input-commandArgs')
+        $('#node-input-commandArgsType').val(this.commandArgsType);
         $('#node-input-command').change(() => {
-          const placeholder = $('#node-input-command option:selected').attr('args_placeholder');
-          const commandArgsInput = $('#node-input-commandArgs');
-          if (placeholder === 'n/a') {
+          const argFormatText = $('#node-input-command option:selected').attr('args_formatText');
+          if (argFormatText === 'n/a') {
             commandArgsInput.val('');
-            commandArgsInput.prop('disabled', true);
-          } else {
-            commandArgsInput.prop('disabled', false);
           }
-          commandArgsInput.attr('placeholder', placeholder);
+          $('#node-args-desc-format').text(argFormatText);
         });
+        commandArgsInput.typedInput({
+            default: 'str',
+            typeField: $("#node-input-commandArgsType"),
+            types:['str','flow','global']
+        });
+        commandArgsInput.typedInput('type', this.commandArgsType);
       });
     }
   });
@@ -101,7 +107,7 @@
         const option = $('<option>', {
           value: item.command,
           text: item.command,
-          args_placeholder: item.type.join(","),
+          args_formatText: item.type.join(","),
         });
         // Avoid list duplicate command returned by Hubitat API
         if (!commands.includes(item.command)) {
@@ -145,7 +151,13 @@
   </div>
   <div class="form-row">
     <label for="node-input-commandArgs"><i class="fa fa-bars"></i> Arguments</label>
+    <input type="hidden" id="node-input-commandArgsType">
     <input type="text" id="node-input-commandArgs">
+  </div>
+  <div class="form-row" id="node-args-desc">
+    <label for="node-args-desc">&nbsp;</label>
+    <span>Argument Format:</span>&nbsp;
+    <span id="node-args-desc-format"></span>&nbsp;
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>

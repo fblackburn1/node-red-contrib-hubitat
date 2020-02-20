@@ -10,7 +10,8 @@ module.exports = function(RED) {
 
     this.deviceId = config.deviceId;
     this.command = config.command;
-    this.commandArgs = config.commandArgs;
+    this.commandArgsType = config.commandArgsType
+    this.commandArgs = RED.util.evaluateNodeProperty(config.commandArgs, this.commandArgsType, this, null)
 
     let node = this;
 
