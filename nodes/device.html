@@ -52,7 +52,7 @@
     };
 
 
-    $.getJSON(`/hubitat/devices`, params, (res) => {
+    $.getJSON(`hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = deviceId == item.id;
         const option = $('<option>', {value: item.id, text: item.label});

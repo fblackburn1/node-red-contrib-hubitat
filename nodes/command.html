@@ -71,7 +71,7 @@
       token: server.token,
     };
 
-    $.getJSON(`/hubitat/devices`, params, (res) => {
+    $.getJSON(`hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = deviceId == item.id;
         const option = $('<option>', {value: item.id, text: item.label});
@@ -95,7 +95,7 @@
     };
     let commands = []
 
-    $.getJSON(`/hubitat/devices/${deviceId}/commands`, params, (res) => {
+    $.getJSON(`hubitat/devices/${deviceId}/commands`, params, (res) => {
       res.map(item => {
         const selected = command == item.command;
         const option = $('<option>', {
