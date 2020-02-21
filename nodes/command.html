@@ -36,6 +36,12 @@
           } else {
             cleanHubitatDeviceCommands();
           }
+
+          const deviceLabel = $('#node-input-deviceId option:selected').text();
+          const name = $('#node-input-name').val();
+          if ((!name) && (deviceId)) {
+            $('#node-input-name').val(deviceLabel);
+          }
         });
         $('#node-input-command').change(() => {
           const placeholder = $('#node-input-command option:selected').attr('args_placeholder');

@@ -26,6 +26,14 @@
             cleanHubitatDevicesForDeviceNode();
           }
         });
+        $('#node-input-deviceId').change(() => {
+          const deviceLabel = $('#node-input-deviceId option:selected').text();
+          const deviceId = $('#node-input-deviceId option:selected').val();
+          const name = $('#node-input-name').val();
+          if ((!name) && (deviceId)) {
+            $('#node-input-name').val(deviceLabel);
+          }
+        });
       });
     }
   });
