@@ -8,6 +8,7 @@
       port: {value: 80, required: true, validate: RED.validators.number()},
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
+      webhook: {value: "/hubitat/webhook", required: false},
     },
     label: function() {
       if (this.name) {
@@ -38,6 +39,12 @@
         id: "hubitat-config-tab-security",
         label: "Security"
       });
+
+      tabs.addTab({
+        id: "hubitat-config-tab-advanced",
+        label: "Advanced"
+      });
+
     }
   });
 </script>
@@ -73,6 +80,13 @@
         <input type="text" id="node-config-input-token" placeholder="00000000-0000-4000-8000-000000000000">
       </div>
     </div>
+    <div id="hubitat-config-tab-advanced" style="display:none">
+      <div class="form-row">
+        <label for="node-config-input-webhook"><i class="fa fa-gear"></i> Webhook URL</label>
+        <input type="text" id="node-config-input-webhook" placeholder="/hubitat/webhook">
+      </div>
+    </div>
+
   </div>
 </script>
 
