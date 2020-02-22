@@ -88,8 +88,8 @@ module.exports = function(RED) {
     
     if (RED.settings.httpNodeRoot !== false) {
         if (!this.webhook) {
-            this.warn(RED._("webhook url not set"));
-            return;
+            this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
+	    this.webhook = "/hubitat/webhook";
         }
         if (this.webhook[0] !== '/') {
             this.webhook = '/'+this.webhook;
@@ -119,8 +119,6 @@ module.exports = function(RED) {
                     c.callback.call(c.parent, req.body.content);
                 });
             }
-
-            //DO THE CALLBACK HERE FROM BELOW
         };
         var httpMiddleware = function(req,res,next) { next(); }
         var corsHandler = function(req,res,next) { next(); }
