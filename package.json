@@ -13,6 +13,8 @@
   "author": "Francois Blackburn",
   "license": "MIT",
   "dependencies": {
+    "cookie-parse": "^0.4.0",
+    "cookie-parser": "^1.4.4",
     "node-fetch": "^2.6.0"
   },
   "keywords": [
