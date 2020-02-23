@@ -106,6 +106,7 @@ module.exports = function(RED) {
       console.log("ERROR /hubitat/devices:");
       console.log(err);
       res.send(err);
+      return;
     }
     devices.sort(function(first, second) {
       if (first.label < second.label) { return -1; }
