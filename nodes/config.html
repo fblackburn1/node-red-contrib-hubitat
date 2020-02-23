@@ -8,6 +8,7 @@
       port: {value: 80, required: true, validate: RED.validators.number()},
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
+      nodeRedServer: {value: ""},
     },
     label: function() {
       if (this.name) {
@@ -38,8 +39,61 @@
         id: "hubitat-config-tab-security",
         label: "Security"
       });
+
+      $("#node-config-input-nodeRedServer").attr('placeholder', window.location.origin);
     }
   });
+
+  function configureHubitat() {
+    $("#node-config-input-webhookConfigured").html('');
+    $("#node-config-text-webhookWarning").hide();
+    const failIcon = "&#10060;";  // Red cross mark
+    const successIcon = "&#9989;";  // Green check mark
+
+    const host = $("#node-config-input-host").val();
+    if (!host) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Server`);
+      return;
+    }
+    const port = $("#node-config-input-port").val();
+    if (!port) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Port`);
+      return;
+    }
+    const appId = $("#node-config-input-appId").val();
+    if (!appId) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Application ID`);
+      return;
+    }
+    const token = $("#node-config-input-token").val();
+    if (!token) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Token`);
+      return;
+    }
+    const nodeRedServer = $("#node-config-input-nodeRedServer").val();
+    if (!nodeRedServer) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Node-RED server`);
+      return;
+    }
+
+    const params = {
+      usetls: $("#node-config-input-usetls").is(":checked"),
+      host: host,
+      port: port,
+      appId: appId,
+      token: token,
+      nodeRedServer: nodeRedServer,
+    };
+
+    $.post("hubitat/configure", params, (res) => {
+      $("#node-config-input-webhookConfigured").html(successIcon);
+      $("#node-config-text-webhookWarning").show();
+    })
+    .fail(() => {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Fail to set webhoook. Verify your configuration`);
+    });
+  }
+
 </script>
 
 <script type="text/x-red" data-template-name="hubitat config">
@@ -64,8 +118,29 @@
       </div>
       <div class="form-row">
         <label for="node-config-input-appId" style="width: auto"><i class="fa fa-gear"></i> Application ID</label>
-        <input type="text" id="node-config-input-appId" style="margin-left:20px; width:55px">
+        <input type="text" id="node-config-input-appId" style="width:55px">
       </div>
+
+      <hr>
+      <div class="form-row">
+        <p><b>Webhook configuration</b></p>
+      </div>
+      <div class="form-row" style="padding-right: 200px">
+        <label for="node-config-input-nodeRedServer"><i class="fa fa-globe"></i> Node-RED</label>
+        <input type="text" id="node-config-input-nodeRedServer">
+        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" disabled value="/hubitat/webhook">
+      </div>
+      <div class="form-row">
+        <button id="node-config-button-webhookConfigure" onclick="configureHubitat()">Configure webhook</button>
+        <p id="node-config-input-webhookConfigured" style="display: inline-block;"></p>
+      </div>
+      <div class="form-row">
+        <p id="node-config-text-webhookWarning" hidden>
+          <b>Warning:</b> To ensure that Node-RED receives webhooks,
+          you should create a basic test flow with <code>device</code> or <code>mode</code> node.
+        </p>
+      </div>
+
     </div>
     <div id="hubitat-config-tab-security" style="display:none">
       <div class="form-row">
@@ -85,4 +160,10 @@
     <code>http://localhost/apps/api/<b>12</b>/devices?access_token=...</code></p>
     <p>Token correspond to the <b>access_token</b> value.
     <p>Server field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
+    <p>The <code>Webhook Section</code> allow to configure the URL on which the Hubitat hub will send events.
+      Ensure that Node-RED is reachable by the Hubitat hub</p>
+    <p>
+      <b>Warning:</b> This node add an unauthenticated endpoint (<code>/hubitat/webhook</code>),
+      which can be a security issue if you expose it on internet
+    </p>
 </script>
