@@ -48,11 +48,10 @@ module.exports = function(RED) {
       this.currentAttributes.forEach( (attribute) => {
         if (event["name"] === attribute["name"]) {
           attribute["currentValue"] = castHubitatValue(attribute["dataType"], event["value"]);
-	  attribute["deviceName"] = node.name;
-	  attribute["deviceId"] = node.deviceId;
+	      attribute["deviceId"] = node.deviceId;
           node.status({});
           if (this.sendEvent) {
-            this.send({payload: attribute});
+            this.send({payload: attribute, topic: node.name});
           }
           found = true;
         }
