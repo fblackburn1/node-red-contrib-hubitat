@@ -105,7 +105,7 @@ module.exports = function(RED) {
     catch(err) {
       console.log("ERROR /hubitat/devices:");
       console.log(err);
-      res.send(err);
+      res.sendStatus(400);
       return;
     }
     devices.sort(function(first, second) {
@@ -137,7 +137,7 @@ module.exports = function(RED) {
     catch(err) {
       console.log("ERROR /hubitat/devices/" + req.params.deviceId + "/commands:");
       console.log(err);
-      res.send(err);
+      res.sendStatus(400);
     }
   });
 
