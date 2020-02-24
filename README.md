@@ -16,7 +16,7 @@ This package contains three nodes:
   * `command`: To send command to Hubitat
   * `device`: To keep a device state. It fetch the device state when deployed, then listen for
     webhook events.
-  * `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode state when deployed, then listen for
+  * `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode when deployed, then listen for
     webhook events
 
   * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat

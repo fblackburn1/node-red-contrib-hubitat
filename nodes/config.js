@@ -105,7 +105,8 @@ module.exports = function(RED) {
     catch(err) {
       console.log("ERROR /hubitat/devices:");
       console.log(err);
-      res.send(err);
+      res.sendStatus(400);
+      return;
     }
     devices.sort(function(first, second) {
       if (first.label < second.label) { return -1; }
@@ -136,7 +137,32 @@ module.exports = function(RED) {
     catch(err) {
       console.log("ERROR /hubitat/devices/" + req.params.deviceId + "/commands:");
       console.log(err);
-      res.send(err);
+      res.sendStatus(400);
+    }
+  });
+
+  RED.httpAdmin.post('/hubitat/configure', RED.auth.needsPermission('hubitat.write'), async function(req, res) {
+    console.log("POST /hubitat/configure");
+    if ((!req.body.host) || (!req.body.port) || (!req.body.appId) || (!req.body.token) || (!req.body.nodeRedServer)) {
+      res.sendStatus(404);
+      return;
+    }
+    const scheme = ((req.body.usetls == 'true') ? 'https': 'http');
+    const baseUrl = `${scheme}://${req.body.host}:${req.body.port}/apps/api/${req.body.appId}`;
+    const options = {method: 'GET'};
+    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}/hubitat/webhook`);
+    let url = `${baseUrl}/postURL/${nodeRedURL}`;
+    console.log(`GET ${url}`);
+    url = `${url}?access_token=${req.body.token}`;
+
+    try {
+      const response = await fetch(url, options);
+      res.json(await response.json());
+    }
+    catch(err) {
+      console.log("ERROR /hubitat/configure:");
+      console.log(err);
+      res.sendStatus(400);
     }
   });
 
