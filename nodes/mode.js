@@ -34,7 +34,7 @@ module.exports = function(RED) {
       };
 
       if (this.sendEvent) {
-        this.send({payload: outgoingEvent});
+        this.send({payload: outgoingEvent, topic: "hubitat-mode"});
       }
 
       node.status({fill:"blue", shape:"dot", text: this.currentMode});
@@ -62,6 +62,7 @@ module.exports = function(RED) {
         name: "mode",
         value: node.currentMode,
       };
+      msg.topic = "hubitat-mode";
       send(msg);
 
       done();
