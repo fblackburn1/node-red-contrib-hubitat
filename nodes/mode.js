@@ -62,6 +62,7 @@ module.exports = function(RED) {
         name: "mode",
         value: node.currentMode,
       };
+      msg.topic = "hubitat-mode";
       send(msg);
 
       done();
