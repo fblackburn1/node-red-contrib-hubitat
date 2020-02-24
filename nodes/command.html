@@ -46,11 +46,18 @@
         });
 
         const commandArgsInput = $('#node-input-commandArgs')
+        const commandArgsScope = $('#node-input-commandArgs-scope');
         $('#node-input-commandArgsType').val(this.commandArgsType);
         $('#node-input-command').change(() => {
           const argFormatText = $('#node-input-command option:selected').attr('args_formatText');
           if (argFormatText === 'n/a') {
+            $('.red-ui-typedInput-type-select', commandArgsScope).prop('disabled', true);
+            $('.red-ui-typedInput-input', commandArgsScope).val('');
             commandArgsInput.val('');
+            $('.red-ui-typedInput-input', commandArgsScope).prop('disabled', true);
+          } else {
+            $('.red-ui-typedInput-type-select', commandArgsScope).prop('disabled', false);
+            $('.red-ui-typedInput-input', commandArgsScope).prop('disabled', false);
           }
           $('#node-args-desc-format').text(argFormatText);
         });
@@ -149,7 +156,7 @@
     <label for="node-input-command"><i class="fa fa-hashtag"></i> Command</label>
     <select id="node-input-command"></select>
   </div>
-  <div class="form-row">
+  <div class="form-row" id="node-input-commandArgs-scope">
     <label for="node-input-commandArgs"><i class="fa fa-bars"></i> Arguments</label>
     <input type="hidden" id="node-input-commandArgsType">
     <input type="text" id="node-input-commandArgs">
