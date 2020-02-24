@@ -84,6 +84,7 @@ module.exports = function(RED) {
         if (msg.attribute === attribute["name"]) {
           node.status({});
           msg.payload = attribute;
+          msg.payload.deviceId = node.deviceId;
           send(msg);
           found = true;
         }
