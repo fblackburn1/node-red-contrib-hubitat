@@ -47,8 +47,9 @@ module.exports = function(RED) {
       let found = false;
       this.currentAttributes.forEach( (attribute) => {
         if (event["name"] === attribute["name"]) {
-          attribute["currentValue"] = castHubitatValue(attribute["dataType"], event["value"]);
+          attribute["value"] = castHubitatValue(attribute["dataType"], event["value"]);
           attribute["deviceId"] = node.deviceId;
+          attribute["currentValue"] = attribute.value;  // deprecated since 0.0.18
           node.status({});
           if (this.sendEvent) {
             this.send({payload: attribute, topic: node.name});
@@ -66,6 +67,10 @@ module.exports = function(RED) {
 
     node.hubitat.getDevice(node.deviceId).then( (device) => {
       console.debug("Device(" + node.name + "): Status refreshed");
+      device.attributes.forEach( (attribute) => {
+        attribute.value = attribute.currentValue;
+        // delete attribute.currentValue;  // keet for compatibility
+      });
       node.currentAttributes = device.attributes;
       node.status({});
     }).catch( err => {
