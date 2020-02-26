@@ -53,7 +53,11 @@ module.exports = function(RED) {
           attribute["currentValue"] = attribute.value;  // deprecated since 0.0.18
 
           if ((this.attribute === event["name"]) || (!this.attribute)) {
-            node.status({});
+            if (this.attribute) {
+              node.status({fill:"blue", shape:"dot", text:`${this.attribute}: ${attribute.value}`});
+            } else {
+              node.status({});
+            }
             if (this.sendEvent) {
               this.send({payload: attribute, topic: node.name});
             }
@@ -75,9 +79,15 @@ module.exports = function(RED) {
       device.attributes.forEach( (attribute) => {
         attribute.value = attribute.currentValue;
         // delete attribute.currentValue;  // keet for compatibility
+        if (node.attribute === attribute.name) {
+          node.status({fill:"blue", shape:"dot", text:`${node.attribute}: ${attribute.value}`});
+        }
       });
       node.currentAttributes = device.attributes;
-      node.status({});
+
+      if (!node.attribute) {
+        node.status({});
+      }
     }).catch( err => {
       console.log(err);
       node.status({fill:"red", shape:"dot", text:"Uninitialized"});
