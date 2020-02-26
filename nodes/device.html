@@ -6,6 +6,7 @@
       name: {value:""},
       server: {type: "hubitat config", required: true},
       deviceId: {value:"", required: true},
+      attribute: {value:""},
       sendEvent: {value: true},
     },
     inputs:1,
@@ -32,6 +33,13 @@
           const name = $('#node-input-name').val();
           if ((!name) && (deviceId)) {
             $('#node-input-name').val(deviceLabel);
+          }
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
+          if (server && deviceId) {
+            listHubitatDeviceAttributes(server, deviceId, this.attribute);
+          } else {
+            cleanHubitatDeviceAttributes();
           }
         });
       });
@@ -61,7 +69,36 @@
       });
     });
   }
+  function listHubitatDeviceAttributes(server, deviceId, attribute) {
+    const selectMenu = $("#node-input-attribute");
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', {value: "", text: "Undefined"});
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.token,
+    };
+    let attributes = []
 
+    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
+      res.attributes.map(item => {
+        const selected = attribute == item.name;
+        const option = $('<option>', {
+          value: item.name,
+          text: item.name,
+        });
+        // Avoid list duplicate attribute returned by Hubitat API
+        if (!attributes.includes(item.name)) {
+          selectMenu.append(option);
+          attributes.push(item.name);
+          if (selected) { selectMenu.val(item.name).trigger('change'); }
+        }
+      });
+    });
+  }
   function cleanHubitatDevicesForDeviceNode() {
     const selectMenu = $("#node-input-deviceId");
     selectMenu.find('option').remove().end();
@@ -69,7 +106,13 @@
     selectMenu.append(option);
     selectMenu.val("").trigger('change');
   }
-
+  function cleanHubitatDeviceAttributes() {
+    const selectMenu = $("#node-input-attribute");
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', {value: "", text: "Choose attribute..."});
+    selectMenu.append(option);
+    selectMenu.val("").trigger('change');
+  }
 </script>
 
 <script type="text/html" data-template-name="hubitat device">
@@ -80,6 +123,10 @@
   <div class="form-row">
     <label for="node-input-deviceId"><i class="fa fa-lightbulb-o"></i> Device</label>
     <select id="node-input-deviceId"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-attribute"><i class="fa fa-bars"></i> Attribute</label>
+    <select id="node-input-attribute"></select>
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
@@ -97,7 +144,7 @@
   <h3>Inputs</h3>
     <dl class="message-properties">
       <dt class="optional">attribute <span class="property-type">string</span></dt>
-      <dd><code>&lt;device-attribute-name&gt;</code> allow to force the node to ouput the current state of this attribute</dd>
+      <dd>If set, this is used to force the node to ouput the current state of this attribute</dd>
     </dl>
 
   <h3>Output</h3>
@@ -119,6 +166,8 @@
   <h3>Details</h3>
     <p>This node will keep device state. Every time the device state changes at Hubitat, the webhook will send us the current status.</p>
     <p><b>Device</b> dropdown is populated when the server is reachable.</p>
+    <p><b>Attribute</b> dropdown is populated when <b>Device</b> is selected.
+    The <b>Undefined</b> value allow to output all events but force to specify the <code>msg.attribute</code> property for the input.</p>
     <p><b>Send events</b> allow to send or not event when it receive one from Hubitat.</p>
     <p><code>currentValue</code> payload is deprecated and replaced by <code>value</code>.</p>
     <p>This node is not compatible with Node-RED 0.x</p>

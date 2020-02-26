@@ -26,6 +26,7 @@ module.exports = function(RED) {
     this.name = config.name;
     this.deviceId = config.deviceId;
     this.sendEvent = config.sendEvent;
+    this.attribute = config.attribute;
     this.currentAttributes = undefined;
 
     let node = this;
@@ -50,10 +51,14 @@ module.exports = function(RED) {
           attribute["value"] = castHubitatValue(attribute["dataType"], event["value"]);
           attribute["deviceId"] = node.deviceId;
           attribute["currentValue"] = attribute.value;  // deprecated since 0.0.18
-          node.status({});
-          if (this.sendEvent) {
-            this.send({payload: attribute, topic: node.name});
+
+          if ((this.attribute === event["name"]) || (!this.attribute)) {
+            node.status({});
+            if (this.sendEvent) {
+              this.send({payload: attribute, topic: node.name});
+            }
           }
+
           found = true;
         }
       });
@@ -80,13 +85,14 @@ module.exports = function(RED) {
 
     node.on('input', function(msg, send, done) {
       console.debug("HubitatDeviceNode: Input received");
-      if (msg.attribute === undefined) {
+      let attributeSearched = msg.attribute || node.attribute;
+      if (attributeSearched === undefined) {
         node.status({fill:"red", shape:"dot", text:"Undefined attribute"});
         return;
       }
       let found = false;
       node.currentAttributes.forEach( (attribute) => {
-        if (msg.attribute === attribute["name"]) {
+        if (attributeSearched === attribute["name"]) {
           node.status({});
           msg.payload = attribute;
           msg.payload.deviceId = node.deviceId;
@@ -97,7 +103,7 @@ module.exports = function(RED) {
       });
 
       if (!found) {
-        node.status({fill:"red", shape:"dot", text:"Invalid attribute: " + msg.attribute});
+        node.status({fill:"red", shape:"dot", text:"Invalid attribute: " + attributeSearched});
       }
       done();
     });
