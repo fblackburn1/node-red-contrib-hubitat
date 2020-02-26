@@ -9,7 +9,7 @@
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
       nodeRedServer: {value: ""},
-      webhook: {value: "/hubitat/webhook", required: false},
+      webhookPath: {value: "/hubitat/webhook", required: false},
     },
     label: function() {
       if (this.name) {
@@ -39,11 +39,6 @@
       tabs.addTab({
         id: "hubitat-config-tab-security",
         label: "Security"
-      });
-
-      tabs.addTab({
-        id: "hubitat-config-tab-advanced",
-        label: "Advanced"
       });
 
       $("#node-config-input-nodeRedServer").attr('placeholder', window.location.origin);
@@ -135,7 +130,7 @@
       <div class="form-row" style="padding-right: 200px">
         <label for="node-config-input-nodeRedServer"><i class="fa fa-globe"></i> Node-RED</label>
         <input type="text" id="node-config-input-nodeRedServer">
-        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" disabled value="/hubitat/webhook">
+        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" value="/hubitat/webhook" placeholder="/hubitat/webhook">
       </div>
       <div class="form-row">
         <button id="node-config-button-webhookConfigure" onclick="configureHubitat()">Configure webhook</button>
@@ -155,13 +150,6 @@
         <input type="text" id="node-config-input-token" placeholder="00000000-0000-4000-8000-000000000000">
       </div>
     </div>
-    <div id="hubitat-config-tab-advanced" style="display:none">
-      <div class="form-row">
-        <label for="node-config-input-webhook"><i class="fa fa-gear"></i> Webhook URL</label>
-        <input type="text" id="node-config-input-webhook" placeholder="/hubitat/webhook">
-      </div>
-    </div>
-
   </div>
 </script>
 

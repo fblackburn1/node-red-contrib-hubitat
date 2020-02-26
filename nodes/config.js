@@ -15,7 +15,7 @@ module.exports = function(RED) {
     this.port = config.port;
     this.token = config.token;
     this.appId = config.appId;
-    this.webhook = config.webhook;
+    this.webhookPath = config.webhookPath;
     this.callbacks = [];
 
     const scheme = ((this.usetls) ? 'https': 'http');
@@ -87,14 +87,14 @@ module.exports = function(RED) {
     nodes[node.baseUrl] = node;
     
     if (RED.settings.httpNodeRoot !== false) {
-        if (!this.webhook) {
+        if (!this.webhookPath) {
             this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
-	    this.webhook = "/hubitat/webhook";
+	    this.webhookPath = "/hubitat/webhook";
         }
-        if (this.webhook[0] !== '/') {
-            this.webhook = '/'+this.webhook;
+        if (this.webhookPath[0] !== '/') {
+            this.webhookPath = '/'+this.webhookPath;
         }
-        console.log('Starting endpoint for ' + this.webhook);
+        console.log('Starting endpoint for ' + this.webhookPath);
         this.webErrorHandler = function(err,req,res,next) {
             node.warn(err);
             res.sendStatus(500);
@@ -128,7 +128,7 @@ module.exports = function(RED) {
         var metricsHandler = function(req,res,next) { next(); }
         var multipartParser = function(req,res,next) { next(); }
         var rawBodyParser = function(req, res, next) {next(); }
-        RED.httpNode.post(this.webhook,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.postCallback,this.webErrorHandler);
+        RED.httpNode.post(this.webhookPath,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.postCallback,this.webErrorHandler);
         this.on("close",function() {
             var node = this;
             RED.httpNode._router.stack.forEach(function(route,i,routes) {
