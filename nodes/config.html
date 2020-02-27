@@ -9,7 +9,7 @@
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
       nodeRedServer: {value: ""},
-      webhookPath: {value: "/hubitat/webhook", required: false},
+      webhookPath: {value: "/hubitat/webhook"},
     },
     label: function() {
       if (this.name) {
