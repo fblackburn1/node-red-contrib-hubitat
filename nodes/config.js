@@ -105,6 +105,7 @@ module.exports = function(RED) {
             console.log(req.body);
             if (!req.body.content) {
                 node.warn('no content in body');
+                res.sendStatus(400);
                 return;
             }
 
@@ -119,6 +120,7 @@ module.exports = function(RED) {
                     c.callback.call(c.parent, req.body.content);
                 });
             }
+            res.sendStatus(204);
         };
         var httpMiddleware = function(req,res,next) { next(); }
         var corsHandler = function(req,res,next) { next(); }
