@@ -87,58 +87,59 @@ module.exports = function(RED) {
     nodes[node.baseUrl] = node;
     
     if (RED.settings.httpNodeRoot !== false) {
-        if (!this.webhookPath) {
-            this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
-	    this.webhookPath = "/hubitat/webhook";
+      if (!this.webhookPath) {
+        this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
+	      this.webhookPath = "/hubitat/webhook";
+      }
+      if (this.webhookPath[0] !== '/') {
+        this.webhookPath = '/'+this.webhookPath;
+      }
+      console.log('Starting endpoint for ' + this.webhookPath);
+      this.webErrorHandler = function(err,req,res,next) {
+        node.warn(err);
+        res.sendStatus(500);
+      };
+      this.postCallback = function(req,res) {
+        var msgid = RED.util.generateId();
+        res._msgid = msgid;
+        console.log(`POST ${node.webhookPath} with body:`);
+        console.log(req.body);
+        if (!req.body.content) {
+          node.warn('no content in body');
+          res.sendStatus(400);
+          return;
         }
-        if (this.webhookPath[0] !== '/') {
-            this.webhookPath = '/'+this.webhookPath;
+
+        if(req.body.content["deviceId"] != null) {
+          var callback = node.callbacks[req.body.content["deviceId"]];
+        } else if (req.body.content["name"] == "mode") {
+          var callback = node.callbacks[0];
         }
-        console.log('Starting endpoint for ' + this.webhookPath);
-        this.webErrorHandler = function(err,req,res,next) {
-            node.warn(err);
-            res.sendStatus(500);
-        };
-        this.postCallback = function(req,res) {
-            var msgid = RED.util.generateId();
-            res._msgid = msgid;
-            console.log(req.body);
-            if (!req.body.content) {
-                node.warn('no content in body');
-                res.sendStatus(400);
-                return;
-            }
 
-            if(req.body.content["deviceId"] != null) {
-                var callback = node.callbacks[req.body.content["deviceId"]];
-            } else if (req.body.content["name"] == "mode") {
-                var callback = node.callbacks[0];
-            }
-
-            if(callback){
-                callback.forEach( (c) => {
-                    c.callback.call(c.parent, req.body.content);
-                });
-            }
-            res.sendStatus(204);
-        };
-        var httpMiddleware = function(req,res,next) { next(); }
-        var corsHandler = function(req,res,next) { next(); }
-        var maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
-        var jsonParser = bodyParser.json({limit:maxApiRequestSize});
-        var urlencParser = bodyParser.urlencoded({limit:maxApiRequestSize,extended:true});
-        var metricsHandler = function(req,res,next) { next(); }
-        var multipartParser = function(req,res,next) { next(); }
-        var rawBodyParser = function(req, res, next) {next(); }
-        RED.httpNode.post(this.webhookPath,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.postCallback,this.webErrorHandler);
-        this.on("close",function() {
-            var node = this;
-            RED.httpNode._router.stack.forEach(function(route,i,routes) {
-                if (route.route && route.route.path === node.webhook && route.route.methods['POST']) {
-                    routes.splice(i,1);
-                }
-            });
+        if(callback){
+          callback.forEach( (c) => {
+            c.callback.call(c.parent, req.body.content);
+          });
+        }
+        res.sendStatus(204);
+      };
+      var httpMiddleware = function(req,res,next) { next(); }
+      var corsHandler = function(req,res,next) { next(); }
+      var maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
+      var jsonParser = bodyParser.json({limit:maxApiRequestSize});
+      var urlencParser = bodyParser.urlencoded({limit:maxApiRequestSize,extended:true});
+      var metricsHandler = function(req,res,next) { next(); }
+      var multipartParser = function(req,res,next) { next(); }
+      var rawBodyParser = function(req, res, next) {next(); }
+      RED.httpNode.post(this.webhookPath,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.postCallback,this.webErrorHandler);
+      this.on("close",function() {
+        var node = this;
+        RED.httpNode._router.stack.forEach(function(route,i,routes) {
+          if (route.route && route.route.path === node.webhook && route.route.methods['POST']) {
+            routes.splice(i,1);
+          }
         });
+      });
     }
   }
 
