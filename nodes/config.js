@@ -140,6 +140,29 @@ module.exports = function(RED) {
       res.sendStatus(400);
     }
   });
+  RED.httpAdmin.get('/hubitat/devices/:deviceId', RED.auth.needsPermission('hubitat.read'), async function(req, res) {
+    console.log("GET /hubitat/devices/" + req.params.deviceId);
+    if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
+      res.sendStatus(404);
+      return;
+    }
+    const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.appId}`;
+    const options = {method: 'GET'}
+    let url = `${baseUrl}/devices/${req.params.deviceId}`;
+    console.log(`GET ${url}`);
+    url = `${url}?access_token=${req.query.token}`;
+
+    try {
+      const response = await fetch(url, options);
+      res.json(await response.json());
+    }
+    catch(err) {
+      console.log("ERROR /hubitat/devices/" + req.params.deviceId);
+      console.log(err);
+      res.sendStatus(400);
+    }
+  });
 
   RED.httpAdmin.post('/hubitat/configure', RED.auth.needsPermission('hubitat.write'), async function(req, res) {
     console.log("POST /hubitat/configure");
