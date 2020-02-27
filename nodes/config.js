@@ -92,8 +92,8 @@ module.exports = function(RED) {
         this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
 	      this.webhookPath = "/hubitat/webhook";
       }
-      if (this.webhookPath[0] !== '/') {
-        this.webhookPath = '/'+this.webhookPath;
+      if (!this.webhookPath.startsWith("/")) {
+        this.webhookPath = '/' + this.webhookPath;
       }
       console.log('Starting endpoint for ' + this.webhookPath);
       this.webErrorHandler = function(err,req,res,next) {
