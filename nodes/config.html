@@ -77,6 +77,11 @@
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Node-RED server`);
       return;
     }
+    const webhookPath = $("#node-config-input-webhookPath").val();
+    if (!webhookPath) {
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid webhook path`);
+      return;
+    }
 
     const params = {
       usetls: $("#node-config-input-usetls").is(":checked"),
@@ -85,6 +90,7 @@
       appId: appId,
       token: token,
       nodeRedServer: nodeRedServer,
+      webhookPath: webhookPath,
     };
 
     $.post("hubitat/configure", params, (res) => {
@@ -130,7 +136,7 @@
       <div class="form-row" style="padding-right: 200px">
         <label for="node-config-input-nodeRedServer"><i class="fa fa-globe"></i> Node-RED</label>
         <input type="text" id="node-config-input-nodeRedServer">
-        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" value="/hubitat/webhook" placeholder="/hubitat/webhook">
+        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" placeholder="/hubitat/webhook">
       </div>
       <div class="form-row">
         <button id="node-config-button-webhookConfigure" onclick="configureHubitat()">Configure webhook</button>

@@ -233,7 +233,7 @@ module.exports = function(RED) {
     const scheme = ((req.body.usetls == 'true') ? 'https': 'http');
     const baseUrl = `${scheme}://${req.body.host}:${req.body.port}/apps/api/${req.body.appId}`;
     const options = {method: 'GET'};
-    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}/hubitat/webhook`);
+    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}${req.body.webhookPath}`);
     let url = `${baseUrl}/postURL/${nodeRedURL}`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.body.token}`;
