@@ -15,6 +15,7 @@ module.exports = function(RED) {
     this.port = config.port;
     this.token = config.token;
     this.appId = config.appId;
+    this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.callbacks = [];
 
