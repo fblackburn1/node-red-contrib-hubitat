@@ -1,4 +1,22 @@
 <script type="text/javascript">
+  function validatorWebhookPath(value) {
+    if (!value.startsWith("/")) {
+      value = `/${value}`;
+      $("#node-config-input-webhookPath").val(value);
+    }
+    const internalEndpoints = ["/auth/token", "/auth/revoke", "/flows", "/flow", "/nodes"];
+    if (internalEndpoints.includes(value)) {
+      value = `${value}_`;
+      $("#node-config-input-webhookPath").val(value);
+    }
+    const pattern = new RegExp('^(\\/[-a-z\\d%_.~+]*)*$');
+    if (!pattern.test(value)) {
+      return false;
+    }
+    // TODO: add validation against other configured webhookPath
+    return true;
+  }
+
   RED.nodes.registerType('hubitat config', {
     category: 'config',
     defaults: {
@@ -8,8 +26,8 @@
       port: {value: 80, required: true, validate: RED.validators.number()},
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
-      nodeRedServer: {value: ""},
-      webhookPath: {value: "/hubitat/webhook"},
+      nodeRedServer: {value: ""},  // validate no space
+      webhookPath: {value: "/hubitat/webhook", validate: validatorWebhookPath},
     },
     label: function() {
       if (this.name) {
