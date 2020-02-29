@@ -13,7 +13,12 @@
     if (!pattern.test(value)) {
       return false;
     }
-    // TODO: add validation against other configured webhookPath
+    RED.nodes.eachConfig(function(node) {
+      if ((node.type === 'hubitat config') && (node.webhookPath === value)) {
+        value = `${value}_`;
+        $("#node-config-input-webhookPath").val(value);
+      }
+    });
     return true;
   }
 
