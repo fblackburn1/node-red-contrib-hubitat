@@ -5,7 +5,6 @@ module.exports = function(RED) {
     var cookieParser = require("cookie-parser");
 
   let nodes = {};
-//  let callbacks = [];
 
   function HubitatConfigNode(config) {
     RED.nodes.createNode(this,config);
@@ -101,7 +100,7 @@ module.exports = function(RED) {
         res.sendStatus(500);
       };
       this.postCallback = function(req,res) {
-        var msgid = RED.util.generateId();
+        const msgid = RED.util.generateId();
         res._msgid = msgid;
         console.log(`POST ${node.webhookPath} with body:`);
         console.log(req.body);
@@ -124,17 +123,29 @@ module.exports = function(RED) {
         }
         res.sendStatus(204);
       };
-      var httpMiddleware = function(req,res,next) { next(); }
-      var corsHandler = function(req,res,next) { next(); }
-      var maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
-      var jsonParser = bodyParser.json({limit:maxApiRequestSize});
-      var urlencParser = bodyParser.urlencoded({limit:maxApiRequestSize,extended:true});
-      var metricsHandler = function(req,res,next) { next(); }
-      var multipartParser = function(req,res,next) { next(); }
-      var rawBodyParser = function(req, res, next) {next(); }
-      RED.httpNode.post(this.webhookPath,cookieParser(),httpMiddleware,corsHandler,metricsHandler,jsonParser,urlencParser,multipartParser,rawBodyParser,this.postCallback,this.webErrorHandler);
+      const httpMiddleware = function(req,res,next) { next(); }
+      const corsHandler = function(req,res,next) { next(); }
+      const maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
+      const jsonParser = bodyParser.json({limit:maxApiRequestSize});
+      const urlencParser = bodyParser.urlencoded({limit:maxApiRequestSize,extended:true});
+      const metricsHandler = function(req,res,next) { next(); }
+      const multipartParser = function(req,res,next) { next(); }
+      const rawBodyParser = function(req, res, next) {next(); }
+      RED.httpNode.post(
+        this.webhookPath,
+        cookieParser(),
+        httpMiddleware,
+        corsHandler,
+        metricsHandler,
+        jsonParser,
+        urlencParser,
+        multipartParser,
+        rawBodyParser,
+        this.postCallback,
+        this.webErrorHandler
+      );
       this.on("close",function() {
-        var node = this;
+        let node = this;
         RED.httpNode._router.stack.forEach(function(route,i,routes) {
           if (route.route && route.route.path === node.webhookPath && route.route.methods['POST']) {
             routes.splice(i,1);
