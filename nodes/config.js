@@ -86,11 +86,11 @@ module.exports = function(RED) {
       });
     };
     nodes[node.baseUrl] = node;
-    
+
     if (RED.settings.httpNodeRoot !== false) {
       if (!this.webhookPath) {
-        this.warn(RED._("webhook url not set, set default to /hubitat/webhook"));
-	      this.webhookPath = "/hubitat/webhook";
+        this.webhookPath = "/hubitat/webhook";
+        this.warn(`webhook url not set, set default to ${this.webhookPath}`);
       }
       if (!this.webhookPath.startsWith("/")) {
         this.webhookPath = '/' + this.webhookPath;
