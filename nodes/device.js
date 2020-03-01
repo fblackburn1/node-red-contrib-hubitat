@@ -100,20 +100,22 @@ module.exports = function(RED) {
         node.status({fill:"red", shape:"dot", text:"Undefined attribute"});
         return;
       }
-      let found = false;
+      let foundAttribute = undefined;
       node.currentAttributes.forEach( (attribute) => {
         if (attributeSearched === attribute["name"]) {
-          node.status({});
           msg.payload = attribute;
           msg.payload.deviceId = node.deviceId;
           msg.topic = node.name;
           send(msg);
-          found = true;
+          foundAttribute = attribute;
         }
       });
-
-      if (!found) {
+      if (foundAttribute === undefined) {
         node.status({fill:"red", shape:"dot", text:"Invalid attribute: " + attributeSearched});
+      } else if (!node.attribute) {
+        node.status({});
+      } else if (node.attribute === foundAttribute.name) {
+        node.status({fill:"blue", shape:"dot", text:`${node.attribute}: ${foundAttribute.value}`});
       }
       done();
     });
