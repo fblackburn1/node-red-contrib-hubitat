@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.20
+
+* fix dependency issue
+
 ## 0.0.19
 * `config` node: support multi hub
 * `config` node: allow to custom the webhook path. This allow to:
