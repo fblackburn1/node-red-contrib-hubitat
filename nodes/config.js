@@ -1,8 +1,10 @@
 module.exports = function(RED) {
   const fetch = require('node-fetch');
 
+    var bodyParser = require("body-parser");
+    var cookieParser = require("cookie-parser");
+
   let nodes = {};
-  let callbacks = [];
 
   function HubitatConfigNode(config) {
     RED.nodes.createNode(this,config);
@@ -12,6 +14,9 @@ module.exports = function(RED) {
     this.port = config.port;
     this.token = config.token;
     this.appId = config.appId;
+    this.nodeRedServer = config.nodeRedServer;
+    this.webhookPath = config.webhookPath;
+    this.callbacks = [];
 
     const scheme = ((this.usetls) ? 'https': 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -61,26 +66,93 @@ module.exports = function(RED) {
     };
 
     node.unregisterCallback = function(parent, deviceId, callback) {
-      if (callbacks[deviceId]) {
-        callbacks[deviceId] = callbacks[deviceId].filter( (c) => c.callback !== callback );
-        if (callbacks[deviceId].length  == 0) {
-          delete callbacks[deviceId];
+      if (node.callbacks[deviceId]) {
+        node.callbacks[deviceId] = node.callbacks[deviceId].filter( (c) => c.callback !== callback );
+        if (node.callbacks[deviceId].length  == 0) {
+          delete node.callbacks[deviceId];
         }
       }
     };
 
     node.registerCallback = function(parent, deviceId, callback) {
-      if (!(deviceId in callbacks)) {
-        callbacks[deviceId] = [];
+      if (!(deviceId in node.callbacks)) {
+        node.callbacks[deviceId] = [];
       }
 
-      callbacks[deviceId].push({
+      node.callbacks[deviceId].push({
         parent: parent,
         callback: callback
       });
     };
-
     nodes[node.baseUrl] = node;
+
+    if (RED.settings.httpNodeRoot !== false) {
+      if (!this.webhookPath) {
+        this.webhookPath = "/hubitat/webhook";
+        this.warn(`webhook url not set, set default to ${this.webhookPath}`);
+      }
+      if (!this.webhookPath.startsWith("/")) {
+        this.webhookPath = '/' + this.webhookPath;
+      }
+      console.log('Starting endpoint for ' + this.webhookPath);
+      this.webErrorHandler = function(err,req,res,next) {
+        node.warn(err);
+        res.sendStatus(500);
+      };
+      this.postCallback = function(req,res) {
+        const msgid = RED.util.generateId();
+        res._msgid = msgid;
+        console.log(`POST ${node.webhookPath} with body:`);
+        console.log(req.body);
+        if (!req.body.content) {
+          node.warn('no content in body');
+          res.sendStatus(400);
+          return;
+        }
+
+        if(req.body.content["deviceId"] != null) {
+          var callback = node.callbacks[req.body.content["deviceId"]];
+        } else if (req.body.content["name"] == "mode") {
+          var callback = node.callbacks[0];
+        }
+
+        if(callback){
+          callback.forEach( (c) => {
+            c.callback.call(c.parent, req.body.content);
+          });
+        }
+        res.sendStatus(204);
+      };
+      const httpMiddleware = function(req,res,next) { next(); }
+      const corsHandler = function(req,res,next) { next(); }
+      const maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
+      const jsonParser = bodyParser.json({limit:maxApiRequestSize});
+      const urlencParser = bodyParser.urlencoded({limit:maxApiRequestSize,extended:true});
+      const metricsHandler = function(req,res,next) { next(); }
+      const multipartParser = function(req,res,next) { next(); }
+      const rawBodyParser = function(req, res, next) {next(); }
+      RED.httpNode.post(
+        this.webhookPath,
+        cookieParser(),
+        httpMiddleware,
+        corsHandler,
+        metricsHandler,
+        jsonParser,
+        urlencParser,
+        multipartParser,
+        rawBodyParser,
+        this.postCallback,
+        this.webErrorHandler
+      );
+      this.on("close",function() {
+        let node = this;
+        RED.httpNode._router.stack.forEach(function(route,i,routes) {
+          if (route.route && route.route.path === node.webhookPath && route.route.methods['POST']) {
+            routes.splice(i,1);
+          }
+        });
+      });
+    }
   }
 
   RED.nodes.registerType("hubitat config", HubitatConfigNode);
@@ -173,7 +245,7 @@ module.exports = function(RED) {
     const scheme = ((req.body.usetls == 'true') ? 'https': 'http');
     const baseUrl = `${scheme}://${req.body.host}:${req.body.port}/apps/api/${req.body.appId}`;
     const options = {method: 'GET'};
-    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}/hubitat/webhook`);
+    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}${req.body.webhookPath}`);
     let url = `${baseUrl}/postURL/${nodeRedURL}`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.body.token}`;
@@ -187,30 +259,6 @@ module.exports = function(RED) {
       console.log(err);
       res.sendStatus(400);
     }
-  });
-
-  RED.httpAdmin.post('/hubitat/webhook', function(req,res){
-
-    console.log("POST /hubitat/webhook with body:");
-    console.log(req.body);
-    if (!req.body.content) {
-      res.sendStatus(400);
-      return;
-    }
-
-    if(req.body.content["deviceId"] != null) {
-      var callback = callbacks[req.body.content["deviceId"]];
-    } else if (req.body.content["name"] == "mode") {
-      var callback = callbacks[0];
-    }
-
-    if(callback){
-      callback.forEach( (c) => {
-        c.callback.call(c.parent, req.body.content);
-      });
-    }
-
-    res.sendStatus(204);
   });
 
 }
