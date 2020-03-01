@@ -197,7 +197,7 @@ module.exports = function(RED) {
     }
     const scheme = ((req.query.usetls == 'true') ? 'https': 'http');
     const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.appId}`;
-    const options = {method: 'GET'}
+    const options = {method: 'GET'};
     let url = `${baseUrl}/devices/${req.params.deviceId}/commands`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.query.token}`;
