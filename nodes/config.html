@@ -17,12 +17,6 @@
     if (!pattern.test(value)) {
       return false;
     }
-    RED.nodes.eachConfig(function(node) {
-      if ((node.type === 'hubitat config') && (node.webhookPath === value)) {
-        value = `${value}_`;
-        $("#node-config-input-webhookPath").val(value);
-      }
-    });
     return true;
   }
   function validatorWhiteSpace(value) {
