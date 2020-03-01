@@ -1,12 +1,17 @@
 # Changelog
 
+## 0.0.21
+
+* `command` node: fix wrong condition from 0.0.18
+* `config` node: remove an helper that verify if webhookPath is already configured in another node
+
 ## 0.0.20
 
 * fix dependency issue
 
 ## 0.0.19
 * `config` node: support multi hub
-* `config` node: allow to custom the webhook path. This allow to:
+* `config` node: allow to customize the webhook path. This allow to:
     * distinguish endpoint when using many hubs
     * *secure* the path to avoid guessing attacks
 * `config` node: small validation on `Node-RED Server` field to avoid typo with white space
