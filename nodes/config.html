@@ -1,5 +1,9 @@
 <script type="text/javascript">
   function validatorWebhookPath(value) {
+    if (!value) {
+      value = "/hubitat/webhook";
+      $("#node-config-input-webhookPath").val(value);
+    }
     if (!value.startsWith("/")) {
       value = `/${value}`;
       $("#node-config-input-webhookPath").val(value);
