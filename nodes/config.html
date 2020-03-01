@@ -4,7 +4,7 @@
       value = `/${value}`;
       $("#node-config-input-webhookPath").val(value);
     }
-    const internalEndpoints = ["/auth/token", "/auth/revoke", "/flows", "/flow", "/nodes"];
+    const internalEndpoints = ["/", "/auth/token", "/auth/revoke", "/flows", "/flow", "/nodes"];
     if (internalEndpoints.includes(value)) {
       value = `${value}_`;
       $("#node-config-input-webhookPath").val(value);
