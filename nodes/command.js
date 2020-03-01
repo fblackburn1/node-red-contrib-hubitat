@@ -21,7 +21,7 @@ module.exports = function(RED) {
       let arguments = ((msg.arguments === undefined)? this.commandArgs: msg.arguments);
 
       let commandWithArgs = command;
-      if (arguments) {
+      if ((arguments == null) || (arguments == "")) {
         commandWithArgs = `${command}/${arguments}`;
       }
       const url = `${this.baseUrl}/devices/${this.deviceId}/${commandWithArgs}?access_token=${this.token}`;
