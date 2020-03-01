@@ -25,6 +25,12 @@
     });
     return true;
   }
+  function validatorWhiteSpace(value) {
+    if (value.indexOf(' ') >= 0) {
+      return false;
+    }
+    return true;
+  }
 
   RED.nodes.registerType('hubitat config', {
     category: 'config',
@@ -35,7 +41,7 @@
       port: {value: 80, required: true, validate: RED.validators.number()},
       token: {value: "", required: true},
       appId: {value: "", required: true, validate: RED.validators.number()},
-      nodeRedServer: {value: ""},  // validate no space
+      nodeRedServer: {value: "", validate: validatorWhiteSpace},
       webhookPath: {value: "/hubitat/webhook", validate: validatorWebhookPath},
     },
     label: function() {
