@@ -38,6 +38,7 @@ module.exports = function(RED) {
       catch(err) {
         console.log(err);
         console.log("unable to fetch modes.");
+        return;
       }
 
       console.log("HubitatConfigNode: Mode:");
