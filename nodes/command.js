@@ -17,14 +17,14 @@ module.exports = function(RED) {
     node.on('input', async function(msg, send, done) {
       node.status({fill:"blue", shape:"dot", text:"requesting"});
 
-      let command = ((msg.command === undefined)? this.command: msg.command);
-      let arguments = ((msg.arguments === undefined)? this.commandArgs: msg.arguments);
+      let command = ((msg.command === undefined)? node.command: msg.command);
+      let arguments = ((msg.arguments === undefined)? node.commandArgs: msg.arguments);
 
       let commandWithArgs = command;
       if ((arguments != null) && (arguments !== "")) {
         commandWithArgs = `${command}/${arguments}`;
       }
-      const url = `${this.baseUrl}/devices/${this.deviceId}/${commandWithArgs}?access_token=${this.token}`;
+      const url = `${node.baseUrl}/devices/${node.deviceId}/${commandWithArgs}?access_token=${node.token}`;
       const options = {method: 'GET'};
 
       try {
