@@ -15,18 +15,18 @@ module.exports = function(RED) {
       return;
     }
 
-    const callback = (event) => {
-      console.debug("Mode(" + node.name + "): Callback called");
+    const callback = function(event) {
+      console.debug("Mode(" + this.name + "): Callback called");
       console.debug(event);
       if (this.currentMode === undefined) {
-        node.status({fill:"red", shape:"dot", text:"Uninitialized"});
-        console.warn("Mode(" + node.name + "): Uninitialized");
+        this.status({fill:"red", shape:"dot", text:"Uninitialized"});
+        console.warn("Mode(" + this.name + "): Uninitialized");
         return;
       }
 
       this.currentMode = event["value"];
 
-      outgoingEvent = {
+      payload = {
         name: "mode",
         value: this.currentMode,
         displayName: event["displayName"],
@@ -34,10 +34,10 @@ module.exports = function(RED) {
       };
 
       if (this.sendEvent) {
-        this.send({payload: outgoingEvent, topic: "hubitat-mode"});
+        this.send({payload: payload, topic: "hubitat-mode"});
       }
 
-      node.status({fill:"blue", shape:"dot", text: this.currentMode});
+      this.status({fill:"blue", shape:"dot", text: this.currentMode});
     }
 
     node.hubitat.registerCallback(node, node.deviceId, callback);
