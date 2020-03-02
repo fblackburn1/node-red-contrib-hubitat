@@ -29,9 +29,11 @@ module.exports = function(RED) {
     node.getMode = async function() {
       const url = `${node.baseUrl}/modes?access_token=${node.token}`;
       const options = {method: 'GET'};
+      let mode = undefined;
+
       try {
         const response = await fetch(url, options);
-        var mode = await response.json();
+        mode = await response.json();
       }
       catch(err) {
         console.log(err);
@@ -46,9 +48,11 @@ module.exports = function(RED) {
     node.getDevice = async function(deviceId, type) {
       const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
       const options = {method: 'GET'};
+      let device = undefined;
+
       try {
         const response = await fetch(url, options);
-        var device = await response.json();
+        device = await response.json();
       }
       catch(err) {
         console.log("unable to fetch device: " + deviceId);
@@ -168,9 +172,10 @@ module.exports = function(RED) {
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.query.token}`;
 
+    let devices = undefined;
     try {
       const response = await fetch(url, options);
-      var devices = await response.json();
+      devices = await response.json();
     }
     catch(err) {
       console.log("ERROR /hubitat/devices:");
