@@ -1,8 +1,7 @@
 module.exports = function(RED) {
   const fetch = require('node-fetch');
-
-    var bodyParser = require("body-parser");
-    var cookieParser = require("cookie-parser");
+  const bodyParser = require("body-parser");
+  const cookieParser = require("cookie-parser");
 
   let nodes = {};
 
@@ -110,10 +109,11 @@ module.exports = function(RED) {
           return;
         }
 
+        let callback = undefined;
         if(req.body.content["deviceId"] != null) {
-          var callback = node.callbacks[req.body.content["deviceId"]];
+          callback = node.callbacks[req.body.content["deviceId"]];
         } else if (req.body.content["name"] == "mode") {
-          var callback = node.callbacks[0];
+          callback = node.callbacks[0];
         }
 
         if(callback){
