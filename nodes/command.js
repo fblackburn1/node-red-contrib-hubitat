@@ -1,46 +1,42 @@
-module.exports = function(RED) {
+/* eslint-disable global-require */
+module.exports = function HubitatCommandModule(RED) {
   const fetch = require('node-fetch');
 
   function HubitatCommandNode(config) {
     RED.nodes.createNode(this, config);
 
-    hubitat = RED.nodes.getNode(config.server);
-    this.baseUrl = hubitat.baseUrl;
-    this.token = hubitat.token;
-
+    this.hubitat = RED.nodes.getNode(config.server);
     this.deviceId = config.deviceId;
     this.command = config.command;
     this.commandArgs = config.commandArgs;
 
-    let node = this;
+    const node = this;
 
-    node.on('input', async function(msg, send, done) {
-      node.status({fill:"blue", shape:"dot", text:"requesting"});
+    node.on('input', async (msg, send, done) => {
+      node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
-      let command = ((msg.command === undefined)? node.command: msg.command);
-      let arguments = ((msg.arguments === undefined)? node.commandArgs: msg.arguments);
+      const command = ((msg.command === undefined) ? node.command : msg.command);
+      const commandArgs = ((msg.arguments === undefined) ? node.commandArgs : msg.arguments);
 
       let commandWithArgs = command;
-      if ((arguments != null) && (arguments !== "")) {
-        commandWithArgs = `${command}/${arguments}`;
+      if ((commandArgs != null) && (commandArgs !== '')) {
+        commandWithArgs = `${command}/${commandArgs}`;
       }
-      const url = `${node.baseUrl}/devices/${node.deviceId}/${commandWithArgs}?access_token=${node.token}`;
-      const options = {method: 'GET'};
+      const url = `${node.hubitat.baseUrl}/devices/${node.deviceId}/${commandWithArgs}?access_token=${node.hubitat.token}`;
+      const options = { method: 'GET' };
 
       try {
         const response = await fetch(url, options);
-        msg.response = await response.json();
-      }
-      catch(err) {
-        node.status({fill:"red", shape:"ring", text:err.code});
+        const output = { ...msg, response: await response.json() };
+        node.status({});
+        send(output);
+        done();
+      } catch (err) {
+        node.status({ fill: 'red', shape: 'ring', text: err.code });
         done(err);
-        return;
       }
-      node.status({});
-      send(msg);
-      done();
     });
   }
 
-  RED.nodes.registerType("hubitat command", HubitatCommandNode);
-}
+  RED.nodes.registerType('hubitat command', HubitatCommandNode);
+};
