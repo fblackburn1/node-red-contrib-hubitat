@@ -98,9 +98,8 @@ module.exports = function(RED) {
         node.warn(err);
         res.sendStatus(500);
       };
+
       this.postCallback = function(req,res) {
-        const msgid = RED.util.generateId();
-        res._msgid = msgid;
         console.log(`POST ${node.webhookPath} with body:`);
         console.log(req.body);
         if (!req.body.content) {
