@@ -147,7 +147,7 @@ module.exports = function(RED) {
       this.on("close",function() {
         let node = this;
         RED.httpNode._router.stack.forEach(function(route,i,routes) {
-          if (route.route && route.route.path === node.webhookPath && route.route.methods['POST']) {
+          if (route.route && route.route.path === node.webhookPath && route.route.methods['post']) {
             routes.splice(i,1);
           }
         });
