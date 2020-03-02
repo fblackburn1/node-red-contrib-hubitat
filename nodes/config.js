@@ -144,7 +144,6 @@ module.exports = function(RED) {
         this.webErrorHandler
       );
       this.on("close",function() {
-        let node = this;
         RED.httpNode._router.stack.forEach(function(route,i,routes) {
           if (route.route && route.route.path === node.webhookPath && route.route.methods['post']) {
             routes.splice(i,1);
