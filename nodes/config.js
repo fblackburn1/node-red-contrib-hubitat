@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable global-require */
 module.exports = function HubitatConfigModule(RED) {
   const fetch = require('node-fetch');
@@ -155,9 +156,9 @@ module.exports = function HubitatConfigModule(RED) {
   RED.nodes.registerType('hubitat config', HubitatConfigNode);
 
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
-    console.log('GET /hubitat/devices');
     if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
-      res.send(404);
+      console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token)`);
+      res.sendStatus(404);
       return;
     }
     const scheme = ((req.query.usetls === 'true') ? 'https' : 'http');
@@ -172,8 +173,7 @@ module.exports = function HubitatConfigModule(RED) {
       const response = await fetch(url, options);
       devices = await response.json();
     } catch (err) {
-      console.log('ERROR /hubitat/devices:');
-      console.log(err);
+      console.log(`ERROR ${req.path}: ${err}`);
       res.sendStatus(400);
       return;
     }
@@ -188,8 +188,8 @@ module.exports = function HubitatConfigModule(RED) {
   });
 
   RED.httpAdmin.get('/hubitat/devices/:deviceId/commands', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
-    console.log(`GET /hubitat/devices/${req.params.deviceId}/commands`);
     if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
+      console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token)`);
       res.sendStatus(404);
       return;
     }
@@ -204,15 +204,14 @@ module.exports = function HubitatConfigModule(RED) {
       const response = await fetch(url, options);
       res.json(await response.json());
     } catch (err) {
-      console.log(`ERROR /hubitat/devices/${req.params.deviceId}/commands:`);
-      console.log(err);
+      console.log(`ERROR ${req.path}: ${err}`);
       res.sendStatus(400);
     }
   });
 
   RED.httpAdmin.get('/hubitat/devices/:deviceId', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
-    console.log(`GET /hubitat/devices/${req.params.deviceId}`);
     if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
+      console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token)`);
       res.sendStatus(404);
       return;
     }
@@ -227,16 +226,15 @@ module.exports = function HubitatConfigModule(RED) {
       const response = await fetch(url, options);
       res.json(await response.json());
     } catch (err) {
-      console.log(`ERROR /hubitat/devices/${req.params.deviceId}`);
-      console.log(err);
+      console.log(`ERROR ${req.path}: ${err}`);
       res.sendStatus(400);
     }
   });
 
   RED.httpAdmin.post('/hubitat/configure', RED.auth.needsPermission('hubitat.write'), async (req, res) => {
-    console.log('POST /hubitat/configure');
-    if ((!req.body.host) || (!req.body.port) || (!req.body.appId)
-        || (!req.body.token) || (!req.body.nodeRedServer)) {
+    // eslint-disable-next-line max-len
+    if ((!req.body.host) || (!req.body.port) || (!req.body.appId) || (!req.body.token) || (!req.body.nodeRedServer)) {
+      console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token, nodeRedServer)`);
       res.sendStatus(404);
       return;
     }
@@ -252,8 +250,7 @@ module.exports = function HubitatConfigModule(RED) {
       const response = await fetch(url, options);
       res.json(await response.json());
     } catch (err) {
-      console.log('ERROR /hubitat/configure:');
-      console.log(err);
+      console.log(`ERROR ${req.path}: ${err}`);
       res.sendStatus(400);
     }
   });
