@@ -178,11 +178,7 @@ module.exports = function HubitatConfigModule(RED) {
       return;
     }
 
-    devices.sort((first, second) => {
-      if (first.label < second.label) { return -1; }
-      if (first.label > second.label) { return 1; }
-      return 0;
-    });
+    devices.sort((first, second) => first.label.localeCompare(second.label));
     res.json(devices);
     // Check if the result should not be [{deviceId: 1, label: light}, ...]
   });
