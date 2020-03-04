@@ -2,8 +2,8 @@
 
 ## 0.0.21
 
-* `command` node: fix wrong condition from 0.0.18
-* `config` node: remove an helper that verify if webhookPath is already configured in another node
+* `command` node: fix wrong condition from 0.0.19
+* `config` node: remove an helper that verify if webhookPath is already configured in another node (added in 0.0.19)
 
 ## 0.0.20
 

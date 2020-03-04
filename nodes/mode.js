@@ -1,4 +1,4 @@
-module.exports = function(RED) {
+module.exports = function HubitatModeModule(RED) {
   function HubitatModeNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -6,73 +6,69 @@ module.exports = function(RED) {
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
-    this.deviceId = 0;  // fake the deviceId to be able to register on callback
+    this.deviceId = 0; // fake the deviceId to be able to register on callback
 
-    let node = this;
+    const node = this;
 
     if (!node.hubitat) {
-      console.log("HubitatModeNode: Hubitat server not configured");
+      node.error('Hubitat server not configured');
       return;
     }
 
-    const callback = (event) => {
-      console.debug("Mode(" + node.name + "): Callback called");
-      console.debug(event);
+    const callback = function callback(event) {
+      node.debug(`Callback called: ${JSON.stringify(event)}`);
       if (this.currentMode === undefined) {
-        node.status({fill:"red", shape:"dot", text:"Uninitialized"});
-        console.warn("Mode(" + node.name + "): Uninitialized");
+        this.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        node.warn('Uninitialized');
         return;
       }
 
-      this.currentMode = event["value"];
-
-      outgoingEvent = {
-        name: "mode",
-        value: this.currentMode,
-        displayName: event["displayName"],
-        descriptionText: event["descriptionText"],
-      };
+      this.currentMode = event.value;
+      node.log(`Mode: ${this.currentMode}`);
 
       if (this.sendEvent) {
-        this.send({payload: outgoingEvent, topic: "hubitat-mode"});
+        const msg = {
+          payload: {
+            name: 'mode',
+            value: this.currentMode,
+            displayName: event.displayName,
+            descriptionText: event.descriptionText,
+          },
+          topic: 'hubitat-mode',
+        };
+        this.send(msg);
       }
 
-      node.status({fill:"blue", shape:"dot", text: this.currentMode});
-    }
+      this.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
+    };
 
     node.hubitat.registerCallback(node, node.deviceId, callback);
 
-    node.hubitat.getMode().then( (mode) => {
-      node.currentMode = mode.filter(function(eachMode) {
-        return eachMode.active;
-      })[0].name;
-      console.debug("Mode(" + node.name + "): Status refreshed.  Current mode: " + node.currentMode);
-      node.status({fill:"blue", shape:"dot", text:node.currentMode});
-    }).catch( err => {
-      console.log(err);
-      node.status({fill:"red", shape:"dot", text:"Uninitialized"});
+    node.hubitat.getMode().then((mode) => {
+      node.currentMode = mode.filter((eachMode) => eachMode.active)[0].name;
+      node.log(`Initialized. mode: ${node.currentMode}`);
+      node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
+    }).catch((err) => {
+      node.warn(`Unable to initialize mode: ${err}`);
+      node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
     });
 
-
-    node.on('input', function(msg, send, done) {
-      console.debug("HubitatModeNode: Input received");
-      console.debug(msg);
-
-      msg.payload = {
-        name: "mode",
-        value: node.currentMode,
+    node.on('input', (msg, send, done) => {
+      node.debug('Input received');
+      const output = {
+        ...msg,
+        payload: { name: 'mode', value: node.currentMode },
+        topic: 'hubitat-mode',
       };
-      msg.topic = "hubitat-mode";
-      send(msg);
-
+      send(output);
       done();
     });
 
-    node.on('close', function() {
-      console.debug("HubitatModeNode: Closed");
+    node.on('close', () => {
+      node.debug('Closed');
       node.hubitat.unregisterCallback(node, callback);
     });
   }
 
-  RED.nodes.registerType("hubitat mode", HubitatModeNode);
-}
+  RED.nodes.registerType('hubitat mode', HubitatModeNode);
+};
