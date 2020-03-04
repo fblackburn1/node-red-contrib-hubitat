@@ -37,7 +37,7 @@ module.exports = function HubitatConfigModule(RED) {
         mode = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch modes: ${err}`);
-        return;
+        throw err;
       }
 
       node.debug(`mode: ${JSON.stringify(mode)}`);
@@ -54,7 +54,7 @@ module.exports = function HubitatConfigModule(RED) {
         device = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch device(${deviceId}): ${err}`);
-        return;
+        throw err;
       }
       device.attributes = device.attributes.filter(
         (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
