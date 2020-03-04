@@ -51,8 +51,10 @@ module.exports = function HubitatDeviceModule(RED) {
           if ((this.attribute === event.name) || (!this.attribute)) {
             if (this.attribute) {
               this.status({ fill: 'blue', shape: 'dot', text: `${this.attribute}: ${attribute.value}` });
+              node.log(`${node.attribute}: ${attribute.value}`);
             } else {
               this.status({});
+              node.log('Attributes refreshed');
             }
             if (this.sendEvent) {
               this.send({ payload: attribute, topic: this.name });

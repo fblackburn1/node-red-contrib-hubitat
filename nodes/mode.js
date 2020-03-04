@@ -24,16 +24,19 @@ module.exports = function HubitatModeModule(RED) {
       }
 
       this.currentMode = event.value;
-
-      const payload = {
-        name: 'mode',
-        value: this.currentMode,
-        displayName: event.displayName,
-        descriptionText: event.descriptionText,
-      };
+      node.log(`Mode: ${this.currentMode}`);
 
       if (this.sendEvent) {
-        this.send({ payload, topic: 'hubitat-mode' });
+        const msg = {
+          payload: {
+            name: 'mode',
+            value: this.currentMode,
+            displayName: event.displayName,
+            descriptionText: event.descriptionText,
+          },
+          topic: 'hubitat-mode',
+        };
+        this.send(msg);
       }
 
       this.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
