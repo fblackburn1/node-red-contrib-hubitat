@@ -68,8 +68,11 @@
         label: 'Security',
       });
 
-      $('#node-config-input-nodeRedServer').attr('placeholder', window.location.origin);
-
+      let nodeRedServer = $('#node-config-input-nodeRedServer');
+      nodeRedServer.attr('placeholder', window.location.origin);
+      if (!nodeRedServer.val()) {
+        nodeRedServer.val(window.location.origin);
+      }
     }
   });
 

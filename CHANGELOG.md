@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.0.23
+
+* add linter (eslint)
+* use node-red logger
+    * To have the same log as before, you need to set loglevel to debug in settings.js
+* insert default value for Node-RED server
+* fix device sorting case insentive
+
+## 0.0.22
+
+* `config` node: fix unregister webhook endpoint
+
 ## 0.0.21
 
 * `command` node: fix wrong condition from 0.0.19
