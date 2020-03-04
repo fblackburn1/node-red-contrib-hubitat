@@ -3,19 +3,19 @@
     category: 'hubitat',
     color: '#a6bbcf',
     defaults: {
-      name: {value:""},
-      server: {type: "hubitat config", required: true},
-      sendEvent: {value: true},
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      sendEvent: { value: true },
     },
     inputs:1,
     outputs:1,
-    icon: "icons/mode.png",
+    icon: 'icons/mode.png',
     label: function() {
-        return this.name || "mode";
+        return this.name || 'mode';
     },
-    paletteLabel: "mode",
+    paletteLabel: 'mode',
     oneditprepare: function() {
-      $("document").ready(() => {
+      $('document').ready(() => {
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);

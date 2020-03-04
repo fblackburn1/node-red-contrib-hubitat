@@ -3,21 +3,21 @@
     category: 'hubitat',
     color: '#a6bbcf',
     defaults: {
-      name: {value:""},
-      server: {type: "hubitat config", required: true},
-      deviceId: {value:"", required: true},
-      command: {value:"", required: true},
-      commandArgs: {value:""},
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      deviceId: { value: '', required: true },
+      command: { value: '', required: true },
+      commandArgs: { value: '' },
     },
     inputs:1,
     outputs:1,
-    icon: "icons/command.png",
+    icon: 'icons/command.png',
     label: function() {
-        return this.name || "command";
+        return this.name || 'command';
     },
-    paletteLabel: "command",
+    paletteLabel: 'command',
     oneditprepare: function() {
-      $("document").ready(() => {
+      $('document').ready(() => {
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -60,8 +60,8 @@
 
   function listHubitatDevices(server, deviceId) {
     $('#node-input-deviceId').find('option').remove().end();
-    const selectMenu = $("#node-input-deviceId");
-    const option = $('<option>', {value: "", text: "Choose device..."});
+    const selectMenu = $('#node-input-deviceId');
+    const option = $('<option>', { value: '', text: 'Choose device...' });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -74,7 +74,7 @@
     $.getJSON(`hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = deviceId == item.id;
-        const option = $('<option>', {value: item.id, text: item.label});
+        const option = $('<option>', { value: item.id, text: item.label });
         selectMenu.append(option);
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
@@ -82,9 +82,9 @@
   }
 
   function listHubitatDeviceCommands(server, deviceId, command) {
-    const selectMenu = $("#node-input-command");
+    const selectMenu = $('#node-input-command');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Choose command..."});
+    const option = $('<option>', { value: '', text: 'Choose command...'} );
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -101,7 +101,7 @@
         const option = $('<option>', {
           value: item.command,
           text: item.command,
-          args_placeholder: item.type.join(","),
+          args_placeholder: item.type.join(','),
         });
         // Avoid list duplicate command returned by Hubitat API
         if (!commands.includes(item.command)) {
@@ -114,19 +114,19 @@
   }
 
   function cleanHubitatDevices() {
-    const selectMenu = $("#node-input-deviceId");
+    const selectMenu = $('#node-input-deviceId');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Choose device..."});
+    const option = $('<option>', { value: '', text: 'Choose device...' });
     selectMenu.append(option);
-    selectMenu.val("").trigger('change');
+    selectMenu.val('').trigger('change');
   }
 
   function cleanHubitatDeviceCommands() {
-    const selectMenu = $("#node-input-command");
+    const selectMenu = $('#node-input-command');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Choose command..."});
+    const option = $('<option>', { value: '', text: 'Choose command...' });
     selectMenu.append(option);
-    selectMenu.val("").trigger('change');
+    selectMenu.val('').trigger('change');
   }
 </script>
 

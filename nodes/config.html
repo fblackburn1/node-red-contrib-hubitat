@@ -1,17 +1,17 @@
 <script type="text/javascript">
   function validatorWebhookPath(value) {
     if (!value) {
-      value = "/hubitat/webhook";
+      value = '/hubitat/webhook';
       $("#node-config-input-webhookPath").val(value);
     }
     if (!value.startsWith("/")) {
       value = `/${value}`;
-      $("#node-config-input-webhookPath").val(value);
+      $('#node-config-input-webhookPath').val(value);
     }
-    const internalEndpoints = ["/", "/auth/token", "/auth/revoke", "/flows", "/flow", "/nodes"];
+    const internalEndpoints = ['/', '/auth/token', '/auth/revoke', '/flows', '/flow', '/nodes'];
     if (internalEndpoints.includes(value)) {
       value = `${value}_`;
-      $("#node-config-input-webhookPath").val(value);
+      $('#node-config-input-webhookPath').val(value);
     }
     const pattern = new RegExp('^(\\/[-a-z\\d%_.~+]*)*$');
     if (!pattern.test(value)) {
@@ -29,21 +29,21 @@
   RED.nodes.registerType('hubitat config', {
     category: 'config',
     defaults: {
-      name: {value: ""},
-      usetls: {value: false},
-      host: {value: "", required: true},
-      port: {value: 80, required: true, validate: RED.validators.number()},
-      token: {value: "", required: true},
-      appId: {value: "", required: true, validate: RED.validators.number()},
-      nodeRedServer: {value: "", validate: validatorWhiteSpace},
-      webhookPath: {value: "/hubitat/webhook", validate: validatorWebhookPath},
+      name: { value: '' },
+      usetls: { value: false },
+      host: { value: '', required: true },
+      port: { value: 80, required: true, validate: RED.validators.number() },
+      token: { value: '', required: true },
+      appId: { value: '', required: true, validate: RED.validators.number() },
+      nodeRedServer: { value: '', validate: validatorWhiteSpace },
+      webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
     },
     label: function() {
       if (this.name) {
         return this.name;
       }
-      const scheme = ((this.usetls) ? 'https': 'http');
-      if ((this.port === "80") || (this.port === "443")) {
+      const scheme = ((this.usetls) ? 'https' : 'http');
+      if ((this.port === '80') || (this.port === '443')) {
         return `${scheme}://${this.host}`;
       } else {
         return `${scheme}://${this.host}:${this.port}`;
@@ -51,67 +51,67 @@
     },
     oneditprepare: function () {
       let tabs = RED.tabs.create({
-        id: "node-config-hubitat-config-tabs",
+        id: 'node-config-hubitat-config-tabs',
         onchange: function(tab) {
-          $("#node-config-hubitat-config-tabs-content").children().hide();
-          $("#" + tab.id).show();
+          $('#node-config-hubitat-config-tabs-content').children().hide();
+          $(`'#${tab.id}`).show();
         }
       });
 
       tabs.addTab({
-        id: "hubitat-config-tab-connection",
-        label: "Connection"
+        id: 'hubitat-config-tab-connection',
+        label: 'Connection',
       });
 
       tabs.addTab({
-        id: "hubitat-config-tab-security",
-        label: "Security"
+        id: 'hubitat-config-tab-security',
+        label: 'Security',
       });
 
-      $("#node-config-input-nodeRedServer").attr('placeholder', window.location.origin);
+      $('#node-config-input-nodeRedServer').attr('placeholder', window.location.origin);
 
     }
   });
 
   function configureHubitat() {
-    $("#node-config-input-webhookConfigured").html('');
-    $("#node-config-text-webhookWarning").hide();
-    const failIcon = "&#10060;";  // Red cross mark
-    const successIcon = "&#9989;";  // Green check mark
+    $('#node-config-input-webhookConfigured').html('');
+    $('#node-config-text-webhookWarning').hide();
+    const failIcon = '&#10060;';  // Red cross mark
+    const successIcon = '&#9989;';  // Green check mark
 
-    const host = $("#node-config-input-host").val();
+    const host = $('#node-config-input-host').val();
     if (!host) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Server`);
       return;
     }
-    const port = $("#node-config-input-port").val();
+    const port = $('#node-config-input-port').val();
     if (!port) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Port`);
       return;
     }
-    const appId = $("#node-config-input-appId").val();
+    const appId = $('#node-config-input-appId').val();
     if (!appId) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Application ID`);
       return;
     }
-    const token = $("#node-config-input-token").val();
+    const token = $('#node-config-input-token').val();
     if (!token) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Token`);
       return;
     }
-    const nodeRedServer = $("#node-config-input-nodeRedServer").val();
+    const nodeRedServer = $('#node-config-input-nodeRedServer').val();
     if (!nodeRedServer) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid Node-RED server`);
       return;
     }
-    const webhookPath = $("#node-config-input-webhookPath").val();
+    const webhookPath = $('#node-config-input-webhookPath').val();
     if (!webhookPath) {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Invalid webhook path`);
       return;
     }
 
     const params = {
-      usetls: $("#node-config-input-usetls").is(":checked"),
+      usetls: $('#node-config-input-usetls').is(':checked'),
       host: host,
       port: port,
       appId: appId,
@@ -120,9 +120,9 @@
       webhookPath: webhookPath,
     };
 
-    $.post("hubitat/configure", params, (res) => {
-      $("#node-config-input-webhookConfigured").html(successIcon);
-      $("#node-config-text-webhookWarning").show();
+    $.post('hubitat/configure', params, (res) => {
+      $('#node-config-input-webhookConfigured').html(successIcon);
+      $('#node-config-text-webhookWarning').show();
     })
     .fail(() => {
       $('#node-config-input-webhookConfigured').html(`${failIcon} Fail to set webhoook. Verify your configuration`);
