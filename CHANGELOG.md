@@ -7,6 +7,8 @@
     * To have the same log as before, you need to set loglevel to debug in settings.js
 * insert default value for Node-RED server
 * fix device sorting case insentive
+* `config` node: readd (and fix) an helper that verify if webhookPath is already configured in another node
+
 
 ## 0.0.22
 
