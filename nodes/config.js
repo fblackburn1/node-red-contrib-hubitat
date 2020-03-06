@@ -92,11 +92,6 @@ module.exports = function HubitatConfigModule(RED) {
         this.webhookPath = `/${this.webhookPath}`;
       }
       node.log(`Starting endpoint for ${this.webhookPath}`);
-      // eslint-disable-next-line no-unused-vars
-      this.webErrorHandler = (err, req, res, next) => {
-        node.warn(err);
-        res.sendStatus(500);
-      };
 
       this.postCallback = (req, res) => {
         node.debug(`receive event on ${node.webhookPath}: ${JSON.stringify(req.body)}`);
@@ -120,24 +115,20 @@ module.exports = function HubitatConfigModule(RED) {
         }
         res.sendStatus(204);
       };
-      const httpMiddleware = (req, res, next) => { next(); };
-      const corsHandler = (req, res, next) => { next(); };
+
+      this.webErrorHandler = (err, req, res, next) => {
+        node.warn(err);
+        res.sendStatus(500);
+      };
+
       const maxApiRequestSize = RED.settings.apiMaxLength || '5mb';
       const jsonParser = bodyParser.json({ limit: maxApiRequestSize });
       const urlencParser = bodyParser.urlencoded({ limit: maxApiRequestSize, extended: true });
-      const metricsHandler = (req, res, next) => { next(); };
-      const multipartParser = (req, res, next) => { next(); };
-      const rawBodyParser = (req, res, next) => { next(); };
       RED.httpNode.post(
         this.webhookPath,
         cookieParser(),
-        httpMiddleware,
-        corsHandler,
-        metricsHandler,
         jsonParser,
         urlencParser,
-        multipartParser,
-        rawBodyParser,
         this.postCallback,
         this.webErrorHandler,
       );
