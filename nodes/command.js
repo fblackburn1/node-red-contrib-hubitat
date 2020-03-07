@@ -33,6 +33,11 @@ module.exports = function HubitatCommandModule(RED) {
 
       try {
         const response = await fetch(url, options);
+        if (response.status >= 400) {
+          node.status({ fill: 'red', shape: 'ring', text: 'response error' });
+          done(await response.text());
+          return;
+        }
         const output = { ...msg, response: await response.json() };
         node.status({});
         send(output);

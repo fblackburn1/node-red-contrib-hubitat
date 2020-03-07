@@ -3,6 +3,7 @@
 ## 0.0.24
 
 * `command` node: fix override a command without arguments when node default has arguments
+* `command` node: change node status when server return error
 
 ## 0.0.23
 
