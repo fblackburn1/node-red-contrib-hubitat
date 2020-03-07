@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.24
+
+* `command` node: fix override a command without arguments when node default has arguments
+
 ## 0.0.23
 
 * add linter (eslint)

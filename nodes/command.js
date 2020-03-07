@@ -15,8 +15,14 @@ module.exports = function HubitatCommandModule(RED) {
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
-      const command = ((msg.command === undefined) ? node.command : msg.command);
-      const commandArgs = ((msg.arguments === undefined) ? node.commandArgs : msg.arguments);
+      let { command } = node;
+      let { commandArgs } = node;
+      if (msg.command !== undefined) {
+        command = msg.command;
+        commandArgs = msg.commandArgs;
+      } else if (msg.arguments !== undefined) {
+        commandArgs = msg.arguments;
+      }
 
       let commandWithArgs = command;
       if ((commandArgs != null) && (commandArgs !== '')) {
