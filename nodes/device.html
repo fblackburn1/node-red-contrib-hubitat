@@ -3,21 +3,21 @@
     category: 'hubitat',
     color: '#a6bbcf',
     defaults: {
-      name: {value:""},
-      server: {type: "hubitat config", required: true},
-      deviceId: {value:"", required: true},
-      attribute: {value:""},
-      sendEvent: {value: true},
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      deviceId: { value: '', required: true },
+      attribute: { value: '' },
+      sendEvent: { value: true },
     },
     inputs:1,
     outputs:1,
-    icon: "icons/device.png",
+    icon: 'icons/device.png',
     label: function() {
-        return this.name || "device";
+        return this.name || 'device';
     },
-    paletteLabel: "device",
+    paletteLabel: 'device',
     oneditprepare: function() {
-      $("document").ready(() => {
+      $('document').ready(() => {
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -48,8 +48,8 @@
 
   function listHubitatDevicesForDeviceNode(server, deviceId) {
     $('#node-input-deviceId').find('option').remove().end();
-    const selectMenu = $("#node-input-deviceId");
-    const option = $('<option>', {value: "", text: "Choose device..."});
+    const selectMenu = $('#node-input-deviceId');
+    const option = $('<option>', { value: '', text: 'Choose device...' });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -63,7 +63,7 @@
     $.getJSON(`hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = deviceId == item.id;
-        const option = $('<option>', {value: item.id, text: item.label});
+        const option = $('<option>', { value: item.id, text: item.label });
         selectMenu.append(option);
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
@@ -71,9 +71,9 @@
     .error(cleanHubitatDevicesForDeviceNode());
   }
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
-    const selectMenu = $("#node-input-attribute");
+    const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Undefined"});
+    const option = $('<option>', { value: '', text: 'Undefined' });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -101,18 +101,18 @@
     });
   }
   function cleanHubitatDevicesForDeviceNode() {
-    const selectMenu = $("#node-input-deviceId");
+    const selectMenu = $('#node-input-deviceId');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Choose device..."});
+    const option = $('<option>', { value: '', text: 'Choose device...' });
     selectMenu.append(option);
-    selectMenu.val("").trigger('change');
+    selectMenu.val('').trigger('change');
   }
   function cleanHubitatDeviceAttributes() {
-    const selectMenu = $("#node-input-attribute");
+    const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', {value: "", text: "Choose attribute..."});
+    const option = $('<option>', { value: '', text: 'Undefined' });
     selectMenu.append(option);
-    selectMenu.val("").trigger('change');
+    selectMenu.val('').trigger('change');
   }
 </script>
 
