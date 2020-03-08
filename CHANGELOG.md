@@ -17,7 +17,7 @@
     * If you want to have debug output, just set Node-RED log level to debug (`settings.js`)
 * `config` node: Node-RED server field has now a default value (not only a placeholder)
 * `config` node: readd (and fix) an helper that verify if webhookPath is already configured in another node
-* sorting device is ow case insensitive
+* sorting device is now case insensitive
 
 ## 0.0.22
 
