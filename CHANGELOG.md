@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.25
+
+* `command` node: reset `arguments` dropdown when server is unavailable
+* `device` node: reset `attributes` dropdown when server is unavailable
+
 ## 0.0.24
 
 * `command` node: fix override a command without arguments when node default has arguments
