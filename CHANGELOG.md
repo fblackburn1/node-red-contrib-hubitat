@@ -2,6 +2,8 @@
 
 ## 0.0.25
 
+* Fix randomly initialization errors when requesting too many devices simultaneous
+  * The simultaneous initialization requests to Hubitat is now set to 4
 * `command` node: reset `arguments` dropdown when server is unavailable
 * `device` node: reset `attributes` dropdown when server is unavailable
 * `command` node: `command` field is now optional

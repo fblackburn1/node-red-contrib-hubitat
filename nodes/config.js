@@ -6,6 +6,26 @@ module.exports = function HubitatConfigModule(RED) {
   const cookieParser = require('cookie-parser');
 
   const nodes = {};
+  let requestPool = 4; // 4 simultaneous requests seem to never cause issue
+
+  function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+  async function acquireLock() {
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      if (requestPool) {
+        requestPool -= 1;
+        return;
+      }
+      // eslint-disable-next-line no-await-in-loop
+      await sleep(40);
+    }
+  }
+
+  function releaseLock() {
+    requestPool += 1;
+  }
 
   function HubitatConfigNode(config) {
     RED.nodes.createNode(this, config);
@@ -33,6 +53,7 @@ module.exports = function HubitatConfigModule(RED) {
       const options = { method: 'GET' };
       let mode;
       try {
+        await acquireLock();
         const response = await fetch(url, options);
         if (response.status >= 400) {
           throw new Error(await response.text());
@@ -41,6 +62,8 @@ module.exports = function HubitatConfigModule(RED) {
       } catch (err) {
         node.warn(`Unable to fetch modes: ${err}`);
         throw err;
+      } finally {
+        releaseLock();
       }
 
       node.debug(`mode: ${JSON.stringify(mode)}`);
@@ -53,6 +76,7 @@ module.exports = function HubitatConfigModule(RED) {
       let device;
 
       try {
+        await acquireLock();
         const response = await fetch(url, options);
         if (response.status >= 400) {
           throw new Error(await response.text());
@@ -61,6 +85,8 @@ module.exports = function HubitatConfigModule(RED) {
       } catch (err) {
         node.warn(`Unable to fetch device(${deviceId}): ${err}`);
         throw err;
+      } finally {
+        releaseLock();
       }
       device.attributes = device.attributes.filter(
         (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
