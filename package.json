@@ -3,9 +3,6 @@
   "version": "0.0.24",
   "description": "Node Red module for Hubitat API",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/fblackburn1/node-red-contrib-hubitat.git"
@@ -37,5 +34,12 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.1"
+  },
+  "scripts": {
+    "bump:prepare": "git checkout master && git pull origin master",
+    "bump:patch": "yarn bump:prepare && yarn version --patch && yarn bump:complete",
+    "bump:minor": "yarn bump:prepare && yarn version --minor && yarn bump:complete",
+    "bump:major": "yarn bump:prepare && yarn version --major && yarn bump:complete",
+    "bump:complete": "git push origin && git push origin --tags"
   }
 }
