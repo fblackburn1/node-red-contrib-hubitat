@@ -23,6 +23,11 @@ module.exports = function HubitatCommandModule(RED) {
       } else if (msg.arguments !== undefined) {
         commandArgs = msg.arguments;
       }
+      if (!command) {
+        node.status({ fill: 'red', shape: 'ring', text: 'undefined command' });
+        done('undefined command');
+        return;
+      }
 
       let commandWithArgs = command;
       if ((commandArgs != null) && (commandArgs !== '')) {

@@ -6,7 +6,7 @@
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
       deviceId: { value: '', required: true },
-      command: { value: '', required: true },
+      command: { value: '' },
       commandArgs: { value: '' },
     },
     inputs:1,
@@ -164,7 +164,8 @@
     </dl>
     <dl class="message-properties">
       <dt class="optional">arguments <span class="property-type">string</span></dt>
-      <dd>Allow to overwrite the command arguments sent. You must remove this property if you send a command that doesn't require an argument</dd>
+      <dd>Allow to overwrite the command arguments sent. You must remove this property
+        if you send a command that doesn't require an argument</dd>
     </dl>
 
   <h3>Output</h3>
@@ -172,7 +173,9 @@
 
   <h3>Details</h3>
     <p><b>Device</b> dropdown is populated when the server is reachable.</p>
-    <p><b>Command</b> dropdown is populated when the <b>Device</b> is selected.</p>
-    <p><b>Arguments</b> field is disabled or placeholder is set according to the chosen <b>Command</b>.</p>
+    <p><b>Command</b> dropdown is populated when the <b>Device</b> is selected.
+      If not specified, input message must define <code>command</code> property</p>
+    <p><b>Arguments</b> field is disabled or placeholder is set according to the chosen <b>Command</b>.
+      If not specified, input message must define <code>arguments</code> property</p>
     <p>This node is not compatible with Node-RED 0.x</p>
 </script>

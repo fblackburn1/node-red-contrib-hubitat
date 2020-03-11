@@ -4,6 +4,8 @@
 
 * `command` node: reset `arguments` dropdown when server is unavailable
 * `device` node: reset `attributes` dropdown when server is unavailable
+* `command` node: `command` field is now optional
+
 
 ## 0.0.24
 
