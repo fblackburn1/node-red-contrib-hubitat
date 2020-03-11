@@ -34,6 +34,9 @@ module.exports = function HubitatConfigModule(RED) {
       let mode;
       try {
         const response = await fetch(url, options);
+        if (response.status >= 400) {
+          throw new Error(await response.text());
+        }
         mode = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch modes: ${err}`);
@@ -51,6 +54,9 @@ module.exports = function HubitatConfigModule(RED) {
 
       try {
         const response = await fetch(url, options);
+        if (response.status >= 400) {
+          throw new Error(await response.text());
+        }
         device = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch device(${deviceId}): ${err}`);
@@ -162,6 +168,9 @@ module.exports = function HubitatConfigModule(RED) {
     let devices;
     try {
       const response = await fetch(url, options);
+      if (response.status >= 400) {
+        throw new Error(await response.text());
+      }
       devices = await response.json();
     } catch (err) {
       console.log(`ERROR ${req.path}: ${err}`);
@@ -189,6 +198,9 @@ module.exports = function HubitatConfigModule(RED) {
 
     try {
       const response = await fetch(url, options);
+      if (response.status >= 400) {
+        throw new Error(await response.text());
+      }
       res.json(await response.json());
     } catch (err) {
       console.log(`ERROR ${req.path}: ${err}`);
@@ -211,6 +223,9 @@ module.exports = function HubitatConfigModule(RED) {
 
     try {
       const response = await fetch(url, options);
+      if (response.status >= 400) {
+        throw new Error(await response.text());
+      }
       res.json(await response.json());
     } catch (err) {
       console.log(`ERROR ${req.path}: ${err}`);
@@ -235,6 +250,9 @@ module.exports = function HubitatConfigModule(RED) {
 
     try {
       const response = await fetch(url, options);
+      if (response.status >= 400) {
+        throw new Error(await response.text());
+      }
       res.json(await response.json());
     } catch (err) {
       console.log(`ERROR ${req.path}: ${err}`);

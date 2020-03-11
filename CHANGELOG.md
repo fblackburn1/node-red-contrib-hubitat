@@ -5,6 +5,7 @@
 * `command` node: reset `arguments` dropdown when server is unavailable
 * `device` node: reset `attributes` dropdown when server is unavailable
 * `command` node: `command` field is now optional
+* improve error handling when hub returns 500
 
 
 ## 0.0.24
