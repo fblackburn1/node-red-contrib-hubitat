@@ -22,6 +22,12 @@ This package contains three nodes:
   * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat
     to dispatch events to other nodes.
 
+## Development
+
+To run linter:
+
+  * npx eslint nodes/*.js
+
 ## Thanks
 
 To [node-red-contrib-smartthings](https://github.com/otaviojr/node-red-contrib-smartthings) for the webhook logic
