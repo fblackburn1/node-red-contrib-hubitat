@@ -14,15 +14,21 @@ module.exports = function HubitatModeModule(RED) {
       node.error('Hubitat server not configured');
       return;
     }
+    async function initializeMode() {
+      return node.hubitat.getMode().then((mode) => {
+        if (!mode) { throw new Error(JSON.stringify(mode)); }
+        node.currentMode = mode.filter((eachMode) => eachMode.active)[0].name;
+        node.log(`Initialized. mode: ${node.currentMode}`);
+        node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
+      }).catch((err) => {
+        node.warn(`Unable to initialize mode: ${err.message}`);
+        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        throw err;
+      });
+    }
 
     const callback = function callback(event) {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
-      if (this.currentMode === undefined) {
-        this.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
-        node.warn('Uninitialized');
-        return;
-      }
-
       this.currentMode = event.value;
       node.log(`Mode: ${this.currentMode}`);
 
@@ -44,17 +50,18 @@ module.exports = function HubitatModeModule(RED) {
 
     node.hubitat.registerCallback(node, node.deviceId, callback);
 
-    node.hubitat.getMode().then((mode) => {
-      node.currentMode = mode.filter((eachMode) => eachMode.active)[0].name;
-      node.log(`Initialized. mode: ${node.currentMode}`);
-      node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
-    }).catch((err) => {
-      node.warn(`Unable to initialize mode: ${err}`);
-      node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
-    });
+    initializeMode().catch(() => {});
 
-    node.on('input', (msg, send, done) => {
+    node.on('input', async (msg, send, done) => {
       node.debug('Input received');
+      if (node.currentMode === undefined) {
+        try {
+          await initializeMode();
+        } catch (err) {
+          return;
+        }
+      }
+
       const output = {
         ...msg,
         payload: { name: 'mode', value: node.currentMode },

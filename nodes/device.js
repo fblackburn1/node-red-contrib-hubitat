@@ -32,13 +32,39 @@ module.exports = function HubitatDeviceModule(RED) {
       node.error('Hubitat server not configured');
       return;
     }
+    async function initializeDevice() {
+      return node.hubitat.getDevice(node.deviceId).then((device) => {
+        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
 
-    const callback = function callback(event) {
+        device.attributes.forEach((attribute) => {
+          attribute.value = attribute.currentValue;
+          // delete attribute.currentValue;  // kept for compatibility
+          if (node.attribute === attribute.name) {
+            node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
+            node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
+          }
+        });
+        node.currentAttributes = device.attributes;
+
+        if (!node.attribute) {
+          node.status({});
+          node.log('Initialized');
+        }
+      }).catch((err) => {
+        node.warn(`Unable to initialize device: ${err.message}`);
+        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        throw err;
+      });
+    }
+
+    const callback = async function callback(event) {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       if (this.currentAttributes === undefined) {
-        this.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
-        this.warn('Uninitialized');
-        return;
+        try {
+          await initializeDevice();
+        } catch (err) {
+          return;
+        }
       }
 
       let found = false;
@@ -68,36 +94,20 @@ module.exports = function HubitatDeviceModule(RED) {
         this.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
       }
     };
-
     node.hubitat.registerCallback(node, node.deviceId, callback);
 
-    node.hubitat.getDevice(node.deviceId).then((device) => {
-      if (!device.attributes) {
-        node.warn(`Unable to initialize device: ${JSON.stringify(device)}}`);
-        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
-      }
+    initializeDevice().catch(() => {});
 
-      device.attributes.forEach((attribute) => {
-        attribute.value = attribute.currentValue;
-        // delete attribute.currentValue;  // kept for compatibility
-        if (node.attribute === attribute.name) {
-          node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
-          node.log(`Initialized.  ${node.attribute}: ${attribute.value}`);
-        }
-      });
-      node.currentAttributes = device.attributes;
-
-      if (!node.attribute) {
-        node.status({});
-        node.log('Initialized');
-      }
-    }).catch((err) => {
-      node.warn(`Unable to initialize device: ${err}`);
-      node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
-    });
-
-    node.on('input', (msg, send, done) => {
+    node.on('input', async (msg, send, done) => {
       node.debug('Input received');
+      if (node.currentAttributes === undefined) {
+        try {
+          await initializeDevice();
+        } catch (err) {
+          return;
+        }
+      }
+
       const attributeSearched = msg.attribute || node.attribute;
       if (attributeSearched === undefined) {
         node.status({ fill: 'red', shape: 'dot', text: 'Undefined attribute' });

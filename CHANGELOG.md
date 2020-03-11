@@ -4,6 +4,8 @@
 
 * Fix randomly initialization errors when requesting too many devices simultaneous
   * The simultaneous initialization requests to Hubitat is now set to 4
+* `device` node: on input message or event, if node is uninitialized, then try to initialize it
+* `mode` node: on input message, if node is uninitialized, then try to initialize it
 * `command` node: reset `arguments` dropdown when server is unavailable
 * `device` node: reset `attributes` dropdown when server is unavailable
 * `command` node: `command` field is now optional
