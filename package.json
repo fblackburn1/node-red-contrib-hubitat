@@ -37,9 +37,9 @@
   },
   "scripts": {
     "bump:prepare": "git checkout master && git pull origin master",
-    "bump:patch": "yarn bump:prepare && yarn version --patch && yarn bump:complete",
-    "bump:minor": "yarn bump:prepare && yarn version --minor && yarn bump:complete",
-    "bump:major": "yarn bump:prepare && yarn version --major && yarn bump:complete",
+    "bump:patch": "npm bump:prepare && yarn version --patch && npm bump:complete",
+    "bump:minor": "npm bump:prepare && yarn version --minor && npm bump:complete",
+    "bump:major": "npm bump:prepare && yarn version --major && npm bump:complete",
     "bump:complete": "git push origin && git push origin --tags"
   }
 }
