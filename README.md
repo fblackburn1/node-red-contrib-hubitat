@@ -26,7 +26,11 @@ This package contains three nodes:
 
 To run linter:
 
-  * npx eslint nodes/*.js
+  * `npx eslint nodes/*.js`
+
+To run unit tests:
+
+  * `mocha test/nodes/*_spec.js`
 
 ## Thanks
 
