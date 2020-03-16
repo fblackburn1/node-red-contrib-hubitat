@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.26
+
+* `command` node: fix regression that ignore arguments from message
+
 ## 0.0.25
 
 * Fix randomly initialization errors when requesting too many devices simultaneously
