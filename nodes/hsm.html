@@ -1,0 +1,76 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat hsm',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      command: { value: '' },
+      sendEvent: { value: true }
+    },
+    inputs:1,
+    outputs:1,
+    icon: 'icons/hsm.png',
+    label: function() {
+        return this.name || 'hsm';
+    },
+    paletteLabel: 'hsm',
+  });
+
+</script>
+
+<script type="text/html" data-template-name="hubitat hsm">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-command"><i class="fa fa-hashtag"></i> Command</label>
+    <select id="node-input-command">
+     <option value="armHome">Arm Home</option>
+     <option value="armAway">Arm Away</option>
+     <option value="armNight">Arm Night</option>
+     <option value="disarm">Disarm Home</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-sendEvent" style="width: auto"><i class="fa fa-rocket"></i> Send events </label>
+    <input type="checkbox" id="node-input-sendEvent" style="display: inline-block; width: auto; vertical-align: top;" checked>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat hsm">
+  <p>A node that sends and receives HSM commands from/to Hubitat.</p>
+
+  <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt class="optional">command <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the command sent.</dd>
+    </dl>
+
+  <h3>Output</h3>
+    <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">string</span></dt>
+      <dd>The attribute values. example:
+        <code>
+          {
+              payload: {
+                  name: "hsmStatus",
+                  value: "disarmed",
+                  displayName: "Development"
+              }
+          }
+      </code>
+      </dd>
+    </dl>
+
+  <h3>Details</h3>
+    <p><b>Command</b> dropdown to preselect the command to be send.
+      If not specified, input message must define <code>command</code> property.
+      Possible values for command are: <code>armAway</code> or <code>armHome</code> or <code>armNight</code> or <code>disarm</code></p>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>
