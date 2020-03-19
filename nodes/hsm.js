@@ -98,17 +98,29 @@ module.exports = function HubitatHsmModule(RED) {
     }
 
     node.on('input', async (msg, send, done) => {
-      node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
       let { command } = node;
       if (msg.command !== undefined)
         command = msg.command;
       if (!command) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined command' });
-        done('undefined command');
+        if (node.currentHsm === undefined) {
+          node.status({ fill: 'red', shape: 'ring', text: 'unitialized' });
+          done('unitialized');
+        } else {
+          const msg = {
+            payload: {
+              name: 'hsmStatus',
+              value: node.currentHsm
+            },
+            topic: 'hubitat-hsm',
+          };
+          send(msg);
+          node.status({ fill: 'blue', shape: 'dot', text: node.currentHsm });
+          done();
+        }
         return;
       }
-
+      node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
       command = convertAlarmState(command);
 
       if (command === 'invalid') {
@@ -128,7 +140,8 @@ module.exports = function HubitatHsmModule(RED) {
           return;
         }
         const output = { ...msg, response: await response.json() };
-        node.status({fill: 'blue', shape: 'dot', text: output.response.hsm});
+        node.currentHsm = output.response.hsm;
+        node.status({fill: 'blue', shape: 'dot', text: node.currentHsm});
         send(output);
         done();
       } catch (err) {
