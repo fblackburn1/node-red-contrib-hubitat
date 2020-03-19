@@ -107,13 +107,9 @@ module.exports = function HubitatHsmModule(RED) {
           node.status({ fill: 'red', shape: 'ring', text: 'unitialized' });
           done('unitialized');
         } else {
-          const msg = {
-            payload: {
-              name: 'hsmStatus',
-              value: node.currentHsm
-            },
-            topic: 'hubitat-hsm',
-          };
+          msg.payload = {};
+          msg.payload.value = node.currentHsm;
+          msg.payload.name = 'hsmStatus';
           send(msg);
           node.status({ fill: 'blue', shape: 'dot', text: node.currentHsm });
           done();
@@ -141,6 +137,9 @@ module.exports = function HubitatHsmModule(RED) {
         }
         const output = { ...msg, response: await response.json() };
         node.currentHsm = output.response.hsm;
+        msg.payload = {};
+        msg.payload.value = node.currentHsm;
+        msg.payload.name = 'hsmStatus';
         node.status({fill: 'blue', shape: 'dot', text: node.currentHsm});
         send(output);
         done();
