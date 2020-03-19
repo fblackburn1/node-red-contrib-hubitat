@@ -47,7 +47,7 @@ module.exports = function HubitatConfigModule(RED) {
     if ((!node.host) || (!node.port) || (!node.token) || (!node.appId)) {
       return;
     }
-
+    
     node.getMode = async () => {
       const url = `${node.baseUrl}/modes?access_token=${node.token}`;
       const options = { method: 'GET' };
@@ -68,6 +68,28 @@ module.exports = function HubitatConfigModule(RED) {
 
       node.debug(`mode: ${JSON.stringify(mode)}`);
       return mode;
+    };
+
+    node.getHsm = async () => {
+      const url = `${node.baseUrl}/hsm?access_token=${node.token}`;
+      const options = { method: 'GET' };
+      let hsm;
+      try {
+        await acquireLock();
+        const response = await fetch(url, options);
+        if (response.status >= 400) {
+          throw new Error(await response.text());
+        }
+        hsm = await response.json();
+      } catch (err) {
+        node.warn(`Unable to fetch hsm: ${err}`);
+        throw err;
+      } finally {
+        releaseLock();
+      }
+
+      node.debug(`hsm: ${JSON.stringify(hsm)}`);
+      return hsm;
     };
 
     node.getDevice = async (deviceId) => {
@@ -138,6 +160,11 @@ module.exports = function HubitatConfigModule(RED) {
           callback = node.callbacks[req.body.content.deviceId];
         } else if (req.body.content.name === 'mode') {
           [callback] = node.callbacks;
+        } else if (req.body.content.name.startsWith('hsm')) {
+          if ((req.body.content.name === 'hsmStatus') || (req.body.content.name === 'hsmAlert') || (req.body.content.name === 'hsmRules'))
+            callback = node.callbacks[-1];
+        } else if (req.body.content.deviceId === null) {
+          callback = node.callbacks[-2];
         }
 
         if (callback) {
