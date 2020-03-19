@@ -4,7 +4,6 @@ module.exports = function HubitatLocationModule(RED) {
 
     this.hubitat = RED.nodes.getNode(config.server);
     this.name = config.name;
-    this.deviceId = -2; // fake the deviceId to be able to register on callback
 
     const node = this;
 
@@ -13,7 +12,7 @@ module.exports = function HubitatLocationModule(RED) {
       return;
     }
 
-    const callback = function callback(event) {
+    this.hubitat.hubitatEvent.on('location', (async function (node, event) {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       node.log(`Location Event: ${event.name}`);
 
@@ -26,15 +25,13 @@ module.exports = function HubitatLocationModule(RED) {
         },
         topic: 'hubitat-location',
       };
-      this.send(msg);
-      this.status = ({});
-    };
+      node.send(msg);
+      node.status = ({});
+    }).bind(null, this));
 
-    node.hubitat.registerCallback(node, node.deviceId, callback);
 
     node.on('close', () => {
       node.debug('Closed');
-      node.hubitat.unregisterCallback(node, callback);
     });
   }
 
