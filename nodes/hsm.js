@@ -8,7 +8,7 @@ module.exports = function HubitatHsmModule(RED) {
     this.sendEvent = config.sendEvent;
     this.currentHsm = undefined;
     this.command = config.command;
-    this.deviceId = -1; // fake the deviceId to be able to register on callback
+    this.shape = this.sendEvent ? 'dot' : 'ring';
 
     const node = this;
 
@@ -21,10 +21,10 @@ module.exports = function HubitatHsmModule(RED) {
         if (!hsm) { throw new Error(JSON.stringify(hsm)); }
         node.currentHsm = hsm.hsm;
         node.log(`Initialized. hsm: ${JSON.stringify(hsm)}`);
-        node.status({ fill: 'blue', shape: 'dot', text: node.currentHsm });
+        node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
       }).catch((err) => {
         node.warn(`Unable to initialize mode: ${err.message}`);
-        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
         throw err;
       });
     }
@@ -56,7 +56,7 @@ module.exports = function HubitatHsmModule(RED) {
         node.send(msg);
       }
 
-      node.status({ fill: 'blue', shape: 'dot', text: this.currentHsm });
+      node.status({ fill: 'blue', shape: node.shape, text: this.currentHsm });
     }).bind(null, this));
 
     initializeHsm().catch(() => {});
@@ -110,12 +110,12 @@ module.exports = function HubitatHsmModule(RED) {
             payload: { name: 'hsmStatus', value: node.currentHsm },
           };
           send(output);
-          node.status({ fill: 'blue', shape: 'dot', text: node.currentHsm });
+          node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
           done();
         }
         return;
       }
-      node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
+      node.status({ fill: 'blue', shape: node.shape, text: 'requesting' });
       command = convertAlarmState(command);
 
       if (command === 'invalid') {
@@ -134,14 +134,13 @@ module.exports = function HubitatHsmModule(RED) {
           done(await response.text());
           return;
         }
-        const output = { ...msg, response: await response.json() };
         node.currentHsm = output.response.hsm;
         const output = {
             ...msg,
             payload: { name: 'hsmStatus', value: node.currentHsm },
           };
         send(output);
-        node.status({fill: 'blue', shape: 'dot', text: node.currentHsm});
+        node.status({fill: 'blue', shape: node.shape, text: node.currentHsm});
         done();
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
