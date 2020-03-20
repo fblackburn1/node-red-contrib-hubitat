@@ -8,7 +8,6 @@ module.exports = function HubitatHsmModule(RED) {
     this.sendEvent = config.sendEvent;
     this.currentHsm = undefined;
     this.command = config.command;
-    this.deviceId = -1; // fake the deviceId to be able to register on callback
 
     const node = this;
 
@@ -134,7 +133,6 @@ module.exports = function HubitatHsmModule(RED) {
           done(await response.text());
           return;
         }
-        const output = { ...msg, response: await response.json() };
         node.currentHsm = output.response.hsm;
         const output = {
             ...msg,
