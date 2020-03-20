@@ -74,9 +74,9 @@ module.exports = function HubitatDeviceModule(RED) {
                 attribute.deviceId = this.deviceId;
                 attribute.currentValue = attribute.value; // deprecated since 0.0.18
 
-                if ((node.attribute === event.name) || (!this.attribute)) {
+                if ((node.attribute === event.name) || (!node.attribute)) {
                   if (node.attribute) {
-                    node.status({ fill: 'blue', shape: 'dot', text: `${this.attribute}: ${attribute.value}` });
+                    node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
                     node.log(`${node.attribute}: ${attribute.value}`);
                   } else {
                     node.status({});
