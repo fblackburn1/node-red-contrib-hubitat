@@ -6,7 +6,6 @@ module.exports = function HubitatModeModule(RED) {
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
-    this.deviceId = 0; // fake the deviceId to be able to register on callback
 
     const node = this;
 
@@ -26,13 +25,12 @@ module.exports = function HubitatModeModule(RED) {
         throw err;
       });
     }
-
-    const callback = function callback(event) {
+    this.hubitat.hubitatEvent.on('mode', (async function (node, event) {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
-      this.currentMode = event.value;
+      node.currentMode = event.value;
       node.log(`Mode: ${this.currentMode}`);
 
-      if (this.sendEvent) {
+      if (node.sendEvent) {
         const msg = {
           payload: {
             name: 'mode',
@@ -42,13 +40,11 @@ module.exports = function HubitatModeModule(RED) {
           },
           topic: 'hubitat-mode',
         };
-        this.send(msg);
+        node.send(msg);
       }
 
-      this.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
-    };
-
-    node.hubitat.registerCallback(node, node.deviceId, callback);
+      node.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
+    }).bind(null, this));
 
     initializeMode().catch(() => {});
 
@@ -73,7 +69,6 @@ module.exports = function HubitatModeModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      node.hubitat.unregisterCallback(node, callback);
     });
   }
 
