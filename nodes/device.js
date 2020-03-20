@@ -57,44 +57,45 @@ module.exports = function HubitatDeviceModule(RED) {
       });
     }
 
-    this.hubitat.hubitatEvent.on('device', (async function (node, event) {
-        if (node.deviceId && node.deviceId === event.deviceId) {
-            node.debug(`Callback called: ${JSON.stringify(event)}`);
-            if (node.currentAttributes === undefined) {
-                try {
-                    await initializeDevice();
-                } catch (err) {
-                    return;
-                }
-            }
-
-            let found = false;
-            node.currentAttributes.forEach((attribute) => {
-              if (event.name === attribute.name) {
-                attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-                attribute.deviceId = this.deviceId;
-                attribute.currentValue = attribute.value; // deprecated since 0.0.18
-
-                if ((node.attribute === event.name) || (!node.attribute)) {
-                  if (node.attribute) {
-                    node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
-                    node.log(`${node.attribute}: ${attribute.value}`);
-                  } else {
-                    node.status({});
-                    node.log('Attributes refreshed');
-                  }
-                  if (node.sendEvent) {
-                    node.send({ payload: attribute, topic: node.name });
-                  }
-                }
-                found = true;
-              }
-            });
-            if (!found) {
-              node.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
-            }
+    this.hubitat.hubitatEvent.on('device', (async (node, event) => {
+      if (!node.deviceId || node.deviceId !== event.deviceId) {
+        return;
+      }
+      node.debug(`Callback called: ${JSON.stringify(event)}`);
+      if (node.currentAttributes === undefined) {
+        try {
+          await initializeDevice();
+        } catch (err) {
+          return;
         }
-    }).bind(null, this)); 
+      }
+
+      let found = false;
+      node.currentAttributes.forEach((attribute) => {
+        if (event.name === attribute.name) {
+          attribute.value = castHubitatValue(node, attribute.dataType, event.value);
+          attribute.deviceId = this.deviceId;
+          attribute.currentValue = attribute.value; // deprecated since 0.0.18
+
+          if ((node.attribute === event.name) || (!node.attribute)) {
+            if (node.attribute) {
+              node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
+              node.log(`${node.attribute}: ${attribute.value}`);
+            } else {
+              node.status({});
+              node.log('Attributes refreshed');
+            }
+            if (node.sendEvent) {
+              node.send({ payload: attribute, topic: node.name });
+            }
+          }
+          found = true;
+        }
+      });
+      if (!found) {
+        node.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
+      }
+    }).bind(null, this));
 
     initializeDevice().catch(() => {});
 

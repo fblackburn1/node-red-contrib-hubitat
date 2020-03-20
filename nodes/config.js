@@ -4,7 +4,7 @@ module.exports = function HubitatConfigModule(RED) {
   const fetch = require('node-fetch');
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
-  const events = require("events");
+  const events = require('events');
 
   const nodes = {};
   let requestPool = 4; // 4 simultaneous requests seem to never cause issue
@@ -39,7 +39,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.hubitatEvent = new events.EventEmitter();
-    
+
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
 
@@ -48,7 +48,7 @@ module.exports = function HubitatConfigModule(RED) {
     if ((!node.host) || (!node.port) || (!node.token) || (!node.appId)) {
       return;
     }
-    
+
     node.getMode = async () => {
       const url = `${node.baseUrl}/modes?access_token=${node.token}`;
       const options = { method: 'GET' };
@@ -117,7 +117,6 @@ module.exports = function HubitatConfigModule(RED) {
           return;
         }
 
-        let callback;
         if (req.body.content.deviceId != null) {
           node.hubitatEvent.emit('device', req.body.content);
         } else if (req.body.content.name === 'mode') {
