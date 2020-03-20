@@ -6,7 +6,7 @@ module.exports = function HubitatModeModule(RED) {
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
-
+    this.shape = this.sendEvent ? 'dot' : 'ring';
     const node = this;
 
     if (!node.hubitat) {
@@ -18,10 +18,10 @@ module.exports = function HubitatModeModule(RED) {
         if (!mode) { throw new Error(JSON.stringify(mode)); }
         node.currentMode = mode.filter((eachMode) => eachMode.active)[0].name;
         node.log(`Initialized. mode: ${node.currentMode}`);
-        node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
+        node.status({ fill: 'blue', shape: node.shape, text: node.currentMode });
       }).catch((err) => {
         node.warn(`Unable to initialize mode: ${err.message}`);
-        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
         throw err;
       });
     }
@@ -42,8 +42,7 @@ module.exports = function HubitatModeModule(RED) {
         };
         node.send(msg);
       }
-
-      node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
+      node.status({ fill: 'blue', shape: node.shape, text: node.currentMode });
     });
 
     initializeMode().catch(() => {});
