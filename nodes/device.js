@@ -59,7 +59,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     this.hubitat.hubitatEvent.on('device', (async function (node, event) {
         if (node.deviceId && node.deviceId === event.deviceId) {
-            node.log(`Callback called: ${JSON.stringify(event)}`);
+            node.debug(`Callback called: ${JSON.stringify(event)}`);
             if (node.currentAttributes === undefined) {
                 try {
                     await initializeDevice();
