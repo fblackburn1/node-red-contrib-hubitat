@@ -1,0 +1,62 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat location',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true }
+    },
+    inputs:0,
+    outputs:1,
+    icon: 'icons/location.png',
+    label: function() {
+        return this.name || 'location';
+    },
+    paletteLabel: 'location',
+    oneditprepare: function() {
+      $('document').ready(() => {
+        $('#node-input-server').change(() => {
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
+        });
+      });
+    }
+  });
+
+
+</script>
+
+<script type="text/html" data-template-name="hubitat location">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat location">
+  <p>A node that can send global location events of your Hubitat hub.</p>
+
+  <h3>Output</h3>
+    <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">object</span></dt>
+      <dd>Information about the location event.
+        <br>
+        <p><strong>Note:</strong> The <code>displayName</code> and <code>descriptionText</code> fields are set if the hub event contained these values.</p>
+        <p>Example:</p>
+<pre>payload: {
+    name: "systemStart",
+    value: "2.1.9.117",
+    descriptionText: "System startup with build: 2.1.9.117"
+}</pre>
+      </dd>
+    </dl>
+
+  <h3>Details</h3>
+    <p>When a location event occurs at the hub, the Maker API app sends the event to Node-RED via HTTP POST.</p>
+    <p>This node requires that you have enabled the "Include location events to be sent by POST?" option in the Maker API app and webhook configured.</p>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>
