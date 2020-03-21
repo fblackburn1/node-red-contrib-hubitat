@@ -28,13 +28,13 @@ module.exports = function HubitatModeModule(RED) {
     this.hubitat.hubitatEvent.on('mode', (async (node, event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       node.currentMode = event.value;
-      node.log(`Mode: ${this.currentMode}`);
+      node.log(`Mode: ${node.currentMode}`);
 
       if (node.sendEvent) {
         const msg = {
           payload: {
             name: 'mode',
-            value: this.currentMode,
+            value: node.currentMode,
             displayName: event.displayName,
             descriptionText: event.descriptionText,
           },
@@ -43,7 +43,7 @@ module.exports = function HubitatModeModule(RED) {
         node.send(msg);
       }
 
-      node.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
+      node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
     }).bind(null, this));
 
     initializeMode().catch(() => {});

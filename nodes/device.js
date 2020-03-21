@@ -74,7 +74,7 @@ module.exports = function HubitatDeviceModule(RED) {
       node.currentAttributes.forEach((attribute) => {
         if (event.name === attribute.name) {
           attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-          attribute.deviceId = this.deviceId;
+          attribute.deviceId = node.deviceId;
           attribute.currentValue = attribute.value; // deprecated since 0.0.18
 
           if ((node.attribute === event.name) || (!node.attribute)) {
