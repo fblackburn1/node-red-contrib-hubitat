@@ -26,7 +26,6 @@ module.exports = function HubitatLocationModule(RED) {
         topic: 'hubitat-location',
       };
       node.send(msg);
-      node.status = ({});
     });
 
     node.on('close', () => {
