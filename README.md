@@ -31,7 +31,3 @@ To run linter:
 To run unit tests:
 
   * `mocha test/nodes/*_spec.js`
-
-## Thanks
-
-To [node-red-contrib-smartthings](https://github.com/otaviojr/node-red-contrib-smartthings) for the webhook logic
