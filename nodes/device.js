@@ -57,10 +57,7 @@ module.exports = function HubitatDeviceModule(RED) {
       });
     }
 
-    this.hubitat.hubitatEvent.on('device', async (event) => {
-      if (!node.deviceId || node.deviceId !== event.deviceId) {
-        return;
-      }
+    this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, async (event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       if (node.currentAttributes === undefined) {
         try {

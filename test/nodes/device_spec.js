@@ -69,7 +69,7 @@ describe('Hubitat Device Node', () => {
           done(err);
         }
       });
-      n0.hubitatEvent.emit('device', hubitatEvent);
+      n0.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
   it('should not send event when event received with wrong deviceId', (done) => {
@@ -92,7 +92,7 @@ describe('Hubitat Device Node', () => {
       n2.on('input', (msg) => {
         inError = true;
       });
-      n0.hubitatEvent.emit('device', hubitatEvent);
+      n0.hubitatEvent.emit('device.999', hubitatEvent);
       setTimeout(() => {
         if (inError) {
           done(new Error('device receive wrong event'));
