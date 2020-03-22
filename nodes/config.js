@@ -106,6 +106,28 @@ module.exports = function HubitatConfigModule(RED) {
       return device;
     };
 
+    node.getHsm = async () => {
+      const url = `${node.baseUrl}/hsm?access_token=${node.token}`;
+      const options = { method: 'GET' };
+      let hsm;
+      try {
+        await acquireLock();
+        const response = await fetch(url, options);
+        if (response.status >= 400) {
+          throw new Error(await response.text());
+        }
+        hsm = await response.json();
+      } catch (err) {
+        node.warn(`Unable to fetch hsm: ${err}`);
+        throw err;
+      } finally {
+        releaseLock();
+      }
+
+      node.debug(`hsm: ${JSON.stringify(hsm)}`);
+      return hsm;
+    };
+
     function eventDispatcher(event) {
       if (node.autoRefresh && event.name === 'systemStart') {
         node.log('Resynchronize all hubitat\'s nodes');
@@ -117,7 +139,9 @@ module.exports = function HubitatConfigModule(RED) {
       } else if (event.name === 'mode') {
         node.hubitatEvent.emit('mode', event);
       } else if (event.name.startsWith('hsm')) {
-        // pass
+        if ((content.name === 'hsmStatus') || (content.name === 'hsmAlert') || (content.name === 'hsmRules')) {
+          node.hubitatEvent.emit('hsm', req.body.content);
+        }
       } else if (event.deviceId === null) {
         // There are no specific condition to know if it's a location event
         // One of property seems to have a deviceId === null
