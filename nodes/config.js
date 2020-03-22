@@ -122,6 +122,10 @@ module.exports = function HubitatConfigModule(RED) {
           node.hubitatEvent.emit(`device.${content.deviceId}`, content);
         } else if (content.name === 'mode') {
           node.hubitatEvent.emit('mode', content);
+        // There are no specific condition to know if it's a location event
+        // One of property seems to have a deviceId === null
+        } else if (content.deviceId === null) {
+          node.hubitatEvent.emit('location', content);
         }
 
         res.sendStatus(204);
