@@ -95,7 +95,6 @@ module.exports = function HubitatHsmModule(RED) {
 
     initializeHsm().catch(() => {});
 
-
     node.on('input', async (msg, send, done) => {
       let { command } = node;
       if (msg.command !== undefined) {
@@ -103,7 +102,7 @@ module.exports = function HubitatHsmModule(RED) {
       }
       if (!command) {
         if (node.currentHsm === undefined) {
-          node.status({ fill: 'red', shape: 'ring', text: 'unitialized' });
+          node.status({ fill: 'red', shape: node.shape, text: 'unitialized' });
           done('unitialized');
         } else {
           const output = {
@@ -120,7 +119,7 @@ module.exports = function HubitatHsmModule(RED) {
       command = convertAlarmState(command);
 
       if (command === 'invalid') {
-        node.status({ fill: 'red', shape: 'ring', text: 'invalid command' });
+        node.status({ fill: 'red', shape: node.shape, text: 'invalid command' });
         done('invalid command');
         return;
       }
@@ -131,7 +130,7 @@ module.exports = function HubitatHsmModule(RED) {
       try {
         const response = await fetch(url, options);
         if (response.status >= 400) {
-          node.status({ fill: 'red', shape: 'ring', text: 'response error' });
+          node.status({ fill: 'red', shape: node.shape, text: 'response error' });
           done(await response.text());
           return;
         }
@@ -144,7 +143,7 @@ module.exports = function HubitatHsmModule(RED) {
         node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
         done();
       } catch (err) {
-        node.status({ fill: 'red', shape: 'ring', text: err.code });
+        node.status({ fill: 'red', shape: node.shape, text: err.code });
         done(err);
       }
     });
