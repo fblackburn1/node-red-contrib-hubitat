@@ -57,7 +57,7 @@ module.exports = function HubitatDeviceModule(RED) {
       });
     }
 
-    this.hubitat.hubitatEvent.on('device', (async (node, event) => {
+    this.hubitat.hubitatEvent.on('device', async (event) => {
       if (!node.deviceId || node.deviceId !== event.deviceId) {
         return;
       }
@@ -95,7 +95,7 @@ module.exports = function HubitatDeviceModule(RED) {
       if (!found) {
         node.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
       }
-    }).bind(null, this));
+    });
 
     initializeDevice().catch(() => {});
 
