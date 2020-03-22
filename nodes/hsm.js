@@ -1,8 +1,9 @@
 module.exports = function HubitatHsmModule(RED) {
   function HubitatHsmNode(config) {
+    // eslint-disable-next-line global-require
     const fetch = require('node-fetch');
     RED.nodes.createNode(this, config);
-    
+
     this.hubitat = RED.nodes.getNode(config.server);
     this.name = config.name;
     this.sendEvent = config.sendEvent;
@@ -32,10 +33,10 @@ module.exports = function HubitatHsmModule(RED) {
     this.hubitat.hubitatEvent.on('hsm', (async function (node, event) {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       if ((event.name === 'hsmAlert') && ((event.value === 'cancel') || (event.value === 'cancelRuleAlerts'))) {
-        let hsm = await node.hubitat.getHsm();
+        const hsm = await node.hubitat.getHsm();
         if (!hsm) { throw new Error(JSON.stringify(hsm)); }
-        node.currentHsm = hsm.hsm; 
-        //Alarm gets cancelled
+        node.currentHsm = hsm.hsm;
+        // Alarm gets cancelled
       } else if (event.name === 'hsmAlert') {
         node.currentHsm = event.value;
       } else if (event.name === 'hsmStatus') {
@@ -60,7 +61,7 @@ module.exports = function HubitatHsmModule(RED) {
     }).bind(null, this));
 
     initializeHsm().catch(() => {});
-    
+
     function convertAlarmState(value) {
       switch (value) {
         case 'stay':
@@ -69,37 +70,38 @@ module.exports = function HubitatHsmModule(RED) {
         case 'armhome':
         case 'armedhome':
         case 0:
-            return 'armHome';
+          return 'armHome';
         case 'away':
         case 'armaway':
         case 'armAway':
         case 'armedaway':
         case 'armedAway':
         case 1:
-            return 'armAway';
+          return 'armAway';
         case 'night':
         case 'armnight':
         case 'armNight':
         case 'armednight':
         case 'armedNight':
         case 2:
-            return 'armNight';
+          return 'armNight';
         case 'off':
         case 'disarm':
         case 'disarmed':
         case 'allDisarmed':
         case 'alldisarmed':
         case 3:
-            return 'disarm';
+          return 'disarm';
+        default:
+          return 'invalid';
       }
-      return 'invalid';      
     }
 
     node.on('input', async (msg, send, done) => {
-
       let { command } = node;
-      if (msg.command !== undefined)
+      if (msg.command !== undefined) {
         command = msg.command;
+      }
       if (!command) {
         if (node.currentHsm === undefined) {
           node.status({ fill: 'red', shape: 'ring', text: 'unitialized' });
@@ -136,11 +138,11 @@ module.exports = function HubitatHsmModule(RED) {
         }
         node.currentHsm = output.response.hsm;
         const output = {
-            ...msg,
-            payload: { name: 'hsmStatus', value: node.currentHsm },
-          };
+          ...msg,
+          payload: { name: 'hsmStatus', value: node.currentHsm },
+        };
         send(output);
-        node.status({fill: 'blue', shape: node.shape, text: node.currentHsm});
+        node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
         done();
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
