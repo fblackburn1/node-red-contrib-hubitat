@@ -6,7 +6,6 @@ module.exports = function HubitatModeModule(RED) {
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
-    this.deviceId = 0; // fake the deviceId to be able to register on callback
 
     const node = this;
 
@@ -26,29 +25,26 @@ module.exports = function HubitatModeModule(RED) {
         throw err;
       });
     }
-
-    const callback = function callback(event) {
+    this.hubitat.hubitatEvent.on('mode', async (event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
-      this.currentMode = event.value;
-      node.log(`Mode: ${this.currentMode}`);
+      node.currentMode = event.value;
+      node.log(`Mode: ${node.currentMode}`);
 
-      if (this.sendEvent) {
+      if (node.sendEvent) {
         const msg = {
           payload: {
             name: 'mode',
-            value: this.currentMode,
+            value: node.currentMode,
             displayName: event.displayName,
             descriptionText: event.descriptionText,
           },
           topic: 'hubitat-mode',
         };
-        this.send(msg);
+        node.send(msg);
       }
 
-      this.status({ fill: 'blue', shape: 'dot', text: this.currentMode });
-    };
-
-    node.hubitat.registerCallback(node, node.deviceId, callback);
+      node.status({ fill: 'blue', shape: 'dot', text: node.currentMode });
+    });
 
     initializeMode().catch(() => {});
 
@@ -73,7 +69,6 @@ module.exports = function HubitatModeModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      node.hubitat.unregisterCallback(node, callback);
     });
   }
 

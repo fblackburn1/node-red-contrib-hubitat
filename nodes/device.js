@@ -57,9 +57,9 @@ module.exports = function HubitatDeviceModule(RED) {
       });
     }
 
-    const callback = async function callback(event) {
+    this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, async (event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
-      if (this.currentAttributes === undefined) {
+      if (node.currentAttributes === undefined) {
         try {
           await initializeDevice();
         } catch (err) {
@@ -68,33 +68,31 @@ module.exports = function HubitatDeviceModule(RED) {
       }
 
       let found = false;
-      this.currentAttributes.forEach((attribute) => {
+      node.currentAttributes.forEach((attribute) => {
         if (event.name === attribute.name) {
           attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-          attribute.deviceId = this.deviceId;
+          attribute.deviceId = node.deviceId;
           attribute.currentValue = attribute.value; // deprecated since 0.0.18
 
-          if ((this.attribute === event.name) || (!this.attribute)) {
-            if (this.attribute) {
-              this.status({ fill: 'blue', shape: 'dot', text: `${this.attribute}: ${attribute.value}` });
+          if ((node.attribute === event.name) || (!node.attribute)) {
+            if (node.attribute) {
+              node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
               node.log(`${node.attribute}: ${attribute.value}`);
             } else {
-              this.status({});
+              node.status({});
               node.log('Attributes refreshed');
             }
-            if (this.sendEvent) {
-              this.send({ payload: attribute, topic: this.name });
+            if (node.sendEvent) {
+              node.send({ payload: attribute, topic: node.name });
             }
           }
           found = true;
         }
       });
-
       if (!found) {
-        this.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
+        node.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
       }
-    };
-    node.hubitat.registerCallback(node, node.deviceId, callback);
+    });
 
     initializeDevice().catch(() => {});
 
@@ -135,7 +133,6 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      node.hubitat.unregisterCallback(node, node.deviceId, callback);
     });
   }
 

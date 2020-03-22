@@ -4,6 +4,7 @@ module.exports = function HubitatConfigModule(RED) {
   const fetch = require('node-fetch');
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
+  const events = require('events');
 
   const nodes = {};
   let requestPool = 4; // 4 simultaneous requests seem to never cause issue
@@ -37,7 +38,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.appId = config.appId;
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
-    this.callbacks = [];
+    this.hubitatEvent = new events.EventEmitter();
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -96,23 +97,6 @@ module.exports = function HubitatConfigModule(RED) {
       return device;
     };
 
-    node.unregisterCallback = (parent, deviceId, callback) => {
-      if (node.callbacks[deviceId]) {
-        node.callbacks[deviceId] = node.callbacks[deviceId].filter((c) => c.callback !== callback);
-        if (node.callbacks[deviceId].length === 0) {
-          delete node.callbacks[deviceId];
-        }
-      }
-    };
-
-    node.registerCallback = (parent, deviceId, callback) => {
-      if (!(deviceId in node.callbacks)) {
-        node.callbacks[deviceId] = [];
-      }
-
-      node.callbacks[deviceId].push({ parent, callback });
-    };
-
     nodes[node.baseUrl] = node;
 
     if (RED.settings.httpNodeRoot !== false) {
@@ -133,18 +117,13 @@ module.exports = function HubitatConfigModule(RED) {
           return;
         }
 
-        let callback;
-        if (req.body.content.deviceId != null) {
-          callback = node.callbacks[req.body.content.deviceId];
-        } else if (req.body.content.name === 'mode') {
-          [callback] = node.callbacks;
+        const { content } = req.body;
+        if (content.deviceId != null) {
+          node.hubitatEvent.emit(`device.${content.deviceId}`, content);
+        } else if (content.name === 'mode') {
+          node.hubitatEvent.emit('mode', content);
         }
 
-        if (callback) {
-          callback.forEach((c) => {
-            c.callback.call(c.parent, req.body.content);
-          });
-        }
         res.sendStatus(204);
       };
 
