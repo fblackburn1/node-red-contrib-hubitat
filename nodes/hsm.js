@@ -1,4 +1,37 @@
 module.exports = function HubitatHsmModule(RED) {
+  // All possible HE event values: https://github.com/fblackburn1/node-red-contrib-hubitat/pull/9#issuecomment-602258248
+  // Conveniant to pass the event value directly in the message property
+  function convertAlarmState(value) {
+    switch (value) {
+      case 'stay':
+      case 'armHome':
+      case 'armedHome':
+      case 'armhome':
+      case 'armedhome':
+        return 'armHome';
+      case 'away':
+      case 'armaway':
+      case 'armAway':
+      case 'armedaway':
+      case 'armedAway':
+        return 'armAway';
+      case 'night':
+      case 'armnight':
+      case 'armNight':
+      case 'armednight':
+      case 'armedNight':
+        return 'armNight';
+      case 'off':
+      case 'disarm':
+      case 'disarmed':
+      case 'allDisarmed':
+      case 'alldisarmed':
+        return 'disarm';
+      default:
+        return 'invalid';
+    }
+  }
+
   function HubitatHsmNode(config) {
     // eslint-disable-next-line global-require
     const fetch = require('node-fetch');
@@ -62,40 +95,6 @@ module.exports = function HubitatHsmModule(RED) {
 
     initializeHsm().catch(() => {});
 
-    function convertAlarmState(value) {
-      switch (value) {
-        case 'stay':
-        case 'armHome':
-        case 'armedHome':
-        case 'armhome':
-        case 'armedhome':
-        case 0:
-          return 'armHome';
-        case 'away':
-        case 'armaway':
-        case 'armAway':
-        case 'armedaway':
-        case 'armedAway':
-        case 1:
-          return 'armAway';
-        case 'night':
-        case 'armnight':
-        case 'armNight':
-        case 'armednight':
-        case 'armedNight':
-        case 2:
-          return 'armNight';
-        case 'off':
-        case 'disarm':
-        case 'disarmed':
-        case 'allDisarmed':
-        case 'alldisarmed':
-        case 3:
-          return 'disarm';
-        default:
-          return 'invalid';
-      }
-    }
 
     node.on('input', async (msg, send, done) => {
       let { command } = node;
