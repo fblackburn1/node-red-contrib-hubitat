@@ -25,7 +25,7 @@ module.exports = function HubitatDeviceModule(RED) {
     this.sendEvent = config.sendEvent;
     this.attribute = config.attribute;
     this.currentAttributes = undefined;
-
+    this.shape = this.sendEvent ? 'dot' : 'ring';
     const node = this;
 
     if (!node.hubitat) {
@@ -40,7 +40,7 @@ module.exports = function HubitatDeviceModule(RED) {
           attribute.value = attribute.currentValue;
           // delete attribute.currentValue;  // kept for compatibility
           if (node.attribute === attribute.name) {
-            node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
+            node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${attribute.value}` });
             node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
           }
         });
@@ -52,7 +52,7 @@ module.exports = function HubitatDeviceModule(RED) {
         }
       }).catch((err) => {
         node.warn(`Unable to initialize device: ${err.message}`);
-        node.status({ fill: 'red', shape: 'dot', text: 'Uninitialized' });
+        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
         throw err;
       });
     }
@@ -73,10 +73,9 @@ module.exports = function HubitatDeviceModule(RED) {
           attribute.value = castHubitatValue(node, attribute.dataType, event.value);
           attribute.deviceId = node.deviceId;
           attribute.currentValue = attribute.value; // deprecated since 0.0.18
-
           if ((node.attribute === event.name) || (!node.attribute)) {
             if (node.attribute) {
-              node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${attribute.value}` });
+              node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${attribute.value}` });
               node.log(`${node.attribute}: ${attribute.value}`);
             } else {
               node.status({});
@@ -90,7 +89,7 @@ module.exports = function HubitatDeviceModule(RED) {
         }
       });
       if (!found) {
-        node.status({ fill: 'red', shape: 'dot', text: `Unknown event: ${event.name}` });
+        node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
       }
     });
 
@@ -108,7 +107,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const attributeSearched = msg.attribute || node.attribute;
       if (attributeSearched === undefined) {
-        node.status({ fill: 'red', shape: 'dot', text: 'Undefined attribute' });
+        node.status({ fill: 'red', shape: node.shape, text: 'Undefined attribute' });
         return;
       }
       let foundAttribute;
@@ -122,11 +121,11 @@ module.exports = function HubitatDeviceModule(RED) {
         }
       });
       if (foundAttribute === undefined) {
-        node.status({ fill: 'red', shape: 'dot', text: `Invalid attribute: ${attributeSearched}` });
+        node.status({ fill: 'red', shape: node.shape, text: `Invalid attribute: ${attributeSearched}` });
       } else if (!node.attribute) {
         node.status({});
       } else if (node.attribute === foundAttribute.name) {
-        node.status({ fill: 'blue', shape: 'dot', text: `${node.attribute}: ${foundAttribute.value}` });
+        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${foundAttribute.value}` });
       }
       done();
     });
