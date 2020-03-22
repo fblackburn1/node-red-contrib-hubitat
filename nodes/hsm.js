@@ -42,7 +42,7 @@ module.exports = function HubitatHsmModule(RED) {
       } else if (event.name === 'hsmStatus') {
         node.currentHsm = event.value;
       }
-      node.log(`HSM: ${this.currentHsm}`);
+      node.log(`HSM: ${node.currentHsm}`);
 
       if (node.sendEvent) {
         const msg = {
@@ -57,7 +57,7 @@ module.exports = function HubitatHsmModule(RED) {
         node.send(msg);
       }
 
-      node.status({ fill: 'blue', shape: node.shape, text: this.currentHsm });
+      node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
     }).bind(null, this));
 
     initializeHsm().catch(() => {});
