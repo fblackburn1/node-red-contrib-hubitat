@@ -19,7 +19,6 @@ describe('Hubitat Location Node', () => {
     type: 'hubitat location',
     name: 'test location name',
     server: 'n0',
-    sendEvent: true,
   };
 
   afterEach(() => {

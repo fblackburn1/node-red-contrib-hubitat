@@ -139,8 +139,8 @@ module.exports = function HubitatConfigModule(RED) {
       } else if (event.name === 'mode') {
         node.hubitatEvent.emit('mode', event);
       } else if (event.name.startsWith('hsm')) {
-        if ((content.name === 'hsmStatus') || (content.name === 'hsmAlert') || (content.name === 'hsmRules')) {
-          node.hubitatEvent.emit('hsm', req.body.content);
+        if (['hsmStatus', 'hsmAlert', 'hsmRules'].includes(event.name)) {
+          node.hubitatEvent.emit('hsm', event);
         }
       } else if (event.deviceId === null) {
         // There are no specific condition to know if it's a location event
