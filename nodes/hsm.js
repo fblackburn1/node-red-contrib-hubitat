@@ -152,7 +152,6 @@ module.exports = function HubitatHsmModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      node.hubitat.unregisterCallback(node, callback);
     });
   }
 
