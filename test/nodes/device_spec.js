@@ -107,4 +107,28 @@ describe('Hubitat Device Node', () => {
       }, 20);
     });
   });
+  it('should use dot shape icon when send event', (done) => {
+    const flow = [{ ...defaultDeviceNode, sendEvent: true }];
+    helper.load(deviceNode, flow, () => {
+      const n1 = helper.getNode('n1');
+      try {
+        n1.should.have.property('shape', 'dot');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should use ring shape icon when send event', (done) => {
+    const flow = [{ ...defaultDeviceNode, sendEvent: false }];
+    helper.load(deviceNode, flow, () => {
+      const n1 = helper.getNode('n1');
+      try {
+        n1.should.have.property('shape', 'ring');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
 });

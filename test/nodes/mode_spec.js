@@ -68,4 +68,28 @@ describe('Hubitat Mode Node', () => {
       n0.hubitatEvent.emit('mode', hubitatEvent);
     });
   });
+  it('should use dot shape icon when send event', (done) => {
+    const flow = [{ ...defaultModeNode, sendEvent: true }];
+    helper.load(modeNode, flow, () => {
+      const n1 = helper.getNode('n1');
+      try {
+        n1.should.have.property('shape', 'dot');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should use ring shape icon when send event', (done) => {
+    const flow = [{ ...defaultModeNode, sendEvent: false }];
+    helper.load(modeNode, flow, () => {
+      const n1 = helper.getNode('n1');
+      try {
+        n1.should.have.property('shape', 'ring');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
 });
