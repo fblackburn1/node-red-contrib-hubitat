@@ -145,7 +145,7 @@ describe('Hubitat Device Node', () => {
         try {
           // eslint-disable-next-line no-param-reassign
           msg.payload.value = 'update value in another node';
-          n1.currentAttributes.should.containEql({ name: 'testAttribute', value: 'value', deviceId: '42' });
+          n1.currentAttributes.should.containEql({ name: 'testAttribute', value: 'value' });
           done();
         } catch (err) {
           done(err);
