@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.27
+
+* add new `location` node to receive global location events
+* use different status icon shapes when `sendEvent` is enabled or not
+* refactor event system to use `events` library from nodejs
+
 ## 0.0.26
 
 * `command` node: fix regression that ignore arguments from message
