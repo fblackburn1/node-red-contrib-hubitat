@@ -131,4 +131,27 @@ describe('Hubitat Device Node', () => {
       }
     });
   });
+  it('should not link the internal properties to the output message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: 'value' }];
+      n2.on('input', (msg) => {
+        try {
+          // eslint-disable-next-line no-param-reassign
+          msg.payload.value = 'update value in another node';
+          n1.currentAttributes.should.containEql({ name: 'testAttribute', value: 'value', deviceId: '42' });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
 });

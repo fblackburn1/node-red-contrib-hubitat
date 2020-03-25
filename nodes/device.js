@@ -113,7 +113,7 @@ module.exports = function HubitatDeviceModule(RED) {
       let foundAttribute;
       node.currentAttributes.forEach((attribute) => {
         if (attributeSearched === attribute.name) {
-          msg.payload = attribute;
+          msg.payload = { ...attribute };
           msg.payload.deviceId = node.deviceId;
           msg.topic = node.name;
           send(msg);
