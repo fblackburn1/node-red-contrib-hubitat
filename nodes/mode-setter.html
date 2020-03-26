@@ -1,0 +1,96 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat mode-setter',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      modeId: { value: '' },
+    },
+    inputs:1,
+    outputs:1,
+    align: 'right',
+    icon: 'icons/mode.png',
+    label: function() {
+        return this.name || 'set mode';
+    },
+    paletteLabel: 'set mode',
+    oneditprepare: function() {
+      $('document').ready(() => {
+        $('#node-input-server').change(() => {
+          const serverId = $('#node-input-server option:selected').val();
+          server = RED.nodes.node(serverId);
+          if (server) {
+            listHubitatModes(server, this.modeId);
+          } else {
+            cleanHubitatModes();
+          }
+        });
+      });
+    },
+  });
+
+  function listHubitatModes(server, modeId) {
+    $('#node-input-modeId').find('option').remove().end();
+    const selectMenu = $('#node-input-modeId');
+    const option = $('<option>', { value: '', text: 'Choose mode...' });
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.token,
+    };
+
+    $.getJSON(`hubitat/modes`, params, (res) => {
+      res.map(item => {
+        const selected = modeId == item.id;
+        const option = $('<option>', { value: item.id, text: item.name });
+        selectMenu.append(option);
+        if (selected) { selectMenu.val(item.id).trigger('change'); }
+      });
+    })
+    .error(cleanHubitatModes());
+  }
+
+  function cleanHubitatModes() {
+    const selectMenu = $('#node-input-modeId');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'Choose mode...' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+  }
+
+</script>
+
+<script type="text/html" data-template-name="hubitat mode-setter">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-modeId"><i class="fa fa-moon-o"></i> Mode</label>
+    <select id="node-input-modeId"></select>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat mode-setter">
+  <p>A node to set Hubitat's mode.</p>
+
+  <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt class="optional">modeId <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the mode set.</dd>
+    </dl>
+
+  <h3>Output</h3>
+    The same message as the input.
+
+  <h3>Details</h3>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>

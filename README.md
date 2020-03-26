@@ -17,7 +17,7 @@ This package contains three nodes:
   * `device`: To keep a device state. It fetch the device state when deployed, then listen for
     webhook events.
   * `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode when deployed, then listen for
-    webhook events
+  * `mode-setter`: To set the Hubitat mode (Day, Night, ...)
   * `location`: To receive global location events (ex: systemStart, sunrise, sunset)
 
   * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat

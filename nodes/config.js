@@ -270,4 +270,34 @@ module.exports = function HubitatConfigModule(RED) {
       res.sendStatus(400);
     }
   });
+
+  RED.httpAdmin.get('/hubitat/modes', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
+    if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
+      console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token)`);
+      res.sendStatus(404);
+      return;
+    }
+    const scheme = ((req.query.usetls === 'true') ? 'https' : 'http');
+    const baseUrl = `${scheme}://${req.query.host}:${req.query.port}/apps/api/${req.query.appId}`;
+    const options = { method: 'GET' };
+    let url = `${baseUrl}/modes`;
+    console.log(`GET ${url}`);
+    url = `${url}?access_token=${req.query.token}`;
+
+    let modes;
+    try {
+      const response = await fetch(url, options);
+      if (response.status >= 400) {
+        throw new Error(await response.text());
+      }
+      modes = await response.json();
+    } catch (err) {
+      console.log(`ERROR ${req.path}: ${err}`);
+      res.sendStatus(400);
+      return;
+    }
+
+    modes.sort((first, second) => first.name.localeCompare(second.name));
+    res.json(modes);
+  });
 };
