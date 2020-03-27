@@ -12,6 +12,11 @@ module.exports = function HubitatCommandModule(RED) {
 
     const node = this;
 
+    if (!node.hubitat) {
+      node.error('Hubitat server not configured');
+      return;
+    }
+
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 

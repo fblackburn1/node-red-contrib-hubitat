@@ -39,6 +39,7 @@ describe('Hubitat Command Node', () => {
   }
 
   before((done) => {
+    testApp.get('/apps/api/1/devices/:deviceId/errorCommand', (req, res) => { res.sendStatus(500); });
     testApp.get('/apps/api/1/devices/:deviceId/:command/:arguments', (req, res) => { res.json(req.params); });
     testApp.get('/apps/api/1/devices/:deviceId/:command', (req, res) => { res.json(req.params); });
     startServer((err) => {
@@ -72,6 +73,57 @@ describe('Hubitat Command Node', () => {
       } catch (err) {
         done(err);
       }
+    });
+  });
+  it('should not send msg when server is not configured', (done) => {
+    const flow = [
+      { ...defaultCommandNode, server: '', wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load(commandNode, flow, () => {
+      const n2 = helper.getNode('n2');
+      const n1 = helper.getNode('n1');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({});
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no server allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
+
+  it('should not send msg when server return error', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        command: 'errorCommand',
+        commandArgs: '',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n2 = helper.getNode('n2');
+      const n1 = helper.getNode('n1');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive();
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('server error allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
     });
   });
 
