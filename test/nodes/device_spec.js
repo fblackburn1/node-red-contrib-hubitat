@@ -57,7 +57,6 @@ describe('Hubitat Device Node', () => {
       value: 'new-value',
     };
     helper.load([deviceNode, configNode], flow, () => {
-      const n0 = helper.getNode('n0');
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
@@ -69,7 +68,7 @@ describe('Hubitat Device Node', () => {
           done(err);
         }
       });
-      n0.hubitatEvent.emit('device.42', hubitatEvent);
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
   it('should not send event when event received with wrong deviceId', (done) => {
@@ -84,7 +83,6 @@ describe('Hubitat Device Node', () => {
       value: 'new-value',
     };
     helper.load([deviceNode, configNode], flow, () => {
-      const n0 = helper.getNode('n0');
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
@@ -92,7 +90,7 @@ describe('Hubitat Device Node', () => {
       n2.on('input', (msg) => {
         inError = true;
       });
-      n0.hubitatEvent.emit('device.999', hubitatEvent);
+      n1.hubitat.hubitatEvent.emit('device.999', hubitatEvent);
       setTimeout(() => {
         if (inError) {
           done(new Error('device receive wrong event'));
@@ -152,6 +150,94 @@ describe('Hubitat Device Node', () => {
         }
       });
       n1.receive({});
+    });
+  });
+  it('should cast event dataType NUMBER to integer', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: '-2.5' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: 1, dataType: 'NUMBER' }];
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', -2.5);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
+  it('should cast event dataType BOOL to boolean', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: 'true' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: false, dataType: 'BOOL' }];
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', true);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
+  it('should cast event dataType VECTOR3 to object', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: '[x:2,y:-4,z:1.5]' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: { x: -9, y: 1, z: -2 }, dataType: 'VECTOR3' }];
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', { x: 2, y: -4, z: 1.5 });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
+  it('should cast event dataType UNDEFINED to string', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: 'string' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: 'undefined', dataType: 'UNDEFINED' }];
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', 'string');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
 });

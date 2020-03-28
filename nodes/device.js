@@ -1,6 +1,10 @@
 /* eslint-disable no-param-reassign */
 module.exports = function HubitatDeviceModule(RED) {
   function castHubitatValue(node, dataType, value) {
+    function defaultAction() {
+      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${JSON.stringify(value)}`);
+      return value;
+    }
     switch (dataType) {
       case 'STRING':
         return value;
@@ -10,9 +14,21 @@ module.exports = function HubitatDeviceModule(RED) {
         return parseFloat(value);
       case 'BOOL':
         return value === 'true';
+      case 'VECTOR3': {
+        const vector3Regexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
+        const match = value.match(vector3Regexp);
+        if (!match) {
+          return defaultAction();
+        }
+        const result = {};
+        for (let i = 1; i < 4; i += 1) {
+          const [axis, point] = match[i].split(':', 2);
+          result[axis] = parseFloat(point);
+        }
+        return result;
+      }
       default:
-        node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${JSON.stringify(value)}`);
-        return value;
+        return defaultAction();
     }
   }
 
