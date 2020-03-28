@@ -65,10 +65,6 @@ module.exports = function HubitatModeModule(RED) {
       send(output);
       done();
     });
-
-    node.on('close', () => {
-      node.debug('Closed');
-    });
   }
 
   RED.nodes.registerType('hubitat mode', HubitatModeNode);

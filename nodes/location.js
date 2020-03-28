@@ -27,10 +27,6 @@ module.exports = function HubitatLocationModule(RED) {
       };
       node.send(msg);
     });
-
-    node.on('close', () => {
-      node.debug('Closed');
-    });
   }
 
   RED.nodes.registerType('hubitat location', HubitatLocationNode);

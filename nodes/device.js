@@ -145,10 +145,6 @@ module.exports = function HubitatDeviceModule(RED) {
       }
       done();
     });
-
-    node.on('close', () => {
-      node.debug('Closed');
-    });
   }
 
   RED.nodes.registerType('hubitat device', HubitatDeviceNode);
