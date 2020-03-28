@@ -12,10 +12,10 @@
   "dependencies": {
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
+    "events": "^3.0.0",
     "node-fetch": "^2.6.0",
     "node-red": "^1.0.4",
     "should": "^13.2.3",
-    "events": "^3.0.0",
     "sinon": "^1.17.7"
   },
   "keywords": [
@@ -36,6 +36,10 @@
     }
   },
   "devDependencies": {
+    "@types/body-parser": "^1.19.0",
+    "@types/cookie-parser": "^1.4.2",
+    "@types/events": "^3.0.0",
+    "@types/node-fetch": "^2.5.5",
     "eslint": "^6.8.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-import": "^2.20.1",
