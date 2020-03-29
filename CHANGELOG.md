@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.28
+
+* add new `mode-setter` node to set mode
+* add support for `VECTOR3` and `JSON_OBJECT` dataType
+* fix disabled input argument when device has duplicate commands available (with and without argument)
+
 ## 0.0.27
 
 * add new `location` node to receive global location events
