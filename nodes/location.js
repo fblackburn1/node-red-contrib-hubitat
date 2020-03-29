@@ -13,7 +13,7 @@ module.exports = function HubitatLocationModule(RED) {
     }
 
     this.hubitat.hubitatEvent.on('location', async (event) => {
-      node.debug(`Callback called: ${JSON.stringify(event)}`);
+      node.debug(`Event received: ${JSON.stringify(event)}`);
       node.log(`Location Event: ${event.name}`);
 
       const msg = {

@@ -26,7 +26,7 @@ module.exports = function HubitatModeModule(RED) {
       });
     }
     this.hubitat.hubitatEvent.on('mode', async (event) => {
-      node.debug(`Callback called: ${JSON.stringify(event)}`);
+      node.debug(`Event received: ${JSON.stringify(event)}`);
       node.currentMode = event.value;
       node.log(`Mode: ${node.currentMode}`);
 
