@@ -7,8 +7,8 @@ module.exports = function HubitatDeviceModule(RED) {
     }
     switch (dataType) {
       case 'STRING':
-        return value;
       case 'ENUM':
+      case 'JSON_OBJECT': // Maker API always return it as String
         return value;
       case 'NUMBER':
         return parseFloat(value);
