@@ -2,7 +2,7 @@
 module.exports = function HubitatDeviceModule(RED) {
   function castHubitatValue(node, dataType, value) {
     function defaultAction() {
-      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${JSON.stringify(value)}`);
+      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
       return value;
     }
     switch (dataType) {
