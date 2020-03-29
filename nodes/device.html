@@ -59,7 +59,6 @@
       token: server.token,
     };
 
-
     $.getJSON(`hubitat/devices`, params, (res) => {
       res.map(item => {
         const selected = deviceId == item.id;
@@ -82,22 +81,23 @@
       appId: server.appId,
       token: server.token,
     };
-    let attributes = []
 
     $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
-      res.attributes.map(item => {
-        const selected = attribute == item.name;
-        const option = $('<option>', {
+      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
+        if (!(value.name in accumulator)) {
+          accumulator[value.name] = value;
+        }
+        return accumulator;
+      }, {})
+      Object.values(uniqueAttrs).map(item => {
+        selectMenu.append($('<option>', {
           value: item.name,
           text: item.name,
-        });
-        // Avoid list duplicate attribute returned by Hubitat API
-        if (!attributes.includes(item.name)) {
-          selectMenu.append(option);
-          attributes.push(item.name);
-          if (selected) { selectMenu.val(item.name).trigger('change'); }
-        }
+        }));
       });
+      if (attribute in uniqueAttrs) {
+        selectMenu.val(attribute).trigger('change');
+      }
     });
   }
   function cleanHubitatDevicesForDeviceNode() {

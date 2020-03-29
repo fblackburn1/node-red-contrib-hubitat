@@ -95,23 +95,24 @@
       appId: server.appId,
       token: server.token,
     };
-    let commands = []
 
     $.getJSON(`hubitat/devices/${deviceId}/commands`, params, (res) => {
-      res.map(item => {
-        const selected = command == item.command;
-        const option = $('<option>', {
+      const uniqueCommands = res.reduce((accumulator, value) => {
+        if (!(value.command in accumulator) || (value.type.length && value.type[0] !== 'n/a')) {
+          accumulator[value.command] = value;
+        }
+        return accumulator;
+      }, {})
+      Object.values(uniqueCommands).map(item => {
+        selectMenu.append($('<option>', {
           value: item.command,
           text: item.command,
           args_placeholder: item.type.join(','),
-        });
-        // Avoid list duplicate command returned by Hubitat API
-        if (!commands.includes(item.command)) {
-          selectMenu.append(option);
-          commands.push(item.command);
-          if (selected) { selectMenu.val(item.command).trigger('change'); }
-        }
+        }));
       });
+      if (command in uniqueCommands) {
+        selectMenu.val(command).trigger('change');
+      }
     });
   }
 
