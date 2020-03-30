@@ -59,7 +59,6 @@ module.exports = function HubitatModeSetterModule(RED) {
       }
 
       const state = convertAlarmState(rawState);
-      console.log(rawState);
       if (state === 'invalid') {
         node.status({ fill: 'red', shape: node.shape, text: 'invalid state' });
         done('invalid state');
