@@ -12,7 +12,7 @@ module.exports = function HubitatLocationModule(RED) {
       return;
     }
 
-    this.hubitat.hubitatEvent.on('location', async (event) => {
+    const callback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
       node.log(`Location Event: ${event.name}`);
 
@@ -26,6 +26,12 @@ module.exports = function HubitatLocationModule(RED) {
         topic: 'hubitat-location',
       };
       node.send(msg);
+    };
+    this.hubitat.hubitatEvent.on('location', callback);
+
+    node.on('close', () => {
+      node.debug('Closed');
+      this.hubitat.hubitatEvent.removeListener('location', callback);
     });
   }
 

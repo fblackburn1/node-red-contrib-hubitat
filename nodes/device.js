@@ -73,7 +73,7 @@ module.exports = function HubitatDeviceModule(RED) {
       });
     }
 
-    this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, async (event) => {
+    const callback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
       if (node.currentAttributes === undefined) {
         try {
@@ -107,7 +107,8 @@ module.exports = function HubitatDeviceModule(RED) {
       if (!found) {
         node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
       }
-    });
+    };
+    this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, callback);
 
     initializeDevice().catch(() => {});
 
@@ -144,6 +145,10 @@ module.exports = function HubitatDeviceModule(RED) {
         node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${foundAttribute.value}` });
       }
       done();
+    });
+    node.on('close', () => {
+      node.debug('Closed');
+      this.hubitat.hubitatEvent.removeListener(`device.${node.deviceId}`, callback);
     });
   }
 
