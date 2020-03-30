@@ -56,7 +56,7 @@ module.exports = function HubitatDeviceModule(RED) {
           attribute.value = attribute.currentValue;
           // delete attribute.currentValue;  // kept for compatibility
           if (node.attribute === attribute.name) {
-            node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${attribute.value}` });
+            node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
             node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
           }
         });
@@ -91,7 +91,7 @@ module.exports = function HubitatDeviceModule(RED) {
           attribute.currentValue = attribute.value; // deprecated since 0.0.18
           if ((node.attribute === event.name) || (!node.attribute)) {
             if (node.attribute) {
-              node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${attribute.value}` });
+              node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
               node.log(`${node.attribute}: ${attribute.value}`);
             } else {
               node.status({});
