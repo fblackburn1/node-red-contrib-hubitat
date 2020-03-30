@@ -6,9 +6,10 @@ module.exports = function HubitatConfigModule(RED) {
   const cookieParser = require('cookie-parser');
   const events = require('events');
 
+  const MAXLISTERNERS = 500;
+  const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
   const nodes = {};
-  let requestPool = 4; // 4 simultaneous requests seem to never cause issue
-
+  let requestPool = MAXSIMULTANEOUSREQUESTS;
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
@@ -39,6 +40,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.hubitatEvent = new events.EventEmitter();
+    this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
