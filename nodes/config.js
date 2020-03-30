@@ -8,7 +8,7 @@ module.exports = function HubitatConfigModule(RED) {
 
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
-  const nodes = {};
+
   let requestPool = MAXSIMULTANEOUSREQUESTS;
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -98,8 +98,6 @@ module.exports = function HubitatConfigModule(RED) {
       node.debug(`device: ${JSON.stringify(device)}`);
       return device;
     };
-
-    nodes[node.baseUrl] = node;
 
     if (RED.settings.httpNodeRoot !== false) {
       if (!this.webhookPath) {
