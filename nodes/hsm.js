@@ -1,47 +1,11 @@
 module.exports = function HubitatHsmModule(RED) {
-  // All possible HE event values: https://github.com/fblackburn1/node-red-contrib-hubitat/pull/9#issuecomment-602258248
-  // Conveniant to pass the event value directly in the message property
-  function convertAlarmState(value) {
-    switch (value) {
-      case 'stay':
-      case 'armHome':
-      case 'armedHome':
-      case 'armhome':
-      case 'armedhome':
-        return 'armHome';
-      case 'away':
-      case 'armaway':
-      case 'armAway':
-      case 'armedaway':
-      case 'armedAway':
-        return 'armAway';
-      case 'night':
-      case 'armnight':
-      case 'armNight':
-      case 'armednight':
-      case 'armedNight':
-        return 'armNight';
-      case 'off':
-      case 'disarm':
-      case 'disarmed':
-      case 'allDisarmed':
-      case 'alldisarmed':
-        return 'disarm';
-      default:
-        return 'invalid';
-    }
-  }
-
   function HubitatHsmNode(config) {
-    // eslint-disable-next-line global-require
-    const fetch = require('node-fetch');
     RED.nodes.createNode(this, config);
 
     this.hubitat = RED.nodes.getNode(config.server);
     this.name = config.name;
     this.sendEvent = config.sendEvent;
     this.currentHsm = undefined;
-    this.command = config.command;
     this.shape = this.sendEvent ? 'dot' : 'ring';
 
     const node = this;
@@ -89,63 +53,28 @@ module.exports = function HubitatHsmModule(RED) {
         };
         node.send(msg);
       }
-
       node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
     });
 
     initializeHsm().catch(() => {});
 
     node.on('input', async (msg, send, done) => {
-      let { command } = node;
-      if (msg.command !== undefined) {
-        command = msg.command;
-      }
-      if (!command) {
-        if (node.currentHsm === undefined) {
-          node.status({ fill: 'red', shape: node.shape, text: 'unitialized' });
-          done('unitialized');
-        } else {
-          const output = {
-            ...msg,
-            payload: { name: 'hsmStatus', value: node.currentHsm },
-          };
-          send(output);
-          node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
-          done();
-        }
-        return;
-      }
-      node.status({ fill: 'blue', shape: node.shape, text: 'requesting' });
-      command = convertAlarmState(command);
-
-      if (command === 'invalid') {
-        node.status({ fill: 'red', shape: node.shape, text: 'invalid command' });
-        done('invalid command');
-        return;
-      }
-
-      const url = `${node.hubitat.baseUrl}/hsm/${command}?access_token=${node.hubitat.token}`;
-      const options = { method: 'GET' };
-
-      try {
-        const response = await fetch(url, options);
-        if (response.status >= 400) {
-          node.status({ fill: 'red', shape: node.shape, text: 'response error' });
-          done(await response.text());
+      node.debug('Input received');
+      if (node.currentHsm === undefined) {
+        try {
+          await initializeHsm();
+        } catch (err) {
           return;
         }
-        node.currentHsm = output.response.hsm;
-        const output = {
-          ...msg,
-          payload: { name: 'hsmStatus', value: node.currentHsm },
-        };
-        send(output);
-        node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
-        done();
-      } catch (err) {
-        node.status({ fill: 'red', shape: node.shape, text: err.code });
-        done(err);
       }
+
+      const output = {
+        ...msg,
+        payload: { name: 'hsmStatus', value: node.currentHsm },
+        topic: 'hubitat-hsm',
+      };
+      send(output);
+      done();
     });
 
     node.on('close', () => {

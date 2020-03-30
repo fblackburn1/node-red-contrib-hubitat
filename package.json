@@ -31,6 +31,7 @@
       "device": "nodes/device.js",
       "event": "nodes/event.js",
       "hsm": "nodes/hsm.js",
+      "hsm-setter": "nodes/hsm-setter.js",
       "location": "nodes/location.js",
       "mode": "nodes/mode.js",
       "mode-setter": "nodes/mode-setter.js",
