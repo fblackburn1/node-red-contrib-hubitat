@@ -29,15 +29,24 @@ module.exports = function HubitatHsmModule(RED) {
 
     this.hubitat.hubitatEvent.on('hsm', async (event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
-      if ((event.name === 'hsmAlert') && ((event.value === 'cancel') || (event.value === 'cancelRuleAlerts'))) {
-        const hsm = await node.hubitat.getHsm();
-        if (!hsm) { throw new Error(JSON.stringify(hsm)); }
+      if ((event.name === 'hsmAlert') && (['cancel', 'cancelRuleAlerts'].includes(event.value))) {
+        let hsm;
+        try {
+          hsm = await node.hubitat.getHsm();
+          if (!hsm) {
+            throw new Error(JSON.stringify(hsm));
+          }
+        } catch (err) {
+          node.warn(`Unable to fetch hsm: ${err.message}`);
+          node.status({ fill: 'red', shape: node.shape, text: 'Unknown' });
+          return;
+        }
         node.currentHsm = hsm.hsm;
-        // Alarm gets cancelled
-      } else if (event.name === 'hsmAlert') {
+      } else if (['hsmAlert', 'hsmStatus'].includes(event.name)) {
         node.currentHsm = event.value;
-      } else if (event.name === 'hsmStatus') {
-        node.currentHsm = event.value;
+      } else {
+        node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
+        return;
       }
       node.log(`HSM: ${node.currentHsm}`);
 
@@ -45,7 +54,7 @@ module.exports = function HubitatHsmModule(RED) {
         const msg = {
           payload: {
             name: event.name,
-            value: event.value,
+            value: node.currentHsm,
             displayName: event.displayName,
             descriptionText: event.descriptionText,
           },
