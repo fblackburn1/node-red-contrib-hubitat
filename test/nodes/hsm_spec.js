@@ -79,10 +79,11 @@ describe('Hubitat HSM Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentHsm = 'disarmed';
-      n1.hubitat.getHsm = () => ({ hsm: 'armNight' });
+      n1.alert = true;
       n2.on('input', (msg) => {
         try {
-          msg.payload.should.have.property('value', 'armNight');
+          msg.payload.should.have.property('value', 'cancel');
+          n1.should.have.property('alert', false);
           done();
         } catch (err) {
           done(err);
@@ -91,54 +92,29 @@ describe('Hubitat HSM Node', () => {
       n1.hubitat.hubitatEvent.emit('hsm', hubitatEvent);
     });
   });
-  it('should not send event when getHsm from event throw error', (done) => {
+  it('should send event when hsmAlert event received', (done) => {
     const flow = [
       defaultConfigNode,
       { ...defaultHsmNode, sendEvent: true, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
-    const hubitatEvent = { name: 'hsmAlert', value: 'cancel' };
+    const hubitatEvent = { name: 'hsmAlert', value: 'intrusion-home' };
     helper.load([hsmNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.getHsm = () => { throw Error(); };
-      let inError = false;
+      n1.currentHsm = 'armHome';
+      n1.alert = false;
       n2.on('input', (msg) => {
-        inError = true;
+        try {
+          msg.payload.should.have.property('value', 'intrusion-home');
+          n1.should.have.property('alert', true);
+          n1.should.have.property('currentHsm', 'armHome');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
       n1.hubitat.hubitatEvent.emit('hsm', hubitatEvent);
-      setTimeout(() => {
-        if (inError) {
-          done(new Error('error send event'));
-        } else {
-          done();
-        }
-      }, 20);
-    });
-  });
-  it('should not send event when getHsm from event return empty', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultHsmNode, sendEvent: true, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'hsmAlert', value: 'cancel' };
-    helper.load([hsmNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.hubitat.getHsm = () => ('');
-      let inError = false;
-      n2.on('input', (msg) => {
-        inError = true;
-      });
-      n1.hubitat.hubitatEvent.emit('hsm', hubitatEvent);
-      setTimeout(() => {
-        if (inError) {
-          done(new Error('error send event'));
-        } else {
-          done();
-        }
-      }, 20);
     });
   });
   it('should send event when hsmStatus event received', (done) => {

@@ -7,6 +7,7 @@ module.exports = function HubitatHsmModule(RED) {
     this.sendEvent = config.sendEvent;
     this.currentHsm = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
+    this.alert = false;
 
     const node = this;
 
@@ -27,22 +28,13 @@ module.exports = function HubitatHsmModule(RED) {
       });
     }
 
-    const callback =async (event) => {
-      node.debug(`Callback called: ${JSON.stringify(event)}`);
+    const callback = async (event) => {
+      node.debug(`Event received: ${JSON.stringify(event)}`);
       if ((event.name === 'hsmAlert') && (['cancel', 'cancelRuleAlerts'].includes(event.value))) {
-        let hsm;
-        try {
-          hsm = await node.hubitat.getHsm();
-          if (!hsm) {
-            throw new Error(JSON.stringify(hsm));
-          }
-        } catch (err) {
-          node.warn(`Unable to fetch hsm: ${err.message}`);
-          node.status({ fill: 'red', shape: node.shape, text: 'Unknown' });
-          return;
-        }
-        node.currentHsm = hsm.hsm;
-      } else if (['hsmAlert', 'hsmStatus'].includes(event.name)) {
+        node.alert = false;
+      } else if (event.name === 'hsmAlert') {
+        node.alert = true;
+      } else if (event.name === 'hsmStatus') {
         node.currentHsm = event.value;
       } else {
         node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
@@ -54,7 +46,7 @@ module.exports = function HubitatHsmModule(RED) {
         const msg = {
           payload: {
             name: event.name,
-            value: node.currentHsm,
+            value: event.value,
             displayName: event.displayName,
             descriptionText: event.descriptionText,
           },
@@ -62,7 +54,8 @@ module.exports = function HubitatHsmModule(RED) {
         };
         node.send(msg);
       }
-      node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
+      const color = this.alert ? 'red' : 'blue';
+      node.status({ fill: color, shape: node.shape, text: node.currentHsm });
     };
     this.hubitat.hubitatEvent.on('hsm', callback);
 
