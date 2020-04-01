@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.29
+
+* fix regression from 0.0.27 on partial node deployment
+* increase maximum listener on same event to 500
+* `device`: fix status when attribute is `VECTOR3` dataType
+
 ## 0.0.28
 
 * add new `mode-setter` node to set mode
