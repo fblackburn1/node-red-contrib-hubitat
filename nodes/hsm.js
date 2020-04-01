@@ -27,7 +27,7 @@ module.exports = function HubitatHsmModule(RED) {
       });
     }
 
-    this.hubitat.hubitatEvent.on('hsm', async (event) => {
+    const callback =async (event) => {
       node.debug(`Callback called: ${JSON.stringify(event)}`);
       if ((event.name === 'hsmAlert') && (['cancel', 'cancelRuleAlerts'].includes(event.value))) {
         let hsm;
@@ -63,7 +63,8 @@ module.exports = function HubitatHsmModule(RED) {
         node.send(msg);
       }
       node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
-    });
+    };
+    this.hubitat.hubitatEvent.on('hsm', callback);
 
     initializeHsm().catch(() => {});
 
@@ -88,6 +89,7 @@ module.exports = function HubitatHsmModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
+      this.hubitat.hubitatEvent.removeListener('hsm', callback);
     });
   }
 
