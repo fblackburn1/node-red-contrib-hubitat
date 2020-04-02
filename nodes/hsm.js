@@ -55,7 +55,8 @@ module.exports = function HubitatHsmModule(RED) {
         node.send(msg);
       }
       const color = this.alert ? 'red' : 'blue';
-      node.status({ fill: color, shape: node.shape, text: node.currentHsm });
+      const status = this.alert ? `${node.currentHsm} - INTRUSION` : node.currentHsm;
+      node.status({ fill: color, shape: node.shape, text: status });
     };
     this.hubitat.hubitatEvent.on('hsm', callback);
 
