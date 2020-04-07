@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-vars */
 const helper = require('node-red-node-test-helper');
 const configNode = require('../../nodes/config.js');
@@ -150,6 +151,34 @@ describe('Hubitat Device Node', () => {
         }
       });
       n1.receive({});
+    });
+  });
+  it('should not link the internal properties to the output message when event received', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = {
+      deviceId: '42',
+      name: 'testAttribute',
+      value: 'new-value',
+    };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
+      n2.on('input', (msg) => {
+        try {
+          n1.currentAttributes[0].should.have.property('value', 'new-value');
+          msg.payload.value = 'overwrite-value';
+          n1.currentAttributes[0].should.have.property('value', 'new-value');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
   it('should cast event dataType NUMBER to integer', (done) => {
