@@ -53,7 +53,6 @@ describe('Hubitat Mode Node', () => {
       descriptionText: 'New Value',
     };
     helper.load([modeNode, configNode], flow, () => {
-      const n0 = helper.getNode('n0');
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentMode = 'old-value';
@@ -65,7 +64,7 @@ describe('Hubitat Mode Node', () => {
           done(err);
         }
       });
-      n0.hubitatEvent.emit('mode', hubitatEvent);
+      n1.hubitat.hubitatEvent.emit('mode', hubitatEvent);
     });
   });
   it('should use dot shape icon when send event', (done) => {
