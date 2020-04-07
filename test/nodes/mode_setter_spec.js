@@ -161,4 +161,25 @@ describe('Hubitat Mode Setter Node', () => {
       n1.receive({ modeId: '999' });
     });
   });
+  it('should take mode from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultModeSetterNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([modeSetterNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.availableModes = { 'far far away': '999' };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('response', { modeId: '999' });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ mode: 'far far away' });
+    });
+  });
 });

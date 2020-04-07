@@ -2,6 +2,7 @@
 
 ## 0.0.30
 
+* `mode-setter` node: allow to override mode with the mode name (e.i. msg.mode = 'Away')
 * `device` node: fix behavior that other nodes can change it internal properties
 * add support for `DATE` dataType
 
