@@ -98,7 +98,8 @@ module.exports = function HubitatDeviceModule(RED) {
               node.log('Attributes refreshed');
             }
             if (node.sendEvent) {
-              node.send({ payload: attribute, topic: node.name });
+              const msg = { ...attribute };
+              node.send({ payload: msg, topic: node.name });
             }
           }
           found = true;

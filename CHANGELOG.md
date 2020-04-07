@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.0.30
+
+* `device` node: fix behavior that other nodes can change it internal properties
+
 ## 0.0.29
 
 * fix regression from 0.0.27 on partial node deployment
