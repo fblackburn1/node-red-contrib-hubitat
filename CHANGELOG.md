@@ -3,6 +3,7 @@
 ## 0.0.30
 
 * `device` node: fix behavior that other nodes can change it internal properties
+* add support for `DATE` dataType
 
 ## 0.0.29
 
