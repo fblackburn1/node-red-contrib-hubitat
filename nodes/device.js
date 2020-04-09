@@ -144,7 +144,7 @@ module.exports = function HubitatDeviceModule(RED) {
       } else if (!node.attribute) {
         node.status({});
       } else if (node.attribute === foundAttribute.name) {
-        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${foundAttribute.value}` });
+        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(foundAttribute.value)}` });
       }
       done();
     });
