@@ -53,17 +53,20 @@ module.exports = function HubitatDeviceModule(RED) {
       return node.hubitat.getDevice(node.deviceId).then((device) => {
         if (!device.attributes) { throw new Error(JSON.stringify(device)); }
 
-        device.attributes.forEach((attribute) => {
-          attribute.value = attribute.currentValue;
-          // delete attribute.currentValue;  // kept for compatibility
-          if (node.attribute === attribute.name) {
-            node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
-            node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
-          }
-        });
-        node.currentAttributes = device.attributes;
+        // delete attribute.currentValue;  // kept for compatibility
+        node.currentAttributes = device.attributes.reduce((obj, item) => {
+          obj[item.name] = { ...item, value: item.currentValue };
+          return obj;
+        }, {});
 
-        if (!node.attribute) {
+        if (node.attribute) {
+          const attribute = node.currentAttributes[node.attribute];
+          if (!attribute) {
+            throw new Error(`Selected attribute (${node.attribute}) is not handled by device`);
+          }
+          node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
+          node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
+        } else {
           node.status({});
           node.log('Initialized');
         }
@@ -83,31 +86,25 @@ module.exports = function HubitatDeviceModule(RED) {
           return;
         }
       }
-
-      let found = false;
-      node.currentAttributes.forEach((attribute) => {
-        if (event.name === attribute.name) {
-          attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-          attribute.deviceId = node.deviceId;
-          attribute.currentValue = attribute.value; // deprecated since 0.0.18
-          if ((node.attribute === event.name) || (!node.attribute)) {
-            if (node.attribute) {
-              node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
-              node.log(`${node.attribute}: ${attribute.value}`);
-            } else {
-              node.status({});
-              node.log('Attributes refreshed');
-            }
-            if (node.sendEvent) {
-              const msg = { ...attribute };
-              node.send({ payload: msg, topic: node.name });
-            }
-          }
-          found = true;
-        }
-      });
-      if (!found) {
+      const attribute = node.currentAttributes[event.name];
+      if (!attribute) {
         node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
+      }
+      attribute.value = castHubitatValue(node, attribute.dataType, event.value);
+      attribute.deviceId = node.deviceId;
+      attribute.currentValue = attribute.value; // deprecated since 0.0.18
+      if ((node.attribute === event.name) || (!node.attribute)) {
+        if (node.attribute) {
+          node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
+          node.log(`${node.attribute}: ${attribute.value}`);
+        } else {
+          node.status({});
+          node.log('Attributes refreshed');
+        }
+        if (node.sendEvent) {
+          const msg = { ...attribute };
+          node.send({ payload: msg, topic: node.name });
+        }
       }
     };
     this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, callback);
@@ -129,22 +126,18 @@ module.exports = function HubitatDeviceModule(RED) {
         node.status({ fill: 'red', shape: node.shape, text: 'Undefined attribute' });
         return;
       }
-      let foundAttribute;
-      node.currentAttributes.forEach((attribute) => {
-        if (attributeSearched === attribute.name) {
-          msg.payload = { ...attribute };
-          msg.payload.deviceId = node.deviceId;
-          msg.topic = node.name;
-          send(msg);
-          foundAttribute = attribute;
-        }
-      });
-      if (foundAttribute === undefined) {
+      const attribute = node.currentAttributes[attributeSearched];
+      if (!attribute) {
         node.status({ fill: 'red', shape: node.shape, text: `Invalid attribute: ${attributeSearched}` });
-      } else if (!node.attribute) {
+        done();
+      }
+      msg.payload = { ...attribute, deviceId: node.deviceId };
+      msg.topic = node.name;
+      send(msg);
+      if (!node.attribute) {
         node.status({});
-      } else if (node.attribute === foundAttribute.name) {
-        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(foundAttribute.value)}` });
+      } else if (node.attribute === attribute.name) {
+        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
       }
       done();
     });

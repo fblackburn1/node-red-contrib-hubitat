@@ -60,7 +60,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value' } };
       n2.on('input', (msg) => {
         try {
           msg.should.have.property('payload', { ...hubitatEvent, currentValue: hubitatEvent.value });
@@ -86,7 +86,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value' } };
       let inError = false;
       n2.on('input', (msg) => {
         inError = true;
@@ -97,7 +97,7 @@ describe('Hubitat Device Node', () => {
           done(new Error('device receive wrong event'));
         } else {
           try {
-            n1.should.have.property('currentAttributes', [{ name: 'testAttribute', value: 'old-value' }]);
+            n1.should.have.property('currentAttributes', { testAttribute: { name: 'testAttribute', value: 'old-value' } });
             done();
           } catch (err) {
             done(err);
@@ -139,12 +139,12 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 'value' }];
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'value' } };
       n2.on('input', (msg) => {
         try {
           // eslint-disable-next-line no-param-reassign
           msg.payload.value = 'update value in another node';
-          n1.currentAttributes.should.containEql({ name: 'testAttribute', value: 'value' });
+          n1.currentAttributes.should.containEql({ testAttribute: { name: 'testAttribute', value: 'value' } });
           done();
         } catch (err) {
           done(err);
@@ -167,12 +167,12 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 'old-value' }];
+      n1.currentAttributes = { testAttribute: { value: 'old-value' } };
       n2.on('input', (msg) => {
         try {
-          n1.currentAttributes[0].should.have.property('value', 'new-value');
+          n1.currentAttributes.testAttribute.should.have.property('value', 'new-value');
           msg.payload.value = 'overwrite-value';
-          n1.currentAttributes[0].should.have.property('value', 'new-value');
+          n1.currentAttributes.testAttribute.should.have.property('value', 'new-value');
           done();
         } catch (err) {
           done(err);
@@ -191,7 +191,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 1, dataType: 'NUMBER' }];
+      n1.currentAttributes = { testAttribute: { value: 1, dataType: 'NUMBER' } };
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', -2.5);
@@ -213,7 +213,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: false, dataType: 'BOOL' }];
+      n1.currentAttributes = { testAttribute: { value: false, dataType: 'BOOL' } };
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', true);
@@ -235,7 +235,8 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: { x: -9, y: 1, z: -2 }, dataType: 'VECTOR3' }];
+      n1.currentAttributes = { testAttribute: { value: { x: -9, y: 1, z: -2 }, dataType: 'VECTOR3' } };
+
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', { x: 2, y: -4, z: 1.5 });
@@ -257,7 +258,8 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = [{ name: 'testAttribute', value: 'undefined', dataType: 'UNDEFINED' }];
+      n1.currentAttributes = { testAttribute: { value: 'undefined', dataType: 'UNDEFINED' } };
+
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', 'string');
