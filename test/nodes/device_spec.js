@@ -72,6 +72,45 @@ describe('Hubitat Device Node', () => {
       n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
+  it('should send event with extra properties when event received', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = {
+      deviceId: '42',
+      name: 'testAttribute',
+      value: 'new-value',
+      dataType: 'overriden attribute',
+      extra: 'extra-arg',
+    };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = {
+        testAttribute: {
+          name: 'testAttribute', value: 'old-value', deviceId: '42', dataType: 'STRING',
+        },
+      };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('payload', {
+            deviceId: '42',
+            name: 'testAttribute',
+            value: 'new-value',
+            currentValue: 'new-value',
+            dataType: 'STRING',
+            extra: 'extra-arg',
+          });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
   it('should not send event when event received with wrong deviceId', (done) => {
     const flow = [
       defaultConfigNode,
