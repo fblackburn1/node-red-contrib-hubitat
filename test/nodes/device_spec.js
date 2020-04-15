@@ -60,7 +60,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value' } };
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value', deviceId: '42' } };
       n2.on('input', (msg) => {
         try {
           msg.should.have.property('payload', { ...hubitatEvent, currentValue: hubitatEvent.value });

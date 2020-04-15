@@ -55,7 +55,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
         // delete attribute.currentValue;  // kept for compatibility
         node.currentAttributes = device.attributes.reduce((obj, item) => {
-          obj[item.name] = { ...item, value: item.currentValue };
+          obj[item.name] = { ...item, value: item.currentValue, deviceId: node.deviceId };
           return obj;
         }, {});
 
@@ -101,7 +101,7 @@ module.exports = function HubitatDeviceModule(RED) {
           node.log('Attributes refreshed');
         }
         if (node.sendEvent) {
-          const msg = { ...attribute, deviceId: node.deviceId };
+          const msg = { ...attribute };
           node.send({ payload: msg, topic: node.name });
         }
       }
@@ -122,7 +122,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const attributeSearched = msg.attribute || node.attribute;
       if (!attributeSearched) {
-        msg.payload = { ...node.currentAttributes }; // FIXME add deviceId
+        msg.payload = { ...node.currentAttributes };
         msg.topic = node.name;
         send(msg);
         node.status({});
@@ -137,7 +137,7 @@ module.exports = function HubitatDeviceModule(RED) {
         return;
       }
 
-      msg.payload = { ...attribute, deviceId: node.deviceId };
+      msg.payload = { ...attribute };
       msg.topic = node.name;
       send(msg);
       if (!node.attribute) {
