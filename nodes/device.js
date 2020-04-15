@@ -91,7 +91,6 @@ module.exports = function HubitatDeviceModule(RED) {
         node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
       }
       attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-      attribute.deviceId = node.deviceId;
       attribute.currentValue = attribute.value; // deprecated since 0.0.18
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
@@ -102,7 +101,7 @@ module.exports = function HubitatDeviceModule(RED) {
           node.log('Attributes refreshed');
         }
         if (node.sendEvent) {
-          const msg = { ...attribute };
+          const msg = { ...attribute, deviceId: node.deviceId };
           node.send({ payload: msg, topic: node.name });
         }
       }
