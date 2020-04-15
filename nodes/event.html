@@ -1,0 +1,45 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat event',{
+    category: 'hubitat',
+    color: '#a6bbcf',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+    },
+    inputs:0,
+    outputs:1,
+    icon: 'icons/event.png',
+    label: function() {
+        return this.name || 'events';
+    },
+    paletteLabel: 'events',
+  });
+
+
+</script>
+
+<script type="text/html" data-template-name="hubitat event">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat event">
+  <p>A generic node to receveive all events of your Hubitat hub.</p>
+
+  <h3>Output</h3>
+    <dl class="message-properties">
+      <dt class="optional">payload <span class="property-type">object</span></dt>
+      <dd>Any events received.</dd>
+    </dl>
+
+  <h3>Details</h3>
+    <p>This is a generic node and it should be only used if other nodes cannot fulfill your expectations.
+    <p>This node requires that you have webhook configured.</p>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>

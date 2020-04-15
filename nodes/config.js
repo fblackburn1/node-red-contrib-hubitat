@@ -118,6 +118,7 @@ module.exports = function HubitatConfigModule(RED) {
         }
 
         const { content } = req.body;
+        node.hubitatEvent.emit('event', content);
         if (content.deviceId != null) {
           node.hubitatEvent.emit(`device.${content.deviceId}`, content);
         } else if (content.name === 'mode') {
