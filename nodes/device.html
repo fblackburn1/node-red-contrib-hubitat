@@ -72,7 +72,7 @@
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
     const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Undefined' });
+    const option = $('<option>', { value: '', text: 'All' });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -110,7 +110,7 @@
   function cleanHubitatDeviceAttributes() {
     const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Undefined' });
+    const option = $('<option>', { value: '', text: 'All' });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
   }
@@ -168,7 +168,7 @@
     <p>This node will keep device state. Every time the device state changes at Hubitat, the webhook will send us the current status.</p>
     <p><b>Device</b> dropdown is populated when the server is reachable.</p>
     <p><b>Attribute</b> dropdown is populated when <b>Device</b> is selected.
-    The <b>Undefined</b> value allow to output all events but force to specify the <code>msg.attribute</code> property for the input.</p>
+      The <b>All</b> value allow to output all events and attributes.</p>
     <p><b>Send events</b> allow to send or not event when it receive one from Hubitat.</p>
     <p><code>currentValue</code> payload is deprecated and replaced by <code>value</code>.</p>
     <p>This node is not compatible with Node-RED 0.x</p>

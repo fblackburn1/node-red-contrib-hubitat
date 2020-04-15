@@ -130,6 +130,27 @@ describe('Hubitat Device Node', () => {
       }
     });
   });
+  it('should send all atributes when not specified', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, attribute: '', wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value' } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('payload', { ...n1.currentAttributes });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
   it('should not link the internal properties to the output message', (done) => {
     const flow = [
       defaultConfigNode,

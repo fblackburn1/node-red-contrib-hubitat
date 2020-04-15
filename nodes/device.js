@@ -121,15 +121,22 @@ module.exports = function HubitatDeviceModule(RED) {
       }
 
       const attributeSearched = msg.attribute || node.attribute;
-      if (attributeSearched === undefined) {
-        node.status({ fill: 'red', shape: node.shape, text: 'Undefined attribute' });
+      if (!attributeSearched) {
+        msg.payload = { ...node.currentAttributes }; // FIXME add deviceId
+        msg.topic = node.name;
+        send(msg);
+        node.status({});
+        done();
         return;
       }
+
       const attribute = node.currentAttributes[attributeSearched];
       if (!attribute) {
         node.status({ fill: 'red', shape: node.shape, text: `Invalid attribute: ${attributeSearched}` });
         done();
+        return;
       }
+
       msg.payload = { ...attribute, deviceId: node.deviceId };
       msg.topic = node.name;
       send(msg);
@@ -140,6 +147,7 @@ module.exports = function HubitatDeviceModule(RED) {
       }
       done();
     });
+
     node.on('close', () => {
       node.debug('Closed');
       this.hubitat.hubitatEvent.removeListener(`device.${node.deviceId}`, callback);
