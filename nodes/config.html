@@ -133,8 +133,16 @@
       $('#node-config-input-webhookConfigured').html(successIcon);
       $('#node-config-text-webhookWarning').show();
     })
-    .fail(() => {
-      $('#node-config-input-webhookConfigured').html(`${failIcon} Fail to set webhoook. Verify your configuration`);
+    .fail((xhr, status, error) => {
+      let reason
+      if (xhr.status === 401) {
+        reason = 'Invalid Token'
+      } else if(xhr.status === 404) {
+        reason = 'Invalid Application ID'
+      } else {
+        reason = 'Invalid connection information (Server, Port, TLS)'
+      }
+      $('#node-config-input-webhookConfigured').html(`${failIcon} Fail to set webhoook. ${reason}`);
     });
   }
 

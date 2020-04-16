@@ -261,13 +261,17 @@ module.exports = function HubitatConfigModule(RED) {
 
     try {
       const response = await fetch(url, options);
-      if (response.status >= 400) {
-        throw new Error(await response.text());
-      }
+      if (!response.ok) { throw response; }
       res.json(await response.json());
     } catch (err) {
-      console.log(`ERROR ${req.path}: ${err}`);
-      res.sendStatus(400);
+      let message = err;
+      if (err.text) {
+        message = await err.text();
+        res.sendStatus(err.status);
+      } else {
+        res.sendStatus(500);
+      }
+      console.log(`ERROR ${req.path}: ${message}`);
     }
   });
 
