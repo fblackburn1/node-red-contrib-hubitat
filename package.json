@@ -30,6 +30,7 @@
     "nodes": {
       "command": "nodes/command.js",
       "config": "nodes/config.js",
+      "event": "nodes/event.js",
       "device": "nodes/device.js",
       "mode": "nodes/mode.js",
       "mode-setter": "nodes/mode-setter.js",
