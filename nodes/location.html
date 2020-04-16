@@ -13,14 +13,6 @@
         return this.name || 'location';
     },
     paletteLabel: 'location',
-    oneditprepare: function() {
-      $('document').ready(() => {
-        $('#node-input-server').change(() => {
-          const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
-        });
-      });
-    }
   });
 
 
