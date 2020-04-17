@@ -21,6 +21,7 @@ This package contains three nodes:
   * `location`: To receive global location events (ex: systemStart, sunrise, sunset)
 
   * `event`: A generic node to receive all events.
+  * `request`: A generic node to request any Hubitat's endpoints.
 
   * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat
     to dispatch events to other nodes.
