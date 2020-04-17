@@ -30,11 +30,12 @@
     "nodes": {
       "command": "nodes/command.js",
       "config": "nodes/config.js",
-      "event": "nodes/event.js",
       "device": "nodes/device.js",
+      "event": "nodes/event.js",
+      "location": "nodes/location.js",
       "mode": "nodes/mode.js",
       "mode-setter": "nodes/mode-setter.js",
-      "location": "nodes/location.js"
+      "request": "nodes/request.js"
     }
   },
   "devDependencies": {
