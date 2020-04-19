@@ -50,8 +50,9 @@
         selectMenu.append(option);
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
+      if (!modeId) { selectMenu.val('').trigger('change'); }
     })
-    .fail(cleanHubitatModes());
+    .fail(() => cleanHubitatModes());
   }
 
   function cleanHubitatModes() {

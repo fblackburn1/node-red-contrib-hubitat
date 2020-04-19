@@ -79,8 +79,9 @@
         selectMenu.append(option);
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
+      if (!deviceId) { selectMenu.val('').trigger('change'); }
     })
-    .fail(cleanHubitatDevices());
+    .fail(() => cleanHubitatDevices());
   }
 
   function listHubitatDeviceCommands(server, deviceId, command) {
