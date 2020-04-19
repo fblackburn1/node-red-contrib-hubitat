@@ -80,7 +80,7 @@
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
     })
-    .error(cleanHubitatDevices());
+    .fail(cleanHubitatDevices());
   }
 
   function listHubitatDeviceCommands(server, deviceId, command) {

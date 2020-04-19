@@ -67,7 +67,7 @@
         if (selected) { selectMenu.val(item.id).trigger('change'); }
       });
     })
-    .error(cleanHubitatDevicesForDeviceNode());
+    .fail(cleanHubitatDevicesForDeviceNode());
   }
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
     const selectMenu = $('#node-input-attribute');
