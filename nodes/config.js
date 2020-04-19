@@ -31,14 +31,15 @@ module.exports = function HubitatConfigModule(RED) {
 
   function HubitatConfigNode(config) {
     RED.nodes.createNode(this, config);
+
     this.name = config.name;
     this.usetls = config.usetls;
     this.host = config.host;
     this.port = config.port;
-    this.token = config.token;
-    this.appId = config.appId;
+    this.token = this.credentials.token;
+    this.appId = this.credentials.appId;
     this.nodeRedServer = config.nodeRedServer;
-    this.webhookPath = config.webhookPath;
+    this.webhookPath = this.credentials.webhookPath;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
@@ -162,7 +163,13 @@ module.exports = function HubitatConfigModule(RED) {
     }
   }
 
-  RED.nodes.registerType('hubitat config', HubitatConfigNode);
+  RED.nodes.registerType('hubitat config', HubitatConfigNode, {
+    credentials: {
+      appId: { type: 'text' },
+      token: { type: 'text' },
+      webhookPath: { type: 'text' },
+    },
+  });
 
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
     if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {

@@ -45,10 +45,12 @@
       usetls: { value: false },
       host: { value: '', required: true },
       port: { value: 80, required: true, validate: RED.validators.number() },
-      token: { value: '', required: true },
-      appId: { value: '', required: true, validate: RED.validators.number() },
       nodeRedServer: { value: '', validate: validatorWhiteSpace },
-      webhookPath: { value: '', validate: validatorWebhookPath },
+    },
+    credentials: {
+      appId: { required: true, type: 'text', validate: RED.validators.number() },
+      token: { required: true, type: 'text' },
+      webhookPath: { required: true, type: 'text', validate: validatorWebhookPath },
     },
     label: function() {
       if (this.name) {
@@ -85,6 +87,8 @@
       if (!nodeRedServer.val()) {
         nodeRedServer.val(window.location.origin);
       }
+      // Initialize webhookPath value
+      validatorWebhookPath();
     }
   });
 
