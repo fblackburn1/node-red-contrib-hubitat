@@ -14,18 +14,22 @@
     align: 'right',
     icon: 'icons/command.png',
     label: function() {
-        return this.name || 'command';
+        return this.name || this._('command');
     },
-    paletteLabel: 'command',
+    paletteLabel: function () {
+      return this._('command');
+    },
     oneditprepare: function() {
+      const defaultDevLabel = this._('select.defaultDevice');
+      const defaultCmdLabel = this._('select.defaultCommand');
       $('document').ready(() => {
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server) {
-            listHubitatDevices(server, this.deviceId);
+            listHubitatDevices(server, this.deviceId, defaultDevLabel);
           } else {
-            cleanHubitatDevices();
+            cleanHubitatDevices(defaultDevLabel);
           }
         });
         $('#node-input-deviceId').change(() => {
@@ -33,9 +37,9 @@
           const deviceId = $('#node-input-deviceId option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId ) {
-            listHubitatDeviceCommands(server, deviceId, this.command);
+            listHubitatDeviceCommands(server, deviceId, this.command, defaultCmdLabel);
           } else {
-            cleanHubitatDeviceCommands();
+            cleanHubitatDeviceCommands(defaultCmdLabel);
           }
 
           const deviceLabel = $('#node-input-deviceId option:selected').text();
@@ -59,10 +63,10 @@
     }
   });
 
-  function listHubitatDevices(server, deviceId) {
+  function listHubitatDevices(server, deviceId, defaultLabel) {
     $('#node-input-deviceId').find('option').remove().end();
     const selectMenu = $('#node-input-deviceId');
-    const option = $('<option>', { value: '', text: 'Choose device...' });
+    const option = $('<option>', { value: '', text: defaultLabel });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -81,13 +85,13 @@
       });
       if (!deviceId) { selectMenu.val('').trigger('change'); }
     })
-    .fail(() => cleanHubitatDevices());
+    .fail(() => cleanHubitatDevices(defaultLabel));
   }
 
-  function listHubitatDeviceCommands(server, deviceId, command) {
+  function listHubitatDeviceCommands(server, deviceId, command, defaultLabel) {
     const selectMenu = $('#node-input-command');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose command...'} );
+    const option = $('<option>', { value: '', text: defaultLabel });
     selectMenu.append(option);
     const params = {
       usetls: server.usetls,
@@ -117,18 +121,18 @@
     });
   }
 
-  function cleanHubitatDevices() {
+  function cleanHubitatDevices(defaultLabel) {
     const selectMenu = $('#node-input-deviceId');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose device...' });
+    const option = $('<option>', { value: '', text: defaultLabel });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
   }
 
-  function cleanHubitatDeviceCommands() {
+  function cleanHubitatDeviceCommands(defaultLabel) {
     const selectMenu = $('#node-input-command');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose command...' });
+    const option = $('<option>', { value: '', text: defaultLabel });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
   }
@@ -136,49 +140,23 @@
 
 <script type="text/html" data-template-name="hubitat command">
   <div class="form-row">
-    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <label for="node-input-server"><i class="fa fa-globe"></i> <span data-i18n="label.server"></span></label>
     <input type="text" id="node-input-server">
   </div>
   <div class="form-row">
-    <label for="node-input-deviceId"><i class="fa fa-lightbulb-o"></i> Device</label>
+    <label for="node-input-deviceId"><i class="fa fa-lightbulb-o"></i> <span data-i18n="label.device"></span></label>
     <select id="node-input-deviceId"></select>
   </div>
   <div class="form-row">
-    <label for="node-input-command"><i class="fa fa-hashtag"></i> Command</label>
+    <label for="node-input-command"><i class="fa fa-hashtag"></i> <span data-i18n="label.command"></span></label>
     <select id="node-input-command"></select>
   </div>
   <div class="form-row">
-    <label for="node-input-commandArgs"><i class="fa fa-bars"></i> Arguments</label>
+    <label for="node-input-commandArgs"><i class="fa fa-bars"></i> <span data-i18n="label.arguments"></span></label>
     <input type="text" id="node-input-commandArgs">
   </div>
   <div class="form-row">
-    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
-    <input type="text" id="node-input-name" placeholder="Name">
+    <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="label.name"></label>
+    <input type="text" id="node-input-name" data-i18n="[placeholder]label.name">
   </div>
-</script>
-
-<script type="text/html" data-help-name="hubitat command">
-  <p>A node that send command to Hubitat.</p>
-
-  <h3>Inputs</h3>
-    <dl class="message-properties">
-      <dt class="optional">command <span class="property-type">string</span></dt>
-      <dd>Allow to overwrite the command sent.</dd>
-    </dl>
-    <dl class="message-properties">
-      <dt class="optional">arguments <span class="property-type">string</span></dt>
-      <dd>Allow to overwrite the command arguments sent. You must remove this property
-        if you send a command that doesn't require an argument</dd>
-    </dl>
-
-  <h3>Output</h3>
-    The same message as the input.
-
-  <h3>Details</h3>
-    <p><b>Device</b> dropdown is populated when the server is reachable.</p>
-    <p><b>Command</b> dropdown is populated when the <b>Device</b> is selected.
-      If not specified, input message must define <code>command</code> property</p>
-    <p><b>Arguments</b> field is disabled or placeholder is set according to the chosen <b>Command</b>.
-      If not specified, input message must define <code>arguments</code> property</p>
-    <p>This node is not compatible with Node-RED 0.x</p>
 </script>

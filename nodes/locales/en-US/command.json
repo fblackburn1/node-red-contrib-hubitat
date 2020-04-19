@@ -1,0 +1,14 @@
+{
+    "command": "command",
+    "label": {
+        "server": "Server",
+        "device": "Device",
+        "command": "Command",
+        "arguments": "Arguments",
+        "name": "Name"
+    },
+    "select": {
+        "defaultCommand": "Choose command...",
+        "defaultDevice": "Choose device..."
+    }
+}
