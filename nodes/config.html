@@ -24,9 +24,22 @@
       return false;
     }
     RED.nodes.eachConfig((node) => {
-      if ((this.id !== node.id) && (node.type === 'hubitat config') && (node.webhookPath === value)) {
-        value = `${value}/${uuidv4()}`;
-        $("#node-config-input-webhookPath").val(value);
+      if ((this.id !== node.id) && (node.type === 'hubitat config')) {
+        if (node.credentials) {
+          if (node.credentials.webhookPath === value) {
+            value = `${value}/${uuidv4()}`;
+            $("#node-config-input-webhookPath").val(value);
+          }
+        } else {
+          $.getJSON(`credentials/hubitat-config/${node.id}`, (data) => {
+            node.credentials = data;
+            node.credentials._ = $.extend(true, {}, data);
+            if (node.credentials.webhookPath === value) {
+              value = `${value}/${uuidv4()}`;
+              $("#node-config-input-webhookPath").val(value);
+            }
+          });
+        }
       }
     });
     return true;
@@ -88,7 +101,7 @@
         nodeRedServer.val(window.location.origin);
       }
       // Initialize webhookPath value
-      validatorWebhookPath();
+      validatorWebhookPath.call(this, this.credentials.webhookPath);
     }
   });
 
