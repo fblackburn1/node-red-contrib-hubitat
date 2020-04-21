@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.0.31
+
+* add new `event` node to allow to receive all events
+* add new `request` node to allow to make a generic request to hubitat
+* `device`: rename the `Undefined` attribute to `All` and allow to input a message without attribute to output all atttributes
+* `device`: bind extra event properties to the output messages (unit, descriptionText, type, etc..)
+* `device`: fix status display for VECTOR3 dataType
+* `config`: improve error message when configuring webhook
+* fix a random behavior that can empty dropdowns for all dynamic listing
+
 ## 0.0.30
 
 * `mode-setter` node: allow to override mode with the mode name (e.i. msg.mode = 'Away')
