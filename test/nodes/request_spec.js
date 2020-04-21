@@ -7,7 +7,7 @@ const requestNode = require('../../nodes/request.js');
 const configNode = require('../../nodes/config.js');
 
 
-describe('Hubitat Command Node', () => {
+describe('Hubitat Request Node', () => {
   const testPort = 10234;
   const defaultConfigNode = {
     id: 'n0',
@@ -155,7 +155,7 @@ describe('Hubitat Command Node', () => {
       const n2 = helper.getNode('n2');
       n2.on('input', (msg) => {
         try {
-          msg.should.have.property('response', { path: 'foobar' });
+          msg.should.have.property('payload', { path: 'foobar' });
           done();
         } catch (err) {
           done(err);
