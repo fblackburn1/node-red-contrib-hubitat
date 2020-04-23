@@ -45,13 +45,16 @@
           }
         });
         $('#node-input-command').change(() => {
-          const placeholder = $('#node-input-command option:selected').attr('args_placeholder');
+          let placeholder = $('#node-input-command option:selected').attr('args_placeholder');
           const commandArgsInput = $('#node-input-commandArgs');
           if (placeholder === 'n/a') {
             commandArgsInput.val('');
             commandArgsInput.prop('disabled', true);
           } else {
             commandArgsInput.prop('disabled', false);
+          }
+          if (placeholder === 'COLOR_MAP') {
+            placeholder = '{"hue":88,"saturation":50,"level":90}';
           }
           commandArgsInput.attr('placeholder', placeholder);
         });
