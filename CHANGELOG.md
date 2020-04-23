@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.32
+
+* `command`: encode arguments to URL encoded format
+* `command`: improve placeholder for COLOR_MAP
+
 ## 0.0.31
 
 * add new `event` node to allow to receive all events
