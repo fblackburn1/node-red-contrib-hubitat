@@ -36,7 +36,7 @@ module.exports = function HubitatCommandModule(RED) {
 
       let commandWithArgs = command;
       if ((commandArgs != null) && (commandArgs !== '')) {
-        commandWithArgs = `${command}/${commandArgs}`;
+        commandWithArgs = `${command}/${encodeURIComponent(commandArgs)}`;
       }
       const url = `${node.hubitat.baseUrl}/devices/${node.deviceId}/${commandWithArgs}?access_token=${node.hubitat.token}`;
       const options = { method: 'GET' };
