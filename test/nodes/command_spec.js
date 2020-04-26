@@ -212,4 +212,48 @@ describe('Hubitat Command Node', () => {
       n1.receive({ command: 'Off' });
     });
   });
+
+  it('should take deviceId from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultCommandNode, deviceId: '1', wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n2.on('input', (msg) => {
+        try {
+          msg.response.should.have.property('deviceId', '75');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ deviceId: '75' });
+    });
+  });
+
+  it('should output an error when empty deviceId is provided', (done) => {
+    const flow = [
+      { ...defaultCommandNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load(commandNode, flow, () => {
+      const n2 = helper.getNode('n2');
+      const n1 = helper.getNode('n1');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({ deviceId: '' });
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no deviceId allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
 });

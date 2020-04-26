@@ -20,6 +20,13 @@ module.exports = function HubitatCommandModule(RED) {
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
+      const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
+      if (!deviceId) {
+        node.status({ fill: 'red', shape: 'ring', text: 'undefined deviceId' });
+        done('undefined deviceId');
+        return;
+      }
+
       let { command } = node;
       let { commandArgs } = node;
       if (msg.command !== undefined) {
@@ -38,7 +45,7 @@ module.exports = function HubitatCommandModule(RED) {
       if ((commandArgs != null) && (commandArgs !== '')) {
         commandWithArgs = `${command}/${encodeURIComponent(commandArgs)}`;
       }
-      const url = `${node.hubitat.baseUrl}/devices/${node.deviceId}/${commandWithArgs}?access_token=${node.hubitat.token}`;
+      const url = `${node.hubitat.baseUrl}/devices/${deviceId}/${commandWithArgs}?access_token=${node.hubitat.token}`;
       const options = { method: 'GET' };
 
       try {
