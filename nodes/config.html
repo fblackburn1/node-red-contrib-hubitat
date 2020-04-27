@@ -1,13 +1,7 @@
 <script type="text/javascript">
-  function uuidv4() {
-    return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
-      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
-    );
-  }
-
   function validatorWebhookPath(value) {
     if (!value) {
-      value = `/hubitat/webhook/${uuidv4()}`;
+      value = '/hubitat/webhook';
       $("#node-config-input-webhookPath").val(value);
     }
     if (!value.startsWith("/")) {
@@ -16,7 +10,7 @@
     }
     const internalEndpoints = ['/', '/auth/token', '/auth/revoke', '/flows', '/flow', '/nodes'];
     if (internalEndpoints.includes(value)) {
-      value = `${value}/${uuidv4()}`;
+      value = `${value}_`;
       $('#node-config-input-webhookPath').val(value);
     }
     const pattern = new RegExp('^(\\/[-a-z\\d%_.~+]*)*$');
@@ -24,22 +18,9 @@
       return false;
     }
     RED.nodes.eachConfig((node) => {
-      if ((this.id !== node.id) && (node.type === 'hubitat config')) {
-        if (node.credentials) {
-          if (node.credentials.webhookPath === value) {
-            value = `${value}/${uuidv4()}`;
-            $("#node-config-input-webhookPath").val(value);
-          }
-        } else {
-          $.getJSON(`credentials/hubitat-config/${node.id}`, (data) => {
-            node.credentials = data;
-            node.credentials._ = $.extend(true, {}, data);
-            if (node.credentials.webhookPath === value) {
-              value = `${value}/${uuidv4()}`;
-              $("#node-config-input-webhookPath").val(value);
-            }
-          });
-        }
+      if ((this.id !== node.id) && (node.type === 'hubitat config') && (node.webhookPath === value)) {
+        value = `${value}_`;
+        $("#node-config-input-webhookPath").val(value);
       }
     });
     return true;
@@ -59,11 +40,11 @@
       host: { value: '', required: true },
       port: { value: 80, required: true, validate: RED.validators.number() },
       nodeRedServer: { value: '', validate: validatorWhiteSpace },
+      webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
     },
     credentials: {
       appId: { required: true, type: 'text', validate: RED.validators.number() },
       token: { required: true, type: 'text' },
-      webhookPath: { required: true, type: 'text', validate: validatorWebhookPath },
     },
     label: function() {
       if (this.name) {
@@ -100,8 +81,6 @@
       if (!nodeRedServer.val()) {
         nodeRedServer.val(window.location.origin);
       }
-      // Initialize webhookPath value
-      validatorWebhookPath.call(this, this.credentials.webhookPath);
     }
   });
 
@@ -239,6 +218,6 @@
       Ensure that Node-RED is reachable by the Hubitat hub</p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
-      which can be a security issue if you expose it on internet. Adding a random UUID in the path can mitigate the issue.
+      which can be a security issue if you expose it on internet.
     </p>
 </script>

@@ -39,7 +39,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.token = this.credentials.token;
     this.appId = this.credentials.appId;
     this.nodeRedServer = config.nodeRedServer;
-    this.webhookPath = this.credentials.webhookPath;
+    this.webhookPath = config.webhookPath;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
@@ -167,7 +167,6 @@ module.exports = function HubitatConfigModule(RED) {
     credentials: {
       appId: { type: 'text' },
       token: { type: 'text' },
-      webhookPath: { type: 'text' },
     },
   });
 
