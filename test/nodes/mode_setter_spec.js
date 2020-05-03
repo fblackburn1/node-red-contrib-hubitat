@@ -15,7 +15,6 @@ describe('Hubitat Mode Setter Node', () => {
     usetls: false,
     host: 'localhost',
     port: testPort,
-    token: '1234-abcd',
     appId: 1,
     nodeRedServer: 'localhost',
     webhookPath: '/hubitat/webhook',
