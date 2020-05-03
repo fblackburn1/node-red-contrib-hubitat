@@ -36,7 +36,6 @@ module.exports = function HubitatConfigModule(RED) {
     this.usetls = config.usetls;
     this.host = config.host;
     this.port = config.port;
-    this.token = this.credentials.token;
     this.appId = config.appId;
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
@@ -48,7 +47,11 @@ module.exports = function HubitatConfigModule(RED) {
 
     const node = this;
 
-    if ((!node.host) || (!node.port) || (!node.token) || (!node.appId)) {
+    if (this.credentials) {
+      this.token = this.credentials.token;
+    }
+
+    if ((!node.host) || (!node.port) || (!node.appId)) {
       return;
     }
 
