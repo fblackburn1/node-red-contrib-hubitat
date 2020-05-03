@@ -39,13 +39,11 @@
       usetls: { value: false },
       host: { value: '', required: true },
       port: { value: 80, required: true, validate: RED.validators.number() },
+      appId: { value: '', required: true, validate: RED.validators.number() },
       nodeRedServer: { value: '', validate: validatorWhiteSpace },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
     },
-    credentials: {
-      appId: { required: true, type: 'text', validate: RED.validators.number() },
-      token: { required: true, type: 'text' },
-    },
+    credentials: { token: { required: true, type: 'text' } },
     label: function() {
       if (this.name) {
         return this.name;
