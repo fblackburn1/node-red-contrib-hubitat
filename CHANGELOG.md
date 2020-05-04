@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0
+
+* **Breaking change**: Maker API token is now saved as credential by Node-RED and must be
+  re-enter it after the upgrade. It will be not exported anymore and will be saved in a special file
+  `flow_cred.json`
+
 ## 0.0.32
 
 * `command`: encode arguments to URL encoded format
