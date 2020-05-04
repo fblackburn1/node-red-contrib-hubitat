@@ -16,17 +16,27 @@ module.exports = function HubitatDeviceModule(RED) {
       case 'BOOL':
         return value === 'true';
       case 'VECTOR3': {
-        const vector3Regexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
-        const match = value.match(vector3Regexp);
-        if (!match) {
-          return defaultAction();
+        const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
+        const threeAxesMatch = value.match(threeAxesRegexp);
+        if (threeAxesMatch) {
+          const result = {};
+          for (let i = 1; i < 4; i += 1) {
+            const [axis, point] = threeAxesMatch[i].split(':', 2);
+            result[axis] = parseFloat(point);
+          }
+          return result;
         }
-        const result = {};
-        for (let i = 1; i < 4; i += 1) {
-          const [axis, point] = match[i].split(':', 2);
-          result[axis] = parseFloat(point);
+        // Some devices use VECTOR3 for range (ex: Ecobee4 thermostat)
+        const rangeRegexp = new RegExp(/^\[(.*),(.*)\]$/);
+        const rangeMatch = value.match(rangeRegexp);
+        if (rangeMatch) {
+          const result = [];
+          for (let i = 1; i < 3; i += 1) {
+            result.push(parseFloat(rangeMatch[i]));
+          }
+          return result;
         }
-        return result;
+        return defaultAction();
       }
       default:
         return defaultAction();
