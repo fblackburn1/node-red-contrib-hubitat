@@ -284,7 +284,7 @@ describe('Hubitat Device Node', () => {
       n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
-  it('should cast event dataType VECTOR3 to object', (done) => {
+  it('should cast event dataType three axes VECTOR3 to object', (done) => {
     const flow = [
       defaultConfigNode,
       { ...defaultDeviceNode, wires: [['n2']] },
@@ -299,6 +299,29 @@ describe('Hubitat Device Node', () => {
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', { x: 2, y: -4, z: 1.5 });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
+  it('should cast event dataType range VECTOR3 to object', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: '[42.5,24]' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
+
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', [42.5, 24]);
           done();
         } catch (err) {
           done(err);
