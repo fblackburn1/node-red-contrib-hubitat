@@ -39,11 +39,11 @@
       usetls: { value: false },
       host: { value: '', required: true },
       port: { value: 80, required: true, validate: RED.validators.number() },
-      token: { value: '', required: true },
       appId: { value: '', required: true, validate: RED.validators.number() },
       nodeRedServer: { value: '', validate: validatorWhiteSpace },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
     },
+    credentials: { token: { required: true, type: 'text' } },
     label: function() {
       if (this.name) {
         return this.name;
@@ -216,6 +216,6 @@
       Ensure that Node-RED is reachable by the Hubitat hub</p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
-      which can be a security issue if you expose it on internet
+      which can be a security issue if you expose it on internet.
     </p>
 </script>

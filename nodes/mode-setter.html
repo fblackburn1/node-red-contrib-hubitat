@@ -21,7 +21,15 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server) {
-            listHubitatModes(server, this.modeId);
+            if (server.credentials) {
+              listHubitatModes(server, this.modeId);
+            } else {
+              $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
+                server.credentials = data;
+                server.credentials._ = $.extend(true, {}, data);
+                listHubitatModes(server, this.modeId);
+              });
+            }
           } else {
             cleanHubitatModes();
           }
@@ -40,7 +48,7 @@
       host: server.host,
       port: server.port,
       appId: server.appId,
-      token: server.token,
+      token: server.credentials.token,
     };
 
     $.getJSON(`hubitat/modes`, params, (res) => {

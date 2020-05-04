@@ -22,7 +22,15 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server) {
-            listHubitatDevicesForDeviceNode(server, this.deviceId);
+            if (server.credentials) {
+              listHubitatDevicesForDeviceNode(server, this.deviceId);
+            } else {
+              $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
+                server.credentials = data;
+                server.credentials._ = $.extend(true, {}, data);
+                listHubitatDevicesForDeviceNode(server, this.deviceId);
+              });
+            }
           } else {
             cleanHubitatDevicesForDeviceNode();
           }
@@ -37,7 +45,15 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId) {
-            listHubitatDeviceAttributes(server, deviceId, this.attribute);
+            if (server.credentials) {
+              listHubitatDeviceAttributes(server, deviceId, this.attribute);
+            } else {
+              $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
+                server.credentials = data;
+                server.credentials._ = $.extend(true, {}, data);
+                listHubitatDeviceAttributes(server, deviceId, this.attribute);
+              });
+            }
           } else {
             cleanHubitatDeviceAttributes();
           }
@@ -56,7 +72,7 @@
       host: server.host,
       port: server.port,
       appId: server.appId,
-      token: server.token,
+      token: server.credentials.token,
     };
 
     $.getJSON(`hubitat/devices`, params, (res) => {
@@ -80,7 +96,7 @@
       host: server.host,
       port: server.port,
       appId: server.appId,
-      token: server.token,
+      token: server.credentials.token,
     };
 
     $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {

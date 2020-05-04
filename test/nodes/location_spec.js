@@ -10,7 +10,6 @@ describe('Hubitat Location Node', () => {
     usetls: false,
     host: 'localhost',
     port: 10234,
-    token: '1234-abcd',
     appId: 1,
     nodeRedServer: 'localhost',
     webhookPath: '/hubitat/webhook',
