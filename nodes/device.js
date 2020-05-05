@@ -16,6 +16,12 @@ module.exports = function HubitatDeviceModule(RED) {
       case 'BOOL':
         return value === 'true';
       case 'VECTOR3': {
+        if (value === 'null') {
+          return null;
+        }
+        if (!value) {
+          return value;
+        }
         const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
         const threeAxesMatch = value.match(threeAxesRegexp);
         if (threeAxesMatch) {

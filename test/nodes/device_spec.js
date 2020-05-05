@@ -330,6 +330,52 @@ describe('Hubitat Device Node', () => {
       n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
+  it('should cast event dataType null VECTOR3 to object', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: 'null' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
+
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', null);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
+  it('should cast event dataType empty VECTOR3 to object', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const hubitatEvent = { name: 'testAttribute', value: '' };
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
+
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', '');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
+    });
+  });
   it('should cast event dataType UNDEFINED to string', (done) => {
     const flow = [
       defaultConfigNode,
