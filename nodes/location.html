@@ -1,14 +1,14 @@
 <script type="text/javascript">
   RED.nodes.registerType('hubitat location',{
     category: 'hubitat',
-    color: '#a6bbcf',
+    color: '#ACE043',
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true }
     },
     inputs:0,
     outputs:1,
-    icon: 'icons/location.png',
+    icon: 'icons/location.svg',
     label: function() {
         return this.name || 'location';
     },

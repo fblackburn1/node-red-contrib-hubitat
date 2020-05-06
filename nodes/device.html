@@ -1,7 +1,7 @@
 <script type="text/javascript">
   RED.nodes.registerType('hubitat device',{
     category: 'hubitat',
-    color: '#a6bbcf',
+    color: '#ACE043',
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
@@ -11,7 +11,7 @@
     },
     inputs:1,
     outputs:1,
-    icon: 'icons/device.png',
+    icon: 'icons/device.svg',
     label: function() {
         return this.name || 'device';
     },

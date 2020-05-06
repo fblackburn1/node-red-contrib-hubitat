@@ -1,7 +1,7 @@
 <script type="text/javascript">
   RED.nodes.registerType('hubitat mode-setter',{
     category: 'hubitat',
-    color: '#a6bbcf',
+    color: '#ACE043',
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
@@ -10,7 +10,7 @@
     inputs:1,
     outputs:1,
     align: 'right',
-    icon: 'icons/mode.png',
+    icon: 'icons/mode.svg',
     label: function() {
         return this.name || 'set mode';
     },
