@@ -39,6 +39,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.appId = config.appId;
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
+    this.autoRefresh = config.autoRefresh;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
@@ -122,6 +123,10 @@ module.exports = function HubitatConfigModule(RED) {
         }
 
         const { content } = req.body;
+        if (node.autoRefresh && content.name === 'systemStart') {
+          node.log('Resynchronize all hubitat\'s nodes');
+          node.hubitatEvent.emit('systemStart');
+        }
         node.hubitatEvent.emit('event', content);
         if (content.deviceId != null) {
           node.hubitatEvent.emit(`device.${content.deviceId}`, content);

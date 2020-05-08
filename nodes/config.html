@@ -42,6 +42,7 @@
       appId: { value: '', required: true, validate: RED.validators.number() },
       nodeRedServer: { value: '', validate: validatorWhiteSpace },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
+      autoRefresh: { value: true },
     },
     credentials: { token: { required: true, type: 'text' } },
     label: function() {
@@ -68,10 +69,13 @@
         id: 'hubitat-config-tab-connection',
         label: 'Connection',
       });
-
       tabs.addTab({
         id: 'hubitat-config-tab-security',
         label: 'Security',
+      });
+      tabs.addTab({
+        id: 'hubitat-config-tab-advanced',
+        label: 'Advanced',
       });
 
       let nodeRedServer = $('#node-config-input-nodeRedServer');
@@ -200,6 +204,12 @@
         <input type="text" id="node-config-input-token" placeholder="00000000-0000-4000-8000-000000000000">
       </div>
     </div>
+    <div id="hubitat-config-tab-advanced" style="display:none">
+      <div class="form-row">
+        <label for="node-config-input-autoRefresh" style="width: auto; margin-right: 5px;">Rebuild cache on Hubitat <code>systemStart</code> event</label>
+        <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
+      </div>
+    </div>
   </div>
 </script>
 
@@ -214,6 +224,11 @@
     <p>Server field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
     <p>The <code>Webhook Section</code> allow to configure the URL on which the Hubitat hub will send events.
       Ensure that Node-RED is reachable by the Hubitat hub</p>
+    <p>
+    <p><b>Rebuild cache on Hubitat <code>systemStart</code> event</b> implies to request hub to re-initialize hubitat's nodes.
+      If desynchronization is found, a new event for each desynchronized attribute will be sent.
+      The event generated cannot be exactly like an original event. Consider that only <code>value</code> as a valid property.
+      The <code>systemStart</code> event is triggered when Hubitat start.</p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
       which can be a security issue if you expose it on internet.

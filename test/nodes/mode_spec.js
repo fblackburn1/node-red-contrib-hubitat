@@ -90,4 +90,51 @@ describe('Hubitat Mode Node', () => {
       }
     });
   });
+  it('should send event when systemStart received and desynchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultModeNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([modeNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentMode = 'old-value';
+      n1.hubitat.getMode = () => new Promise((res) => res([{ name: 'new-value', active: true }]));
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', 'new-value');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
+  it('should not send event when systemStart received and synchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultModeNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([modeNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentMode = 'old-value';
+      n1.hubitat.getMode = () => new Promise((res) => res([{ name: 'old-value', active: true }]));
+      let inError = false;
+      n2.on('input', () => {
+        inError = true;
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('synchronized state send event'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
 });

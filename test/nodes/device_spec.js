@@ -399,4 +399,92 @@ describe('Hubitat Device Node', () => {
       n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
     });
   });
+  it('should send event when systemStart received and desynchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'desync' } };
+      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('name', 'testAttribute');
+          msg.payload.should.have.property('value', 'sync');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
+  it('should not send event when systemStart received and synchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'sync' } };
+      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      let inError = false;
+      n2.on('input', () => {
+        inError = true;
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('synchronized attribute send event'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
+  it('should send only desynchronized attributes event when systemStart received', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, attribute: '', wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentAttributes = {
+        desync1: { name: 'desync1', value: 'desync' },
+        sync: { name: 'sync', value: 'sync' },
+        desync2: { name: 'desync2', value: 'desync' },
+      };
+      n1.hubitat.getDevice = () => new Promise((res) => res({
+        attributes: [
+          { name: 'desync1', currentValue: 'sync', dataType: 'STRING' },
+          { name: 'sync', currentValue: 'sync', dataType: 'STRING' },
+          { name: 'desync2', currentValue: 'sync', dataType: 'STRING' },
+        ],
+      }));
+      let eventRecevied = 0;
+      n2.on('input', (msg) => {
+        try {
+          eventRecevied += 1;
+          if (eventRecevied === 1) {
+            msg.payload.should.have.property('name', 'desync1');
+            msg.payload.should.have.property('value', 'sync');
+          } else if (eventRecevied === 2) {
+            msg.payload.should.have.property('name', 'desync2');
+            msg.payload.should.have.property('value', 'sync');
+            done();
+          }
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
 });
