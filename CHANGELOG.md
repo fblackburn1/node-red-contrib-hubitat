@@ -2,9 +2,12 @@
 
 ## 1.0.0
 
-* **Breaking change**: Maker API token is now saved as credential by Node-RED and must be
-  re-enter it after the upgrade. It will be not exported anymore and will be saved in a special file
+* **WARNING**: Maker API token is now saved as credential by Node-RED and must be
+  re-enter after the upgrade. It will be not exported anymore and will be saved in a special file
   `flow_cred.json`
+* improve nodes color and add new icons
+* rebuild cache on Hubitat systemStart event (enabled by default)
+* support VECTOR3 dataType for range values (e.i. `[12.0,11.2]`)
 
 ## 0.0.32
 
