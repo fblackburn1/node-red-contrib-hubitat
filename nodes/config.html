@@ -225,10 +225,10 @@
     <p>The <code>Webhook Section</code> allow to configure the URL on which the Hubitat hub will send events.
       Ensure that Node-RED is reachable by the Hubitat hub</p>
     <p>
-    <p><b>Rebuild cache on Hubitat <code>systemStart</code> event</b> implies to request hub to re-initialize hubitat's nodes.
-      If desynchronization is found, a new event for each desynchronized attribute will be sent.
-      The event generated cannot be exactly like an original event. Consider that only <code>value</code> as a valid property.
-      The <code>systemStart</code> event is triggered when Hubitat start.</p>
+    <p><b>Rebuild cache on Hubitat <code>systemStart</code> event</b> will rebuild the Node-RED cache for the Hubitat nodes.
+      During the rebuild, if a difference is found between the current Hubitat attribute value and the previous cached value a new event msg for each changed attribute will be sent from the applicable nodes.
+      If the current Hubitat attribute value is unchanged from the previous cached value, then no event msg will be sent.
+      The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.</p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
       which can be a security issue if you expose it on internet.
