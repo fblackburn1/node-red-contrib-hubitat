@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-hubitat",
-  "version": "0.0.32",
+  "version": "1.0.0",
   "description": "Node Red module for Hubitat API",
   "main": "index.js",
   "repository": {
