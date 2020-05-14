@@ -104,6 +104,25 @@ module.exports = function HubitatConfigModule(RED) {
       return device;
     };
 
+    function eventDispatcher(event) {
+      if (node.autoRefresh && event.name === 'systemStart') {
+        node.log('Resynchronize all hubitat\'s nodes');
+        node.hubitatEvent.emit('systemStart');
+      }
+      node.hubitatEvent.emit('event', event);
+      if (event.deviceId != null) {
+        node.hubitatEvent.emit(`device.${event.deviceId}`, event);
+      } else if (event.name === 'mode') {
+        node.hubitatEvent.emit('mode', event);
+      } else if (event.name.startsWith('hsm')) {
+        // pass
+      } else if (event.deviceId === null) {
+        // There are no specific condition to know if it's a location event
+        // One of property seems to have a deviceId === null
+        node.hubitatEvent.emit('location', event);
+      }
+    }
+
     if (RED.settings.httpNodeRoot !== false) {
       if (!this.webhookPath) {
         this.webhookPath = '/hubitat/webhook';
@@ -121,25 +140,8 @@ module.exports = function HubitatConfigModule(RED) {
           res.sendStatus(400);
           return;
         }
-
         const { content } = req.body;
-        if (node.autoRefresh && content.name === 'systemStart') {
-          node.log('Resynchronize all hubitat\'s nodes');
-          node.hubitatEvent.emit('systemStart');
-        }
-        node.hubitatEvent.emit('event', content);
-        if (content.deviceId != null) {
-          node.hubitatEvent.emit(`device.${content.deviceId}`, content);
-        } else if (content.name === 'mode') {
-          node.hubitatEvent.emit('mode', content);
-        } else if (content.name.startsWith('hsm')) {
-          // pass
-        } else if (content.deviceId === null) {
-          // There are no specific condition to know if it's a location event
-          // One of property seems to have a deviceId === null
-          node.hubitatEvent.emit('location', content);
-        }
-
+        eventDispatcher(content);
         res.sendStatus(204);
       };
 
