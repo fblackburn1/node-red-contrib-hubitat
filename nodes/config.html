@@ -230,7 +230,6 @@
     <p>Server field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
     <p>The <code>Webhook Section</code> allow to configure the URL on which the Hubitat hub will send events.
       Ensure that Node-RED is reachable by the Hubitat hub</p>
-    <p>
     <p><b>Rebuild cache on Hubitat <code>systemStart</code> event</b> will rebuild the Node-RED cache for the Hubitat nodes.
       During the rebuild, if a difference is found between the current Hubitat attribute value and the previous cached value a new event msg for each changed attribute will be sent from the applicable nodes.
       If the current Hubitat attribute value is unchanged from the previous cached value, then no event msg will be sent.
