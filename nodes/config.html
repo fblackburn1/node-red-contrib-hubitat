@@ -49,6 +49,7 @@
       nodeRedServer: { value: '', validate: validatorNodeRedServer },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
+      useWebsocket: { value: false },
     },
     credentials: { token: { required: true, type: 'text' } },
     label: function() {
@@ -215,6 +216,10 @@
         <label for="node-config-input-autoRefresh" style="width: auto; margin-right: 5px;">Rebuild cache on Hubitat <code>systemStart</code> event</label>
         <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
+      <div class="form-row">
+        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket</label>
+        <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
+      </div>
     </div>
   </div>
 </script>
@@ -234,6 +239,9 @@
       During the rebuild, if a difference is found between the current Hubitat attribute value and the previous cached value a new event msg for each changed attribute will be sent from the applicable nodes.
       If the current Hubitat attribute value is unchanged from the previous cached value, then no event msg will be sent.
       The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.</p>
+    <p><b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
+      Using websocket should reduce the delay before receiving event (e.g. by ~ 50 ms).
+      Warning: Some event attributes can be different or missing. (ex: type: digitial)</p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
       which can be a security issue if you expose it on internet.

@@ -5,6 +5,7 @@ module.exports = function HubitatConfigModule(RED) {
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
   const events = require('events');
+  const ws = require('ws');
 
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
@@ -40,6 +41,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.autoRefresh = config.autoRefresh;
+    this.useWebsocket = config.useWebsocket;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
@@ -123,7 +125,46 @@ module.exports = function HubitatConfigModule(RED) {
       }
     }
 
-    if (RED.settings.httpNodeRoot !== false) {
+    if (this.useWebsocket) {
+      node.closing = false;
+
+      const startWebsocket = () => {
+        node.wsTimeout = null;
+        // eslint-disable-next-line new-cap
+        const socket = new ws(`ws://${node.host}/eventsocket`);
+        socket.setMaxListeners(0);
+        node.wsServer = socket; // keep for closing
+
+        socket.on('open', () => {
+          node.hubitatEvent.emit('websocket-opened');
+        });
+        socket.on('close', () => {
+          node.hubitatEvent.emit('websocket-closed');
+          if (!node.closing) {
+            clearTimeout(node.wsTimeout);
+            node.wsTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+          }
+        });
+        socket.on('message', (data) => {
+          try {
+            const event = JSON.parse(data);
+            if (event) {
+              eventDispatcher(event);
+            }
+          } catch (err) {
+            // ignore error
+          }
+        });
+        socket.on('error', (err) => {
+          node.hubitatEvent.emit('websocket-error', { error: err });
+          clearTimeout(node.wsTimeout);
+          node.wsTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+        });
+      };
+      startWebsocket();
+    }
+
+    if (!this.useWebsocket && RED.settings.httpNodeRoot !== false) {
       if (!this.webhookPath) {
         this.webhookPath = '/hubitat/webhook';
         this.warn(`webhook url not set, set default to ${this.webhookPath}`);
@@ -163,12 +204,21 @@ module.exports = function HubitatConfigModule(RED) {
       );
 
       this.on('close', () => {
-        // eslint-disable-next-line no-underscore-dangle
-        RED.httpNode._router.stack.forEach((route, i, routes) => {
-          if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
-            routes.splice(i, 1);
+        if (this.useWebsocket) {
+          node.closing = true;
+          node.wsServer.close();
+          if (node.wsTimeout) {
+            clearTimeout(node.wsTimeout);
+            node.wsTimeout = null;
           }
-        });
+        } else { // webhook
+          // eslint-disable-next-line no-underscore-dangle
+          RED.httpNode._router.stack.forEach((route, i, routes) => {
+            if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
+              routes.splice(i, 1);
+            }
+          });
+        }
       });
     }
   }
