@@ -3,7 +3,7 @@ const helper = require('node-red-node-test-helper');
 const configNode = require('../../nodes/config.js');
 
 
-describe('Hubitat Command Node', () => {
+describe('Hubitat Config Node', () => {
   const defaultConfigNode = {
     id: 'n0',
     type: 'hubitat config',
