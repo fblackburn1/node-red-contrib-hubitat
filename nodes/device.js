@@ -5,6 +5,10 @@ module.exports = function HubitatDeviceModule(RED) {
       node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
       return value;
     }
+
+    if (typeof value !== 'string') {
+      return value;
+    }
     switch (dataType) {
       case 'STRING':
       case 'ENUM':
