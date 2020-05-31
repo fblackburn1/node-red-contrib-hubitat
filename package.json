@@ -53,6 +53,7 @@
     "stoppable": "^1.1.0"
   },
   "scripts": {
+    "test": "mocha test/*",
     "bump:prepare": "git checkout master && git pull origin master",
     "bump:patch": "npm run-script bump:prepare && npm version patch && npm run-script bump:complete",
     "bump:minor": "npm run-script bump:prepare && npm version minor && npm run-script bump:complete",
