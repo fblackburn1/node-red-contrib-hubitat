@@ -29,10 +29,10 @@ This package contains three nodes:
 
 ## Development
 
-To run linter:
+To run linters:
 
-* `npx eslint nodes/*.js`
+* `npm run-script linter`
 
 To run unit tests:
 
-* `mocha test/nodes/*_spec.js`
+* `npm test`

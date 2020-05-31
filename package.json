@@ -53,7 +53,7 @@
     "stoppable": "^1.1.0"
   },
   "scripts": {
-    "linters": "markdownlint *.md",
+    "linter": "markdownlint *.md && npx eslint nodes/*.js test/nodes/*.js",
     "test": "mocha test/*",
     "bump:prepare": "git checkout master && git pull origin master",
     "bump:patch": "npm run-script bump:prepare && npm version patch && npm run-script bump:complete",
