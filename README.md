@@ -13,25 +13,26 @@ npm install node-red-contrib-hubitat
 
 This package contains three nodes:
 
-  * `command`: To send command to Hubitat
-  * `device`: To keep a device state. It fetch the device state when deployed, then listen for
-    webhook events.
-  * `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode when deployed, then listen for
-  * `mode-setter`: To set the Hubitat mode (Day, Night, ...)
-  * `location`: To receive global location events (ex: systemStart, sunrise, sunset)
+* `command`: To send command to Hubitat
+* `device`: To keep a device state. It fetch the device state when deployed, then listen for
+  webhook events.
+* `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode when deployed, then
+  listen for
+* `mode-setter`: To set the Hubitat mode (Day, Night, ...)
+* `location`: To receive global location events (ex: systemStart, sunrise, sunset)
 
-  * `event`: A generic node to receive all events.
-  * `request`: A generic node to request any Hubitat's endpoints.
+* `event`: A generic node to receive all events.
+* `request`: A generic node to request any Hubitat's endpoints.
 
-  * `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat
-    to dispatch events to other nodes.
+* `config`: To setup Hubitat connection information. It also listen on webhook from Hubitat
+  to dispatch events to other nodes.
 
 ## Development
 
 To run linter:
 
-  * `npx eslint nodes/*.js`
+* `npx eslint nodes/*.js`
 
 To run unit tests:
 
-  * `mocha test/nodes/*_spec.js`
+* `mocha test/nodes/*_spec.js`
