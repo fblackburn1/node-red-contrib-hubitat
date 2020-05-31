@@ -44,6 +44,7 @@
     "eslint-config-airbnb-base": "^14.1.0",
     "eslint-plugin-import": "^2.20.2",
     "express": "4.17.1",
+    "markdownlint-cli": "^0.23.1",
     "mocha": "^7.2.0",
     "node-red": "^1.0.6",
     "node-red-node-test-helper": "^0.2.5",
@@ -52,6 +53,7 @@
     "stoppable": "^1.1.0"
   },
   "scripts": {
+    "linter": "markdownlint *.md && npx eslint nodes/*.js test/nodes/*.js",
     "test": "mocha test/*",
     "bump:prepare": "git checkout master && git pull origin master",
     "bump:patch": "npm run-script bump:prepare && npm version patch && npm run-script bump:complete",

@@ -22,7 +22,8 @@
 
 * add new `event` node to allow to receive all events
 * add new `request` node to allow to make a generic request to hubitat
-* `device`: rename the `Undefined` attribute to `All` and allow to input a message without attribute to output all atttributes
+* `device`: rename the `Undefined` attribute to `All` and allow to input a message without attribute
+  to output all atttributes
 * `device`: bind extra event properties to the output messages (unit, descriptionText, type, etc..)
 * `device`: fix status display for VECTOR3 dataType
 * `config`: improve error message when configuring webhook
@@ -44,7 +45,8 @@
 
 * add new `mode-setter` node to set mode
 * add support for `VECTOR3` and `JSON_OBJECT` dataType
-* fix disabled input argument when device has duplicate commands available (with and without argument)
+* fix disabled input argument when device has duplicate commands available (with and without
+  argument)
 
 ## 0.0.27
 
@@ -76,9 +78,10 @@
 
 * add linter (eslint)
 * use Node-RED logging system
-    * If you want to have debug output, just set Node-RED log level to debug (`settings.js`)
+  * If you want to have debug output, just set Node-RED log level to debug (`settings.js`)
 * `config` node: Node-RED server field has now a default value (not only a placeholder)
-* `config` node: readd (and fix) an helper that verify if webhookPath is already configured in another node
+* `config` node: readd (and fix) an helper that verify if webhookPath is already configured in
+  another node
 * sorting device is now case insensitive
 
 ## 0.0.22
@@ -88,22 +91,25 @@
 ## 0.0.21
 
 * `command` node: fix wrong condition from 0.0.19
-* `config` node: remove an helper that verify if webhookPath is already configured in another node (added in 0.0.19)
+* `config` node: remove an helper that verify if webhookPath is already configured in another node
+  (added in 0.0.19)
 
 ## 0.0.20
 
 * fix dependency issue
 
 ## 0.0.19
+
 * `config` node: support multi hub
 * `config` node: allow to customize the webhook path. This allow to:
-    * distinguish endpoint when using many hubs
-    * *secure* the path to avoid guessing attacks
+  * distinguish endpoint when using many hubs
+  * *secure* the path to avoid guessing attacks
 * `config` node: small validation on `Node-RED Server` field to avoid typo with white space
 * `device` node: fix bug that remove the status when requesting device attribute
 * `command` node: fix bug when sending integer 0 as command arguments
 
 ## 0.0.18
+
 * `device` node: add attribute configuration
 * `device` node: add node status when an `attribute` is selected
 * `device` node: add payload property: `value`
@@ -111,16 +117,20 @@
 * add CHANGELOG.md to follow changes
 
 ## 0.0.17
+
 * new icons
 * `config` node: add webhookd section to help configuration
 * fix url issue that can prevent user to config their nodes
 
 ## 0.0.16
+
 * populate name with the device label
 
 ## 0.0.15
+
 * add `mode` node to get the current mode state (day, night, ...)
 * improve documentation
 
 ## 0.0.14
+
 * `command` node: allow to override command/arguments from message properties
