@@ -16,6 +16,10 @@ describe('Hubitat Config Node', () => {
     webhookPath: '/hubitat/webhook',
   };
 
+  afterEach(() => {
+    helper.unload();
+  });
+
   it('should be loaded', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
