@@ -20,6 +20,7 @@ jobs:
       with:
         files: "*.md"
         config_file: ".markdownlint.yml"
+    - uses: stefanoeb/eslint-action@1.0.2
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v1
       with:
