@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+* fix issue with rebuild cache when attributes are not string
+
 ## 1.0.0
 
 * **WARNING**: Maker API token is now saved as credential by Node-RED and must be
