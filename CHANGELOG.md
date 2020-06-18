@@ -11,6 +11,7 @@
   `flow_cred.json`
 * improve nodes color and add new icons
 * rebuild cache on Hubitat systemStart event (enabled by default)
+* `command`: allow to override device with the device ID (e.i. msg.deviceId = 12)
 * support VECTOR3 dataType for range values (e.i. `[12.0,11.2]`)
 
 ## 0.0.32
