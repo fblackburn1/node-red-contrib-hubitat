@@ -136,9 +136,11 @@ module.exports = function HubitatConfigModule(RED) {
         node.wsServer = socket; // keep for closing
 
         socket.on('open', () => {
+          node.log('Websocket connected');
           node.hubitatEvent.emit('websocket-opened');
         });
         socket.on('close', () => {
+          node.log('Websocket closed');
           node.hubitatEvent.emit('websocket-closed');
           if (!node.closing) {
             clearTimeout(node.wsTimeout);
@@ -156,6 +158,7 @@ module.exports = function HubitatConfigModule(RED) {
           }
         });
         socket.on('error', (err) => {
+          node.error(`Websocket error: ${JSON.stringify(err)}`);
           node.hubitatEvent.emit('websocket-error', { error: err });
           clearTimeout(node.wsTimeout);
           node.wsTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
