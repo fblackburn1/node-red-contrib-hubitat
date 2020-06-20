@@ -90,6 +90,21 @@
       if (!nodeRedServer.val()) {
         nodeRedServer.val(window.location.origin);
       }
+
+      const useWebsocket = $('#node-config-input-useWebsocket');
+      function disableWebhook() {
+        if(useWebsocket.is(':checked')){
+          $('#node-config-input-nodeRedServer').attr('disabled', 'disabled');
+          $('#node-config-input-webhookPath').attr('disabled', 'disabled');
+          $('#node-config-button-webhookConfigure').attr('disabled', 'disabled');
+        } else {
+          $('#node-config-input-nodeRedServer').removeAttr('disabled');
+          $('#node-config-input-webhookPath').removeAttr('disabled');
+          $('#node-config-button-webhookConfigure').removeAttr('disabled');
+        }
+      }
+      useWebsocket.click(disableWebhook);
+      disableWebhook();
     }
   });
 
