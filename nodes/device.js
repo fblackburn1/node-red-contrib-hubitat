@@ -109,6 +109,7 @@ module.exports = function HubitatDeviceModule(RED) {
       const attribute = node.currentAttributes[event.name];
       if (!attribute) {
         node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
+        return;
       }
       attribute.value = castHubitatValue(node, attribute.dataType, event.value);
       attribute.currentValue = attribute.value; // deprecated since 0.0.18
