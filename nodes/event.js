@@ -11,6 +11,8 @@ module.exports = function HubitatEventModule(RED) {
       return;
     }
 
+    node.status({}); // clean status if toggle useWebsocket
+
     const callback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
       node.log(`Event: ${event.name}`);
@@ -24,13 +26,11 @@ module.exports = function HubitatEventModule(RED) {
     this.hubitat.hubitatEvent.on('event', callback);
 
     const wsOpened = async () => {
-      const successIcon = '\u2713'; // check mark
-      node.status({ text: `[${successIcon}]` });
+      node.status({ fill: 'blue', shape: 'ring', text: '' });
     };
     this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
     const wsClosed = async () => {
-      const failIcon = '\u2717'; // cross mark
-      node.status({ text: `[${failIcon}]` });
+      node.status({ fill: 'red', shape: 'ring', text: 'WS ERROR' });
     };
     this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);
     this.hubitat.hubitatEvent.on('websocket-error', wsClosed);

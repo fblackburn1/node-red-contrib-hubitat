@@ -63,12 +63,42 @@ module.exports = function HubitatDeviceModule(RED) {
     this.attribute = config.attribute;
     this.currentAttributes = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
+    this.currentStatusText = '';
+    this.currentStatusFill = undefined;
+    this.currentStatusWs = 'NOK';
+    this.wsState = '';
     const node = this;
 
     if (!node.hubitat) {
       node.error('Hubitat server not configured');
       return;
     }
+
+    this.updateStatus = (fill = null, text = null) => {
+      const status = { fill, shape: this.shape, text };
+      node.currentStatusText = text;
+      node.currentStatusFill = fill;
+
+      if (fill === null) {
+        delete status.shape;
+        delete status.fill;
+      }
+      if (text === null) {
+        delete status.text;
+      }
+      if (node.hubitat.useWebsocket) {
+        if (fill === null) {
+          status.fill = 'blue';
+          status.shape = this.shape;
+        }
+        if (node.currentStatusWs !== 'OK') {
+          status.fill = 'red';
+          status.text = 'WS ERROR';
+        }
+      }
+      node.status(status);
+    };
+
     async function initializeDevice() {
       return node.hubitat.getDevice(node.deviceId).then((device) => {
         if (!device.attributes) { throw new Error(JSON.stringify(device)); }
@@ -84,15 +114,15 @@ module.exports = function HubitatDeviceModule(RED) {
           if (!attribute) {
             throw new Error(`Selected attribute (${node.attribute}) is not handled by device`);
           }
-          node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
+          node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
           node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
         } else {
-          node.status({});
+          node.updateStatus();
           node.log('Initialized');
         }
       }).catch((err) => {
         node.warn(`Unable to initialize device: ${err.message}`);
-        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
+        node.updateStatus('red', 'Uninitialized');
         throw err;
       });
     }
@@ -108,17 +138,17 @@ module.exports = function HubitatDeviceModule(RED) {
       }
       const attribute = node.currentAttributes[event.name];
       if (!attribute) {
-        node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
+        node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
       }
       attribute.value = castHubitatValue(node, attribute.dataType, event.value);
       attribute.currentValue = attribute.value; // deprecated since 0.0.18
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
-          node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
+          node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
           node.log(`${node.attribute}: ${attribute.value}`);
         } else {
-          node.status({});
+          node.updateStatus();
           node.log('Attributes refreshed');
         }
         if (node.sendEvent) {
@@ -151,6 +181,18 @@ module.exports = function HubitatDeviceModule(RED) {
     };
     this.hubitat.hubitatEvent.on('systemStart', systemStartCallback);
 
+    const wsOpened = async () => {
+      node.currentStatusWs = 'OK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
+    const wsClosed = async () => {
+      node.currentStatusWs = 'NOK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);
+    this.hubitat.hubitatEvent.on('websocket-error', wsClosed);
+
     initializeDevice().catch(() => {});
 
     node.on('input', async (msg, send, done) => {
@@ -168,14 +210,14 @@ module.exports = function HubitatDeviceModule(RED) {
         msg.payload = { ...node.currentAttributes };
         msg.topic = node.name;
         send(msg);
-        node.status({});
+        node.updateStatus();
         done();
         return;
       }
 
       const attribute = node.currentAttributes[attributeSearched];
       if (!attribute) {
-        node.status({ fill: 'red', shape: node.shape, text: `Invalid attribute: ${attributeSearched}` });
+        node.updateStatus('red', `Invalid attribute: ${attributeSearched}`);
         done();
         return;
       }
@@ -184,9 +226,9 @@ module.exports = function HubitatDeviceModule(RED) {
       msg.topic = node.name;
       send(msg);
       if (!node.attribute) {
-        node.status({});
+        node.updateStatus();
       } else if (node.attribute === attribute.name) {
-        node.status({ fill: 'blue', shape: node.shape, text: `${node.attribute}: ${JSON.stringify(attribute.value)}` });
+        node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
       }
       done();
     });
@@ -195,6 +237,9 @@ module.exports = function HubitatDeviceModule(RED) {
       node.debug('Closed');
       this.hubitat.hubitatEvent.removeListener(`device.${node.deviceId}`, eventCallback);
       this.hubitat.hubitatEvent.removeListener('systemStart', systemStartCallback);
+      this.hubitat.hubitatEvent.removeListener('websocket-opened', wsOpened);
+      this.hubitat.hubitatEvent.removeListener('websocket-closed', wsClosed);
+      this.hubitat.hubitatEvent.removeListener('websocket-error', wsClosed);
     });
   }
 
