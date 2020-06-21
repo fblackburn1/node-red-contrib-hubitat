@@ -88,8 +88,10 @@ module.exports = function HubitatDeviceModule(RED) {
       }
       if (node.hubitat.useWebsocket) {
         if (fill === null) {
-          status.fill = 'blue';
+          status.fill = 'green';
           status.shape = this.shape;
+        } else if (fill === 'blue') {
+          status.fill = 'green';
         }
         if (node.currentStatusWs !== 'OK') {
           status.fill = 'red';

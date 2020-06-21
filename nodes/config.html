@@ -256,7 +256,9 @@
       The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.</p>
     <p><b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
       Using websocket should reduce the delay before receiving event (e.g. by ~ 50 ms).
-      Warning: Some event attributes can be different or missing. (ex: type: digitial)</p>
+      This option remove usage of the webhook configuration section and node status icons will be green instead of blue.
+      Warning: Some event attributes can be different or missing. (ex: <code>type: digitial</code>)
+    </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
       which can be a security issue if you expose it on internet.

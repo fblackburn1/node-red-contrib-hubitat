@@ -32,7 +32,7 @@ module.exports = function HubitatLocationModule(RED) {
     this.hubitat.hubitatEvent.on('location', callback);
 
     const wsOpened = async () => {
-      node.status({ fill: 'blue', shape: 'ring', text: '' });
+      node.status({ fill: 'green', shape: 'ring', text: '' });
     };
     this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
     const wsClosed = async () => {

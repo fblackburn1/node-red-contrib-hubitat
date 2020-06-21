@@ -26,7 +26,7 @@ module.exports = function HubitatEventModule(RED) {
     this.hubitat.hubitatEvent.on('event', callback);
 
     const wsOpened = async () => {
-      node.status({ fill: 'blue', shape: 'ring', text: '' });
+      node.status({ fill: 'green', shape: 'ring', text: '' });
     };
     this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
     const wsClosed = async () => {
