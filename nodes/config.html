@@ -25,22 +25,28 @@
     });
     return true;
   }
-  function validatorWhiteSpace(value) {
-    if (value.indexOf(' ') >= 0) {
-      return false;
+  function validatorNodeRedServer(value) {
+    value = value.replace(new RegExp(' ', 'g'),'');
+    if (!value.startsWith('http://') && !value.startsWith('https://')) {
+      value = `http://${value}`;
     }
+    $("#node-config-input-nodeRedServer").val(value);
     return true;
   }
-
+  function validatorRemoveScheme(value) {
+    value = value.replace(new RegExp('^http[s]?://'),'');
+    $("#node-config-input-host").val(value);
+    return true;
+  }
   RED.nodes.registerType('hubitat config', {
     category: 'config',
     defaults: {
       name: { value: '' },
       usetls: { value: false },
-      host: { value: '', required: true },
+      host: { value: '', required: true, validate: validatorRemoveScheme },
       port: { value: 80, required: true, validate: RED.validators.number() },
       appId: { value: '', required: true, validate: RED.validators.number() },
-      nodeRedServer: { value: '', validate: validatorWhiteSpace },
+      nodeRedServer: { value: '', validate: validatorNodeRedServer },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
     },
