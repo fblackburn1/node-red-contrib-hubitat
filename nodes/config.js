@@ -131,7 +131,8 @@ module.exports = function HubitatConfigModule(RED) {
       const startWebsocket = () => {
         node.reconnectTimeout = null;
         node.pingTimeout = null;
-        const socket = new WebSocket(`ws://${node.host}/eventsocket`);
+        const wsScheme = ((this.usetls) ? 'wss' : 'ws');
+        const socket = new WebSocket(`${wsScheme}://${node.host}/eventsocket`);
         socket.setMaxListeners(0);
         node.wsServer = socket; // keep for closing
 
