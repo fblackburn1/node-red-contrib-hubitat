@@ -5,7 +5,7 @@ module.exports = function HubitatConfigModule(RED) {
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
   const events = require('events');
-  const ws = require('ws');
+  const WebSocket = require('ws');
 
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
@@ -129,22 +129,40 @@ module.exports = function HubitatConfigModule(RED) {
       node.closing = false;
 
       const startWebsocket = () => {
-        node.wsTimeout = null;
-        // eslint-disable-next-line new-cap
-        const socket = new ws(`ws://${node.host}/eventsocket`);
+        node.reconnectTimeout = null;
+        node.pingTimeout = null;
+        const socket = new WebSocket(`ws://${node.host}/eventsocket`);
         socket.setMaxListeners(0);
         node.wsServer = socket; // keep for closing
+
+        const reconnect = () => {
+          node.log('Websocket reconnection triggered');
+          clearTimeout(node.reconnectTimeout);
+          node.reconnectTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+        };
+        const heartbeat = () => {
+          clearTimeout(this.pingTimeout);
+          // Use `WebSocket#terminate()`, which immediately destroys the connection,
+          // instead of `WebSocket#close()`, which waits for the close timer.
+          // Delay should be equal to the interval at which your server
+          // sends out pings plus a conservative assumption of the latency.
+          this.pingTimeout = setTimeout(() => {
+            socket.terminate(); // terminate seems to trigger a close event
+          }, 120000 + 10000); // server sends ping with 2 min interval + 10 sec for latency
+        };
 
         socket.on('open', () => {
           node.log('Websocket connected');
           node.hubitatEvent.emit('websocket-opened');
+          heartbeat();
         });
+        socket.on('ping', heartbeat);
         socket.on('close', () => {
           node.log('Websocket closed');
           node.hubitatEvent.emit('websocket-closed');
+          clearTimeout(this.pingTimeout);
           if (!node.closing) {
-            clearTimeout(node.wsTimeout);
-            node.wsTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+            reconnect();
           }
         });
         socket.on('message', (data) => {
@@ -160,8 +178,7 @@ module.exports = function HubitatConfigModule(RED) {
         socket.on('error', (err) => {
           node.error(`Websocket error: ${JSON.stringify(err)}`);
           node.hubitatEvent.emit('websocket-error', { error: err });
-          clearTimeout(node.wsTimeout);
-          node.wsTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+          reconnect();
         });
       };
       startWebsocket();
@@ -209,11 +226,8 @@ module.exports = function HubitatConfigModule(RED) {
       this.on('close', () => {
         if (this.useWebsocket) {
           node.closing = true;
+          clearTimeout(node.reconnectTimeout);
           node.wsServer.close();
-          if (node.wsTimeout) {
-            clearTimeout(node.wsTimeout);
-            node.wsTimeout = null;
-          }
         } else { // webhook
           // eslint-disable-next-line no-underscore-dangle
           RED.httpNode._router.stack.forEach((route, i, routes) => {
