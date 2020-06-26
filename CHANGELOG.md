@@ -3,6 +3,7 @@
 ## 1.1.0
 
 * `config`: add option to use WebSocket instead WebHook
+* `command`: add missing documentation about the `deviceId` message property
 
 ## 1.0.1
 
