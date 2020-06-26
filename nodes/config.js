@@ -5,6 +5,7 @@ module.exports = function HubitatConfigModule(RED) {
   const bodyParser = require('body-parser');
   const cookieParser = require('cookie-parser');
   const events = require('events');
+  const WebSocket = require('ws');
 
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
@@ -40,6 +41,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.autoRefresh = config.autoRefresh;
+    this.useWebsocket = config.useWebsocket;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
 
@@ -104,7 +106,86 @@ module.exports = function HubitatConfigModule(RED) {
       return device;
     };
 
-    if (RED.settings.httpNodeRoot !== false) {
+    function eventDispatcher(event) {
+      if (node.autoRefresh && event.name === 'systemStart') {
+        node.log('Resynchronize all hubitat\'s nodes');
+        node.hubitatEvent.emit('systemStart');
+      }
+      node.hubitatEvent.emit('event', event);
+      if (event.deviceId != null) {
+        node.hubitatEvent.emit(`device.${event.deviceId}`, event);
+      } else if (event.name === 'mode') {
+        node.hubitatEvent.emit('mode', event);
+      } else if (event.name.startsWith('hsm')) {
+        // pass
+      } else if (event.deviceId === null) {
+        // There are no specific condition to know if it's a location event
+        // One of property seems to have a deviceId === null
+        node.hubitatEvent.emit('location', event);
+      }
+    }
+
+    if (this.useWebsocket) {
+      node.closing = false;
+
+      const startWebsocket = () => {
+        node.reconnectTimeout = null;
+        node.pingTimeout = null;
+        const wsScheme = ((this.usetls) ? 'wss' : 'ws');
+        const socket = new WebSocket(`${wsScheme}://${node.host}/eventsocket`);
+        socket.setMaxListeners(0);
+        node.wsServer = socket; // keep for closing
+
+        const reconnect = () => {
+          node.log('Websocket reconnection triggered');
+          clearTimeout(node.reconnectTimeout);
+          node.reconnectTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+        };
+        const heartbeat = () => {
+          clearTimeout(this.pingTimeout);
+          // Use `WebSocket#terminate()`, which immediately destroys the connection,
+          // instead of `WebSocket#close()`, which waits for the close timer.
+          // Delay should be equal to the interval at which your server
+          // sends out pings plus a conservative assumption of the latency.
+          this.pingTimeout = setTimeout(() => {
+            socket.terminate(); // terminate seems to trigger a close event
+          }, 120000 + 10000); // server sends ping with 2 min interval + 10 sec for latency
+        };
+
+        socket.on('open', () => {
+          node.log('Websocket connected');
+          node.hubitatEvent.emit('websocket-opened');
+          heartbeat();
+        });
+        socket.on('ping', heartbeat);
+        socket.on('close', () => {
+          node.log('Websocket closed');
+          node.hubitatEvent.emit('websocket-closed');
+          clearTimeout(this.pingTimeout);
+          if (!node.closing) {
+            reconnect();
+          }
+        });
+        socket.on('message', (data) => {
+          try {
+            const event = JSON.parse(data);
+            if (event) {
+              eventDispatcher(event);
+            }
+          } catch (err) {
+            // ignore error
+          }
+        });
+        socket.on('error', (err) => {
+          node.error(`Websocket error: ${JSON.stringify(err)}`);
+          node.hubitatEvent.emit('websocket-error', { error: err });
+          reconnect();
+        });
+      };
+      startWebsocket();
+    }
+
+    if (!this.useWebsocket && RED.settings.httpNodeRoot !== false) {
       if (!this.webhookPath) {
         this.webhookPath = '/hubitat/webhook';
         this.warn(`webhook url not set, set default to ${this.webhookPath}`);
@@ -121,25 +202,8 @@ module.exports = function HubitatConfigModule(RED) {
           res.sendStatus(400);
           return;
         }
-
         const { content } = req.body;
-        if (node.autoRefresh && content.name === 'systemStart') {
-          node.log('Resynchronize all hubitat\'s nodes');
-          node.hubitatEvent.emit('systemStart');
-        }
-        node.hubitatEvent.emit('event', content);
-        if (content.deviceId != null) {
-          node.hubitatEvent.emit(`device.${content.deviceId}`, content);
-        } else if (content.name === 'mode') {
-          node.hubitatEvent.emit('mode', content);
-        } else if (content.name.startsWith('hsm')) {
-          // pass
-        } else if (content.deviceId === null) {
-          // There are no specific condition to know if it's a location event
-          // One of property seems to have a deviceId === null
-          node.hubitatEvent.emit('location', content);
-        }
-
+        eventDispatcher(content);
         res.sendStatus(204);
       };
 
@@ -161,12 +225,18 @@ module.exports = function HubitatConfigModule(RED) {
       );
 
       this.on('close', () => {
-        // eslint-disable-next-line no-underscore-dangle
-        RED.httpNode._router.stack.forEach((route, i, routes) => {
-          if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
-            routes.splice(i, 1);
-          }
-        });
+        if (this.useWebsocket) {
+          node.closing = true;
+          clearTimeout(node.reconnectTimeout);
+          node.wsServer.close();
+        } else { // webhook
+          // eslint-disable-next-line no-underscore-dangle
+          RED.httpNode._router.stack.forEach((route, i, routes) => {
+            if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
+              routes.splice(i, 1);
+            }
+          });
+        }
       });
     }
   }

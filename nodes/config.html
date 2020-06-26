@@ -49,6 +49,7 @@
       nodeRedServer: { value: '', validate: validatorNodeRedServer },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
+      useWebsocket: { value: false },
     },
     credentials: { token: { required: true, type: 'text' } },
     label: function() {
@@ -89,6 +90,21 @@
       if (!nodeRedServer.val()) {
         nodeRedServer.val(window.location.origin);
       }
+
+      const useWebsocket = $('#node-config-input-useWebsocket');
+      function disableWebhook() {
+        if(useWebsocket.is(':checked')){
+          $('#node-config-input-nodeRedServer').attr('disabled', 'disabled');
+          $('#node-config-input-webhookPath').attr('disabled', 'disabled');
+          $('#node-config-button-webhookConfigure').attr('disabled', 'disabled');
+        } else {
+          $('#node-config-input-nodeRedServer').removeAttr('disabled');
+          $('#node-config-input-webhookPath').removeAttr('disabled');
+          $('#node-config-button-webhookConfigure').removeAttr('disabled');
+        }
+      }
+      useWebsocket.click(disableWebhook);
+      disableWebhook();
     }
   });
 
@@ -215,6 +231,10 @@
         <label for="node-config-input-autoRefresh" style="width: auto; margin-right: 5px;">Rebuild cache on Hubitat <code>systemStart</code> event</label>
         <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
+      <div class="form-row">
+        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket</label>
+        <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
+      </div>
     </div>
   </div>
 </script>
@@ -222,21 +242,35 @@
 <script type="text/html" data-help-name="hubitat config">
   <p>Creates a new Hubitat configuration node</p>
   <h3>Details</h3>
-    <p>Hubitat Maker API must be installed to use this node.
-    All required fields can be found inside example URL
-    <p>In the following example, the application ID is <b>12</b>:
-    <code>http://localhost/apps/api/<b>12</b>/devices?access_token=...</code></p>
-    <p>Token correspond to the <b>access_token</b> value.
-    <p>Server field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
-    <p>The <code>Webhook Section</code> allow to configure the URL on which the Hubitat hub will send events.
-      Ensure that Node-RED is reachable by the Hubitat hub</p>
     <p>
-    <p><b>Rebuild cache on Hubitat <code>systemStart</code> event</b> will rebuild the Node-RED cache for the Hubitat nodes.
+      Hubitat Maker API must be installed to use this node.
+      All required fields can be found inside example URL
+    </p>
+    <p>
+      In the following example, the <b>Application ID</b> is <b>12</b>:
+      <code>http://localhost/apps/api/<b>12</b>/devices?access_token=...</code>
+    </p>
+    <p><b>Token</b> correspond to the <b>access_token</b> value.
+    <p><b>Server</b> field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
+    <p>
+      The <b>Webhook configuration</b> section allow to configure the URL on which the Hubitat hub will send events.
+      Ensure that Node-RED is reachable by the Hubitat hub
+    </p>
+    <p>
+      <b>Rebuild cache on Hubitat <code>systemStart</code> event</b> will rebuild the Node-RED cache for the Hubitat nodes.
       During the rebuild, if a difference is found between the current Hubitat attribute value and the previous cached value a new event msg for each changed attribute will be sent from the applicable nodes.
       If the current Hubitat attribute value is unchanged from the previous cached value, then no event msg will be sent.
-      The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.</p>
+      The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.
+    </p>
+    <p>
+      <b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
+      Using websocket should reduce the delay before receiving event (e.g. by ~ 50 ms).
+      This option remove usage of the webhook configuration section and node status icons will be green instead of blue.
+      Warning: Some event attributes can be different or missing. (ex: <code>type: digitial</code>)
+    </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
       which can be a security issue if you expose it on internet.
+      Please read Node-RED documentation to add security on routes exposed by HTTP.
     </p>
 </script>

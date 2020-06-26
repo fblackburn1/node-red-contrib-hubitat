@@ -7,21 +7,51 @@ module.exports = function HubitatModeModule(RED) {
     this.sendEvent = config.sendEvent;
     this.currentMode = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
+    this.currentStatusText = '';
+    this.currentStatusFill = undefined;
+    this.currentStatusWs = 'NOK';
     const node = this;
 
     if (!node.hubitat) {
       node.error('Hubitat server not configured');
       return;
     }
+    this.updateStatus = (fill = null, text = null) => {
+      const status = { fill, shape: this.shape, text };
+      node.currentStatusText = text;
+      node.currentStatusFill = fill;
+
+      if (fill === null) {
+        delete status.shape;
+        delete status.fill;
+      }
+      if (text === null) {
+        delete status.text;
+      }
+      if (node.hubitat.useWebsocket) {
+        if (fill === null) {
+          status.fill = 'green';
+          status.shape = this.shape;
+        } else if (fill === 'blue') {
+          status.fill = 'green';
+        }
+        if (node.currentStatusWs !== 'OK') {
+          status.fill = 'red';
+          status.text = 'WS ERROR';
+        }
+      }
+      node.status(status);
+    };
+
     async function initializeMode() {
       return node.hubitat.getMode().then((mode) => {
         if (!mode) { throw new Error(JSON.stringify(mode)); }
         node.currentMode = mode.filter((eachMode) => eachMode.active)[0].name;
         node.log(`Initialized. mode: ${node.currentMode}`);
-        node.status({ fill: 'blue', shape: node.shape, text: node.currentMode });
+        node.updateStatus('blue', node.currentMode);
       }).catch((err) => {
         node.warn(`Unable to initialize mode: ${err.message}`);
-        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
+        node.updateStatus('red', 'Uninitialized');
         throw err;
       });
     }
@@ -43,7 +73,7 @@ module.exports = function HubitatModeModule(RED) {
         };
         node.send(msg);
       }
-      node.status({ fill: 'blue', shape: node.shape, text: node.currentMode });
+      node.updateStatus('blue', node.currentMode);
     };
     this.hubitat.hubitatEvent.on('mode', eventCallback);
 
@@ -61,6 +91,18 @@ module.exports = function HubitatModeModule(RED) {
       }
     };
     this.hubitat.hubitatEvent.on('systemStart', systemStartCallback);
+
+    const wsOpened = async () => {
+      node.currentStatusWs = 'OK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
+    const wsClosed = async () => {
+      node.currentStatusWs = 'NOK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);
+    this.hubitat.hubitatEvent.on('websocket-error', wsClosed);
 
     initializeMode().catch(() => {});
 
@@ -82,10 +124,14 @@ module.exports = function HubitatModeModule(RED) {
       send(output);
       done();
     });
+
     node.on('close', () => {
       node.debug('Closed');
       this.hubitat.hubitatEvent.removeListener('mode', eventCallback);
       this.hubitat.hubitatEvent.removeListener('systemStart', systemStartCallback);
+      this.hubitat.hubitatEvent.removeListener('websocket-opened', wsOpened);
+      this.hubitat.hubitatEvent.removeListener('websocket-closed', wsClosed);
+      this.hubitat.hubitatEvent.removeListener('websocket-error', wsClosed);
     });
   }
 
