@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.1.0
+
+* `config`: add option to use WebSocket instead WebHook
+
 ## 1.0.1
 
 * fix issue with rebuild cache when attributes are not string
