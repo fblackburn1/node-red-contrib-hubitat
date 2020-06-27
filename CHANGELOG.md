@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.1
+
+* `config`: fix too fast reconnect on error by adding a delay between reconnect
+* `config`: fix issue when redeploying websocket
+* `config`: fix `event`/`location` status issue when using with websocket
+
 ## 1.1.0
 
 * `config`: add option to use WebSocket instead WebHook
