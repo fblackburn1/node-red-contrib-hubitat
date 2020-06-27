@@ -235,22 +235,22 @@ module.exports = function HubitatConfigModule(RED) {
         this.postCallback,
         this.webErrorHandler,
       );
-
-      this.on('close', () => {
-        if (this.useWebsocket) {
-          node.closing = true;
-          clearTimeout(node.reconnectTimeout);
-          node.wsServer.close();
-        } else { // webhook
-          // eslint-disable-next-line no-underscore-dangle
-          RED.httpNode._router.stack.forEach((route, i, routes) => {
-            if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
-              routes.splice(i, 1);
-            }
-          });
-        }
-      });
     }
+
+    this.on('close', () => {
+      if (node.useWebsocket) {
+        node.closing = true;
+        clearTimeout(node.reconnectTimeout);
+        node.wsServer.close();
+      } else { // webhook
+        // eslint-disable-next-line no-underscore-dangle
+        RED.httpNode._router.stack.forEach((route, i, routes) => {
+          if (route.route && route.route.path === node.webhookPath && route.route.methods.post) {
+            routes.splice(i, 1);
+          }
+        });
+      }
+    });
   }
 
   RED.nodes.registerType('hubitat config', HubitatConfigNode, {
