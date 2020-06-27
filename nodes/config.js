@@ -127,6 +127,13 @@ module.exports = function HubitatConfigModule(RED) {
 
     if (this.useWebsocket) {
       node.closing = false;
+      const reconnectDelays = [
+        3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, 3000, // 3s * 10 = 30sec
+        15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000,
+        15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, 15000, // 15s * 20 = 5min
+        60000, // 1min
+      ];
+      let reconnectAttempt = 0;
 
       const startWebsocket = () => {
         node.reconnectTimeout = null;
@@ -136,10 +143,13 @@ module.exports = function HubitatConfigModule(RED) {
         socket.setMaxListeners(0);
         node.wsServer = socket; // keep for closing
 
-        const reconnect = () => {
-          node.log('Websocket reconnection triggered');
+        const reconnect = (cause) => {
+          node.debug(`Websocket reconnection triggered by "${cause}" event`);
           clearTimeout(node.reconnectTimeout);
-          node.reconnectTimeout = setTimeout(() => { startWebsocket(); }, 3000); // 3 sec
+          const delay = (
+            reconnectDelays[reconnectAttempt] || reconnectDelays[reconnectDelays.length - 1]
+          );
+          node.reconnectTimeout = setTimeout(() => { startWebsocket(); }, delay);
         };
         const heartbeat = () => {
           clearTimeout(this.pingTimeout);
@@ -155,6 +165,7 @@ module.exports = function HubitatConfigModule(RED) {
         socket.on('open', () => {
           node.log('Websocket connected');
           node.hubitatEvent.emit('websocket-opened');
+          reconnectAttempt = 0;
           heartbeat();
         });
         socket.on('ping', heartbeat);
@@ -163,7 +174,7 @@ module.exports = function HubitatConfigModule(RED) {
           node.hubitatEvent.emit('websocket-closed');
           clearTimeout(this.pingTimeout);
           if (!node.closing) {
-            reconnect();
+            reconnect('close');
           }
         });
         socket.on('message', (data) => {
@@ -179,7 +190,8 @@ module.exports = function HubitatConfigModule(RED) {
         socket.on('error', (err) => {
           node.error(`Websocket error: ${JSON.stringify(err)}`);
           node.hubitatEvent.emit('websocket-error', { error: err });
-          reconnect();
+          reconnectAttempt += 1;
+          reconnect('error');
         });
       };
       startWebsocket();
