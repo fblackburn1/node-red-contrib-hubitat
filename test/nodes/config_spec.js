@@ -14,6 +14,7 @@ describe('Hubitat Config Node', () => {
     appId: 1,
     nodeRedServer: 'localhost',
     webhookPath: '/hubitat/webhook',
+    useWebsocket: false,
   };
 
   afterEach(() => {
@@ -32,6 +33,19 @@ describe('Hubitat Config Node', () => {
         n0.should.have.property('appId', 1);
         n0.should.have.property('nodeRedServer', 'localhost');
         n0.should.have.property('webhookPath', '/hubitat/webhook');
+        n0.should.have.property('useWebsocket', false);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should not load websocket when not used', (done) => {
+    const flow = [{ ...defaultConfigNode, useWebsocket: false }];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      try {
+        n0.should.not.have.property('wsServer');
         done();
       } catch (err) {
         done(err);
