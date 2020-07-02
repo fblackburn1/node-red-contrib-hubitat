@@ -11,7 +11,7 @@ npm install node-red-contrib-hubitat
 
 ## Quick Start
 
-This package contains three nodes:
+This package contains 10 nodes:
 
 * `command`: To send command to Hubitat
 * `device`: To keep a device state. It fetch the device state when deployed, then listen for
