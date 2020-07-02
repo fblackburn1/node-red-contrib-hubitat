@@ -7,6 +7,9 @@ module.exports = function HubitatHsmModule(RED) {
     this.sendEvent = config.sendEvent;
     this.currentHsm = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
+    this.currentStatusText = '';
+    this.currentStatusFill = undefined;
+    this.currentStatusWs = 'NOK';
     this.alert = false;
 
     const node = this;
@@ -15,20 +18,47 @@ module.exports = function HubitatHsmModule(RED) {
       node.error('Hubitat server not configured');
       return;
     }
+    this.updateStatus = (fill = null, text = null) => {
+      const status = { fill, shape: this.shape, text };
+      node.currentStatusText = text;
+      node.currentStatusFill = fill;
+
+      if (fill === null) {
+        delete status.shape;
+        delete status.fill;
+      }
+      if (text === null) {
+        delete status.text;
+      }
+      if (node.hubitat.useWebsocket) {
+        if (fill === null) {
+          status.fill = 'green';
+          status.shape = this.shape;
+        } else if (fill === 'blue') {
+          status.fill = 'green';
+        }
+        if (node.currentStatusWs !== 'OK') {
+          status.fill = 'red';
+          status.text = 'WS ERROR';
+        }
+      }
+      node.status(status);
+    };
+
     async function initializeHsm() {
       return node.hubitat.getHsm().then((hsm) => {
         if (!hsm) { throw new Error(JSON.stringify(hsm)); }
         node.currentHsm = hsm.hsm;
         node.log(`Initialized. HSM: ${node.currentHsm}`);
-        node.status({ fill: 'blue', shape: node.shape, text: node.currentHsm });
+        node.updateStatus('blue', node.currentHsm);
       }).catch((err) => {
         node.warn(`Unable to initialize mode: ${err.message}`);
-        node.status({ fill: 'red', shape: node.shape, text: 'Uninitialized' });
+        node.updateStatus('red', 'Uninitialized');
         throw err;
       });
     }
 
-    const callback = async (event) => {
+    const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
       if ((event.name === 'hsmAlert') && (['cancel', 'cancelRuleAlerts'].includes(event.value))) {
         node.alert = false;
@@ -37,7 +67,7 @@ module.exports = function HubitatHsmModule(RED) {
       } else if (event.name === 'hsmStatus') {
         node.currentHsm = event.value;
       } else {
-        node.status({ fill: 'red', shape: node.shape, text: `Unknown event: ${event.name}` });
+        node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
       }
       node.log(`HSM: ${node.currentHsm}`);
@@ -56,9 +86,21 @@ module.exports = function HubitatHsmModule(RED) {
       }
       const color = this.alert ? 'red' : 'blue';
       const status = this.alert ? `${node.currentHsm} - INTRUSION` : node.currentHsm;
-      node.status({ fill: color, shape: node.shape, text: status });
+      node.updateStatus(color, status);
     };
-    this.hubitat.hubitatEvent.on('hsm', callback);
+    this.hubitat.hubitatEvent.on('hsm', eventCallback);
+
+    const wsOpened = async () => {
+      node.currentStatusWs = 'OK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
+    const wsClosed = async () => {
+      node.currentStatusWs = 'NOK';
+      node.updateStatus(node.currentStatusFill, node.currentStatusText);
+    };
+    this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);
+    this.hubitat.hubitatEvent.on('websocket-error', wsClosed);
 
     initializeHsm().catch(() => {});
 
@@ -83,7 +125,10 @@ module.exports = function HubitatHsmModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      this.hubitat.hubitatEvent.removeListener('hsm', callback);
+      this.hubitat.hubitatEvent.removeListener('hsm', eventCallback);
+      this.hubitat.hubitatEvent.removeListener('websocket-opened', wsOpened);
+      this.hubitat.hubitatEvent.removeListener('websocket-closed', wsClosed);
+      this.hubitat.hubitatEvent.removeListener('websocket-error', wsClosed);
     });
   }
 
