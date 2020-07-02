@@ -11,7 +11,6 @@ describe('Hubitat HSM Node', () => {
     usetls: false,
     host: 'localhost',
     port: 10234,
-    token: '1234-abcd',
     appId: 1,
     nodeRedServer: 'localhost',
     webhookPath: '/hubitat/webhook',
@@ -207,6 +206,53 @@ describe('Hubitat HSM Node', () => {
       } catch (err) {
         done(err);
       }
+    });
+  });
+  it('should send event when systemStart received and desynchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultHsmNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([hsmNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentHsm = 'disarmed';
+      n1.hubitat.getHsm = () => new Promise((res) => res({ hsm: 'armNight' }));
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', 'armNight');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
+  it('should not send event when systemStart received and synchronized', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultHsmNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([hsmNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.currentHsm = 'armNight';
+      n1.hubitat.getHsm = () => new Promise((res) => res({ hsm: 'armNight' }));
+      let inError = false;
+      n2.on('input', () => {
+        inError = true;
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('synchronized state send event'));
+        } else {
+          done();
+        }
+      }, 20);
     });
   });
 });
