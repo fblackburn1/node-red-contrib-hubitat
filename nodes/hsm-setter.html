@@ -1,0 +1,63 @@
+<script type="text/javascript">
+  RED.nodes.registerType('hubitat hsm-setter',{
+    category: 'hubitat',
+    color: '#ACE043',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      state: { value: '' },
+    },
+    inputs:1,
+    outputs:1,
+    align: 'right',
+    icon: 'icons/hsm.svg',
+    label: function() {
+        return this.name || 'set hsm';
+    },
+    paletteLabel: 'set hsm',
+  });
+
+</script>
+
+<script type="text/html" data-template-name="hubitat hsm-setter">
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Server</label>
+    <input type="text" id="node-input-server">
+  </div>
+  <div class="form-row">
+    <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-state"><i class="fa fa-shield-alt"></i> State</label>
+    <select id="node-input-state">
+      <option value="">Choose a state...</option>
+      <option value="armHome">Arm Home</option>
+      <option value="armAway">Arm Away</option>
+      <option value="armNight">Arm Night</option>
+      <option value="disarm">Disarm Intrusion</option>
+      <option value="disarmAll">Disarm All</option>
+      <option value="cancelAlerts">Cancel Alerts</option>
+     </select>
+   </div>
+  </div>
+</script>
+
+<script type="text/html" data-help-name="hubitat hsm-setter">
+  <p>A node to set Hubitat's hsm.</p>
+
+  <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt class="optional">state <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the state set.</dd>
+    </dl>
+
+  <h3>Output</h3>
+    The same message as the input.
+
+  <h3>Details</h3>    
+    <p><b>state</b> dropdown to preselect the state to be sent.
+    If not specified, input message must define <code>state</code> property.
+    Possible values for state are: <code>armAway</code> or <code>armHome</code> or <code>armNight</code> or <code>disarm</code></p>
+    <p>This node is not compatible with Node-RED 0.x</p>
+</script>
