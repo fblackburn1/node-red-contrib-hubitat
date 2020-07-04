@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+* add new `hsm` node to get the current Hubitat Safety Monitor state (armnight, disarmed, ...)
+* add new `mode-setter` node to set Hubitat Safety Monitor state
+* fix websocket connection to take Hubitat server port into account
+* improve nodes documentation
+
 ## 1.1.1
 
 * `config`: fix too fast reconnect on error by adding a delay between reconnect
