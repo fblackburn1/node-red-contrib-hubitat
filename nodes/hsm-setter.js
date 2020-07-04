@@ -27,9 +27,14 @@ module.exports = function HubitatModeSetterModule(RED) {
       case 'off':
       case 'disarm':
       case 'disarmed':
+        return 'disarm';
+      case 'disarmAll':
+      case 'disarmall':
       case 'allDisarmed':
       case 'alldisarmed':
-        return 'disarm';
+        return 'disarmAll';
+      case 'cancelAlerts':
+        return 'cancelAlerts';
       default:
         return 'invalid';
     }
