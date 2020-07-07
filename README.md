@@ -16,9 +16,9 @@ This package contains 10 nodes:
 * `command`: To send command to Hubitat
 * `device`: To keep a device state. It fetch the device state when deployed, then listen for
   webhook events.
-* `hsm`: To keep the Hubitat Safety Monitor status (`Arm Home`, `Arm Away`, `Arm Home` and
-  `Disarm`). It fetch the status when deployed, then listen for webhook events.
-* `hsm-setter`: To set the Hubitat mode (Day, Night, ...)
+* `hsm`: To keep the Hubitat Safety Monitor status (`Armed Home`, `Armed Away`, `Armed Night` and
+  `Disarmed`). It fetch the status when deployed, then listen for webhook events.
+* `hsm-setter`: To set the Hubitat Hubitat Safety Monitor mode (Disarmed, Armed Away, Armed Home ...)
 * `mode`: To keep the Hubitat mode (Day, Night, ...)  state. It fetch the mode when deployed, then
   listen for
 * `mode-setter`: To set the Hubitat mode (Day, Night, ...)
