@@ -6,7 +6,6 @@ const stoppable = require('stoppable');
 const requestNode = require('../../nodes/request.js');
 const configNode = require('../../nodes/config.js');
 
-
 describe('Hubitat Request Node', () => {
   const testPort = 10234;
   const defaultConfigNode = {

@@ -6,7 +6,6 @@ const stoppable = require('stoppable');
 const commandNode = require('../../nodes/command.js');
 const configNode = require('../../nodes/config.js');
 
-
 describe('Hubitat Command Node', () => {
   const testPort = 10234;
   const defaultConfigNode = {
