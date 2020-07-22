@@ -11,7 +11,7 @@
   "license": "MIT",
   "dependencies": {
     "body-parser": "^1.19.0",
-    "cookie-parser": "^1.4.4",
+    "cookie-parser": "^1.4.5",
     "events": "^3.2.0",
     "node-fetch": "^2.6.0",
     "ws": "^6.2.1"
