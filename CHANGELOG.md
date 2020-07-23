@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.1
+
+* reword websocket documentation
+
 ## 1.2.0
 
 * add new `hsm` node to get the current Hubitat Safety Monitor state (armnight, disarmed, ...)
