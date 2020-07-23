@@ -232,7 +232,7 @@
         <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
       <div class="form-row">
-        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket</label>
+        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
     </div>
@@ -263,10 +263,16 @@
       The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.
     </p>
     <p>
-      <b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
-      Using websocket should reduce the delay before receiving event (e.g. by ~ 50 ms).
-      This option remove usage of the webhook configuration section and node status icons will be green instead of blue.
-      Warning: Some event attributes can be different or missing. (ex: <code>type: digitial</code>)
+      <b>Use websocket</b> will switch the internal update mechanism to use Hubitat's websocket instead of webhook.
+      Websocket does not perform event de-duplication and will send duplicate events which may require additional handling in Node-RED
+      (such as use of an RBE node) to prevent unintended re-activation of logic.
+      Websocket events contain less information, and may not have all event data that the webhook method does
+      (e,g, lock code used for lock/unlock events, and the event "type" field).
+      But using websocket should reduce the delay before receiving events by a few tens of milliseconds.
+      The websocket update method should only be used by informed users, and only for specific needs
+      <p>
+        <b>Warning:</b> Using websocket is not officially supported, and it's at your own risk!
+      </p>
     </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
