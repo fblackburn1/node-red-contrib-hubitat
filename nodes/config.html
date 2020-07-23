@@ -267,7 +267,7 @@
       Websocket does not perform event de-duplication and will send duplicate events which may require additional handling in Node-RED
       (such as use of an RBE node) to prevent unintended re-activation of logic.
       Websocket events contain less information, and may not have all event data that the webhook method does
-      (e,g, lock code used for lock/unlock events, and the event "type" field).
+      (e,g, lock code used for lock/unlock events, and the event <code>type</code> field).
       But using websocket should reduce the delay before receiving events by a few tens of milliseconds.
       The websocket update method should only be used by informed users, and only for specific needs
       <p>
