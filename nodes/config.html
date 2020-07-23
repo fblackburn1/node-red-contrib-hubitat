@@ -263,12 +263,15 @@
       The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.
     </p>
     <p>
-      <b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
-      Websocket send duplicate events and their attributes can be different or missing. (ex: <code>type: digitial</code>)
-      But using websocket should reduce the delay before receiving event from a few tens of milliseconds.
-      It should only be used by informed people and for specific needed.
+      <b>Use websocket</b> will switch the internal update mechanism to use Hubitat's websocket instead of webhook.
+      Websocket does not perform event de-duplication and will send duplicate events which may require additional handling in Node-RED
+      (such as use of an RBE node) to prevent unintended re-activation of logic.
+      Websocket events contain less information, and may not have all event data that the webhook method does
+      (e,g, lock code used for lock/unlock events, and the event "type" field).
+      But using websocket should reduce the delay before receiving events by a few tens of milliseconds.
+      The websocket update method should only be used by informed users, and only for specific needs
       <p>
-        <b>Warning:</b> Using websocket is not officialy supported and it's at your own risk
+        <b>Warning:</b> Using websocket is not officially supported, and it's at your own risk!
       </p>
     </p>
     <p>
