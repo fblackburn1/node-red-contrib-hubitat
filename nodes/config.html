@@ -232,7 +232,7 @@
         <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
       <div class="form-row">
-        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket</label>
+        <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
     </div>
@@ -264,9 +264,12 @@
     </p>
     <p>
       <b>Use websocket</b> will switch the internal mechanism to use Hubitat's websocket instead of webhook.
-      Using websocket should reduce the delay before receiving event (e.g. by ~ 50 ms).
-      This option remove usage of the webhook configuration section and node status icons will be green instead of blue.
-      Warning: Some event attributes can be different or missing. (ex: <code>type: digitial</code>)
+      Websocket send duplicate events and their attributes can be different or missing. (ex: <code>type: digitial</code>)
+      But using websocket should reduce the delay before receiving event from a few tens of milliseconds.
+      It should only be used by informed people and for specific needed.
+      <p>
+        <b>Warning:</b> Using websocket is not officialy supported and it's at your own risk
+      </p>
     </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
