@@ -1,23 +1,59 @@
 /* eslint-disable no-unused-vars */
+const express = require('express');
 const helper = require('node-red-node-test-helper');
+const http = require('http');
+const should = require('should');
+const stoppable = require('stoppable');
 const configNode = require('../../nodes/config.js');
 
 describe('Hubitat Config Node', () => {
+  const testPort = 10234;
+
   const defaultConfigNode = {
     id: 'n0',
     type: 'hubitat config',
     name: 'test config name',
     usetls: false,
     host: 'localhost',
-    port: 10234,
+    port: testPort,
     appId: 1,
     nodeRedServer: 'localhost',
     webhookPath: '/hubitat/webhook',
     useWebsocket: false,
   };
+  const testApp = express();
+  let nbGetDeviceCalled = 0;
+  const testServer = stoppable(http.createServer(testApp));
+
+  testApp.use((req, res, next) => {
+    nbGetDeviceCalled += 1;
+    next();
+  });
+
+  function startServer(done) {
+    testServer.listen(testPort, (err) => {});
+    done();
+  }
+
+  before((done) => {
+    testApp.get('/apps/api/1/devices/:deviceId', (req, res) => { res.json({ id: req.params.deviceId, attributes: [{ name: 'switch' }] }); });
+    startServer((err) => {
+      if (err) {
+        done(err);
+      }
+      helper.startServer(done);
+    });
+  });
+
+  after((done) => {
+    testServer.stop(() => {
+      helper.stopServer(done);
+    });
+  });
 
   afterEach(() => {
     helper.unload();
+    nbGetDeviceCalled = 0;
   });
 
   it('should be loaded', (done) => {
@@ -49,6 +85,28 @@ describe('Hubitat Config Node', () => {
       } catch (err) {
         done(err);
       }
+    });
+  });
+  it('should fetch getDevice twice by deviceId', (done) => {
+    const flow = [defaultConfigNode];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.getDevice(1).then((device) => {
+        clearTimeout(n0.invalidCacheTimeout);
+        try {
+          should.equal(nbGetDeviceCalled, 2);
+        } catch (err) {
+          done(err);
+        }
+      });
+      n0.getDevice(1).then((device) => {
+        try {
+          should.equal(nbGetDeviceCalled, 2);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
     });
   });
 });
