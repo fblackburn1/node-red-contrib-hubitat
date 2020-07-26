@@ -432,7 +432,9 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'desync' } };
-      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      n1.hubitat.initDevice = () => new Promise((res) => res({
+        attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
+      }));
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('name', 'testAttribute');
@@ -455,7 +457,9 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'sync' } };
-      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      n1.hubitat.initDevice = () => new Promise((res) => res({
+        attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
+      }));
       let inError = false;
       n2.on('input', () => {
         inError = true;
@@ -484,12 +488,12 @@ describe('Hubitat Device Node', () => {
         sync: { name: 'sync', value: 'sync' },
         desync2: { name: 'desync2', value: 'desync' },
       };
-      n1.hubitat.getDevice = () => new Promise((res) => res({
-        attributes: [
-          { name: 'desync1', currentValue: 'sync', dataType: 'STRING' },
-          { name: 'sync', currentValue: 'sync', dataType: 'STRING' },
-          { name: 'desync2', currentValue: 'sync', dataType: 'STRING' },
-        ],
+      n1.hubitat.initDevice = () => new Promise((res) => res({
+        attributes: {
+          desync1: { name: 'desync1', value: 'sync', dataType: 'STRING' },
+          sync: { name: 'sync', value: 'sync', dataType: 'STRING' },
+          desync2: { name: 'desync2', value: 'sync', dataType: 'STRING' },
+        },
       }));
       let eventRecevied = 0;
       n2.on('input', (msg) => {

@@ -46,7 +46,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.useWebsocket = config.useWebsocket;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
-    this.devicesCache = {};
+    this.devices = {};
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -86,9 +86,9 @@ module.exports = function HubitatConfigModule(RED) {
     function invalidateCache() {
       node.deviceCache = {};
     }
-    node.getDevice = async (deviceId) => {
-      if (!node.devicesCache[deviceId]) {
-        node.devicesCache[deviceId] = { pending: true };
+    node.initDevice = async (deviceId) => {
+      if (!node.devices[deviceId]) {
+        node.devices[deviceId] = { pending: true };
 
         const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
         const options = { method: 'GET' };
@@ -106,23 +106,34 @@ module.exports = function HubitatConfigModule(RED) {
         } finally {
           releaseLock();
         }
+
+        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
+
+        // remove duplicate attribute name
         device.attributes = device.attributes.filter(
           (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
         );
 
+        // refactor add default attributes
+        device.attributes = device.attributes.reduce((obj, item) => {
+          // eslint-disable-next-line no-param-reassign
+          obj[item.name] = { ...item, value: item.currentValue, deviceId };
+          return obj;
+        }, {});
+
         node.debug(`device: ${JSON.stringify(device)}`);
-        node.devicesCache[deviceId] = device;
+        node.devices[deviceId] = device;
 
         // FIXME: invalidate cache 30s after the last request to avoid caching wrong state too long
         // Next step: the config node should track all device states and
         // no need to invalidate cache anymore
         clearTimeout(this.invalidCacheTimeout);
         node.invalidCacheTimeout = setTimeout(() => { invalidateCache(); }, 30000);
-      } else if (node.devicesCache[deviceId].pending) {
+      } else if (node.devices[deviceId].pending) {
         await sleep(40);
-        return node.getDevice(deviceId);
+        return node.initDevice(deviceId);
       }
-      return node.devicesCache[deviceId];
+      return node.devices[deviceId];
     };
 
     node.getHsm = async () => {

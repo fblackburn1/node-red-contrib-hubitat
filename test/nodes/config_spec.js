@@ -41,6 +41,9 @@ describe('Hubitat Config Node', () => {
         res.json({ id: 'slow', attributes: [{ name: 'switch' }] });
       }, 100);
     });
+    testApp.get('/apps/api/1/devices/switch-off-duplicate', (req, res) => {
+      res.json({ id: 'switch-off-duplicate', attributes: [{ name: 'switch', currentValue: 'off' }, { name: 'switch', currentValue: 'off' }] });
+    });
     testApp.get('/apps/api/1/devices/:deviceId', (req, res) => { res.json({ id: req.params.deviceId, attributes: [{ name: 'switch' }] }); });
 
     startServer((err) => {
@@ -93,11 +96,11 @@ describe('Hubitat Config Node', () => {
       }
     });
   });
-  it('should fetch getDevice only once by deviceId', (done) => {
+  it('should fetch initDevice only once by deviceId', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.getDevice(1).then((device) => {
+      n0.initDevice(1).then((device) => {
         clearTimeout(n0.invalidCacheTimeout);
         try {
           should.equal(nbGetDeviceCalled, 1);
@@ -105,7 +108,7 @@ describe('Hubitat Config Node', () => {
           done(err);
         }
       });
-      n0.getDevice(1).then((device) => {
+      n0.initDevice(1).then((device) => {
         try {
           should.equal(nbGetDeviceCalled, 1);
           done();
@@ -115,18 +118,18 @@ describe('Hubitat Config Node', () => {
       });
     });
   });
-  it('should not mixed up getDevice cache', (done) => {
+  it('should not mixed up initDevice cache', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.getDevice(1).then((device) => {
+      n0.initDevice(1).then((device) => {
         try {
           device.should.have.property('id', '1');
         } catch (err) {
           done(err);
         }
       });
-      n0.getDevice(2).then((device) => {
+      n0.initDevice(2).then((device) => {
         clearTimeout(n0.invalidCacheTimeout);
         try {
           device.should.have.property('id', '2');
@@ -137,11 +140,11 @@ describe('Hubitat Config Node', () => {
       });
     });
   });
-  it('should wait on slow getDevice until first request is completed', (done) => {
+  it('should wait on slow initDevice until first request is completed', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.getDevice('slow').then((device) => {
+      n0.initDevice('slow').then((device) => {
         clearTimeout(n0.invalidCacheTimeout);
         try {
           should.equal(nbGetDeviceCalled, 1);
@@ -150,10 +153,29 @@ describe('Hubitat Config Node', () => {
           done(err);
         }
       });
-      n0.getDevice('slow').then((device) => {
+      n0.initDevice('slow').then((device) => {
         try {
           should.equal(nbGetDeviceCalled, 1);
           device.should.have.property('id', 'slow');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+  it('initDevice should reorder and remove duplicate attributes', (done) => {
+    const flow = [defaultConfigNode];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.initDevice('switch-off-duplicate').then((device) => {
+        clearTimeout(n0.invalidCacheTimeout);
+        try {
+          should.equal(nbGetDeviceCalled, 1);
+          device.should.have.property('id', 'switch-off-duplicate');
+          device.attributes.switch.should.have.property('value', 'off');
+          device.attributes.switch.should.have.property('currentValue', 'off');
+          device.attributes.switch.should.have.property('deviceId', 'switch-off-duplicate');
           done();
         } catch (err) {
           done(err);

@@ -102,14 +102,8 @@ module.exports = function HubitatDeviceModule(RED) {
     };
 
     async function initializeDevice() {
-      return node.hubitat.getDevice(node.deviceId).then((device) => {
-        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
-
-        // delete attribute.currentValue;  // kept for compatibility
-        node.currentAttributes = device.attributes.reduce((obj, item) => {
-          obj[item.name] = { ...item, value: item.currentValue, deviceId: node.deviceId };
-          return obj;
-        }, {});
+      return node.hubitat.initDevice(node.deviceId).then((device) => {
+        node.currentAttributes = device.attributes;
 
         if (node.attribute) {
           const attribute = node.currentAttributes[node.attribute];
