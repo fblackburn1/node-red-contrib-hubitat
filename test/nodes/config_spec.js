@@ -36,7 +36,13 @@ describe('Hubitat Config Node', () => {
   }
 
   before((done) => {
+    testApp.get('/apps/api/1/devices/slow', (req, res) => {
+      setTimeout(() => {
+        res.json({ id: 'slow', attributes: [{ name: 'switch' }] });
+      }, 100);
+    });
     testApp.get('/apps/api/1/devices/:deviceId', (req, res) => { res.json({ id: req.params.deviceId, attributes: [{ name: 'switch' }] }); });
+
     startServer((err) => {
       if (err) {
         done(err);
@@ -87,21 +93,67 @@ describe('Hubitat Config Node', () => {
       }
     });
   });
-  it('should fetch getDevice twice by deviceId', (done) => {
+  it('should fetch getDevice only once by deviceId', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
       n0.getDevice(1).then((device) => {
         clearTimeout(n0.invalidCacheTimeout);
         try {
-          should.equal(nbGetDeviceCalled, 2);
+          should.equal(nbGetDeviceCalled, 1);
         } catch (err) {
           done(err);
         }
       });
       n0.getDevice(1).then((device) => {
         try {
-          should.equal(nbGetDeviceCalled, 2);
+          should.equal(nbGetDeviceCalled, 1);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+  it('should not mixed up getDevice cache', (done) => {
+    const flow = [defaultConfigNode];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.getDevice(1).then((device) => {
+        try {
+          device.should.have.property('id', '1');
+        } catch (err) {
+          done(err);
+        }
+      });
+      n0.getDevice(2).then((device) => {
+        clearTimeout(n0.invalidCacheTimeout);
+        try {
+          device.should.have.property('id', '2');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+    });
+  });
+  it('should wait on slow getDevice until first request is completed', (done) => {
+    const flow = [defaultConfigNode];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.getDevice('slow').then((device) => {
+        clearTimeout(n0.invalidCacheTimeout);
+        try {
+          should.equal(nbGetDeviceCalled, 1);
+          device.should.have.property('id', 'slow');
+        } catch (err) {
+          done(err);
+        }
+      });
+      n0.getDevice('slow').then((device) => {
+        try {
+          should.equal(nbGetDeviceCalled, 1);
+          device.should.have.property('id', 'slow');
           done();
         } catch (err) {
           done(err);

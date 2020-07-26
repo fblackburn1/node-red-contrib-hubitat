@@ -11,9 +11,11 @@ module.exports = function HubitatConfigModule(RED) {
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
 
   let requestPool = MAXSIMULTANEOUSREQUESTS;
+
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
   async function acquireLock() {
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -44,6 +46,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.useWebsocket = config.useWebsocket;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
+    this.devicesCache = {};
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -80,30 +83,46 @@ module.exports = function HubitatConfigModule(RED) {
       return mode;
     };
 
+    function invalidateCache() {
+      node.deviceCache = {};
+    }
     node.getDevice = async (deviceId) => {
-      const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
-      const options = { method: 'GET' };
-      let device;
+      if (!node.devicesCache[deviceId]) {
+        node.devicesCache[deviceId] = { pending: true };
 
-      try {
-        await acquireLock();
-        const response = await fetch(url, options);
-        if (response.status >= 400) {
-          throw new Error(await response.text());
+        const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
+        const options = { method: 'GET' };
+        let device;
+        try {
+          await acquireLock();
+          const response = await fetch(url, options);
+          if (response.status >= 400) {
+            throw new Error(await response.text());
+          }
+          device = await response.json();
+        } catch (err) {
+          node.warn(`Unable to fetch device(${deviceId}): ${err}`);
+          throw err;
+        } finally {
+          releaseLock();
         }
-        device = await response.json();
-      } catch (err) {
-        node.warn(`Unable to fetch device(${deviceId}): ${err}`);
-        throw err;
-      } finally {
-        releaseLock();
-      }
-      device.attributes = device.attributes.filter(
-        (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
-      );
+        device.attributes = device.attributes.filter(
+          (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
+        );
 
-      node.debug(`device: ${JSON.stringify(device)}`);
-      return device;
+        node.debug(`device: ${JSON.stringify(device)}`);
+        node.devicesCache[deviceId] = device;
+
+        // FIXME: invalidate cache 30s after the last request to avoid caching wrong state too long
+        // Next step: the config node should track all device states and
+        // no need to invalidate cache anymore
+        clearTimeout(this.invalidCacheTimeout);
+        node.invalidCacheTimeout = setTimeout(() => { invalidateCache(); }, 30000);
+      } else if (node.devicesCache[deviceId].pending) {
+        await sleep(40);
+        return node.getDevice(deviceId);
+      }
+      return node.devicesCache[deviceId];
     };
 
     node.getHsm = async () => {
