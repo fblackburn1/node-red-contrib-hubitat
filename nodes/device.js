@@ -61,7 +61,6 @@ module.exports = function HubitatDeviceModule(RED) {
     this.deviceId = config.deviceId;
     this.sendEvent = config.sendEvent;
     this.attribute = config.attribute;
-    this.currentAttributes = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
     this.currentStatusText = '';
     this.currentStatusFill = undefined;
@@ -102,11 +101,9 @@ module.exports = function HubitatDeviceModule(RED) {
     };
 
     async function initializeDevice() {
-      return node.hubitat.initDevice(node.deviceId).then((device) => {
-        node.currentAttributes = device.attributes;
-
+      return node.hubitat.initDevice(node.deviceId).then(() => {
         if (node.attribute) {
-          const attribute = node.currentAttributes[node.attribute];
+          const attribute = node.hubitat.devices[node.deviceId].attributes[node.attribute];
           if (!attribute) {
             throw new Error(`Selected attribute (${node.attribute}) is not handled by device`);
           }
@@ -125,14 +122,14 @@ module.exports = function HubitatDeviceModule(RED) {
 
     const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
-      if (node.currentAttributes === undefined) {
+      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
         try {
           await initializeDevice();
         } catch (err) {
           return;
         }
       }
-      const attribute = node.currentAttributes[event.name];
+      const attribute = node.hubitat.devices[node.deviceId].attributes[event.name];
       if (!attribute) {
         node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
@@ -156,13 +153,13 @@ module.exports = function HubitatDeviceModule(RED) {
     this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, eventCallback);
 
     const systemStartCallback = async () => {
-      const previousAttributes = node.currentAttributes;
+      const previousAttributes = node.hubitat.devices[node.deviceId].attributes;
       try {
         await initializeDevice();
       } catch (err) {
         return;
       }
-      Object.values(node.currentAttributes)
+      Object.values(node.hubitat.devices[node.deviceId].attributes)
         .filter((attribute) => attribute.value !== previousAttributes[attribute.name].value)
         .forEach((attribute) => {
           node.log(`Fix "${attribute.name}" attribute desynchronization: "${previousAttributes[attribute.name].value}" --> "${attribute.value}"`);
@@ -193,7 +190,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('input', async (msg, send, done) => {
       node.debug('Input received');
-      if (node.currentAttributes === undefined) {
+      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
         try {
           await initializeDevice();
         } catch (err) {
@@ -203,7 +200,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const attributeSearched = msg.attribute || node.attribute;
       if (!attributeSearched) {
-        msg.payload = { ...node.currentAttributes };
+        msg.payload = { ...node.hubitat.devices[node.deviceId].attributes };
         msg.topic = node.name;
         send(msg);
         node.updateStatus();
@@ -211,7 +208,7 @@ module.exports = function HubitatDeviceModule(RED) {
         return;
       }
 
-      const attribute = node.currentAttributes[attributeSearched];
+      const attribute = node.hubitat.devices[node.deviceId].attributes[attributeSearched];
       if (!attribute) {
         node.updateStatus('red', `Invalid attribute: ${attributeSearched}`);
         done();
