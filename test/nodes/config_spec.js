@@ -183,4 +183,124 @@ describe('Hubitat Config Node', () => {
       });
     });
   });
+  it('should cast event dataType NUMBER to integer', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: '-2.5' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: 1, dataType: 'NUMBER' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', -2.5);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType BOOL to boolean', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: 'true' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: false, dataType: 'BOOL' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', true);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType three axes VECTOR3 to object', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: '[x:2,y:-4,z:1.5]' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: { x: -9, y: 1, z: -2 }, dataType: 'VECTOR3' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', { x: 2, y: -4, z: 1.5 });
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType range VECTOR3 to object', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: '[42.5,24]' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', [42.5, 24]);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType null VECTOR3 to object', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: 'null' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', null);
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType empty VECTOR3 to object', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: '' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', '');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should cast event dataType UNDEFINED to string', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: 'string' };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: 'undefined', dataType: 'UNDEFINED' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', 'string');
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
+  it('should not cast event with object value', (done) => {
+    const flow = [defaultConfigNode];
+    const event = { deviceId: 42, name: 'testAttribute', value: { object: 'val' } };
+    helper.load([configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devices = { 42: { attributes: { testAttribute: { value: 'string', dataType: 'UNDEFINED' } } } };
+      n0.updateDevice(event);
+      try {
+        n0.devices[42].attributes.testAttribute.should.have.property('value', { object: 'val' });
+        done();
+      } catch (err) {
+        done(err);
+      }
+    });
+  });
 });

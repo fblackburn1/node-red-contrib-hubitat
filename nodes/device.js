@@ -1,58 +1,5 @@
 /* eslint-disable no-param-reassign */
 module.exports = function HubitatDeviceModule(RED) {
-  function castHubitatValue(node, dataType, value) {
-    function defaultAction() {
-      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
-      return value;
-    }
-
-    if (typeof value !== 'string') {
-      return value;
-    }
-    switch (dataType) {
-      case 'STRING':
-      case 'ENUM':
-      case 'DATE':
-      case 'JSON_OBJECT': // Maker API always return it as String
-        return value;
-      case 'NUMBER':
-        return parseFloat(value);
-      case 'BOOL':
-        return value === 'true';
-      case 'VECTOR3': {
-        if (value === 'null') {
-          return null;
-        }
-        if (!value) {
-          return value;
-        }
-        const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
-        const threeAxesMatch = value.match(threeAxesRegexp);
-        if (threeAxesMatch) {
-          const result = {};
-          for (let i = 1; i < 4; i += 1) {
-            const [axis, point] = threeAxesMatch[i].split(':', 2);
-            result[axis] = parseFloat(point);
-          }
-          return result;
-        }
-        // Some devices use VECTOR3 for range (ex: Ecobee4 thermostat)
-        const rangeRegexp = new RegExp(/^\[(.*),(.*)\]$/);
-        const rangeMatch = value.match(rangeRegexp);
-        if (rangeMatch) {
-          const result = [];
-          for (let i = 1; i < 3; i += 1) {
-            result.push(parseFloat(rangeMatch[i]));
-          }
-          return result;
-        }
-        return defaultAction();
-      }
-      default:
-        return defaultAction();
-    }
-  }
-
   function HubitatDeviceNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -134,8 +81,6 @@ module.exports = function HubitatDeviceModule(RED) {
         node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
       }
-      attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-      attribute.currentValue = attribute.value; // deprecated since 0.0.18
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
           node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
