@@ -54,15 +54,15 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'raw-value',
     };
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'old-value', deviceId: '42' } } } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'updated-value', deviceId: '42' } } } };
       n2.on('input', (msg) => {
         try {
-          msg.should.have.property('payload', { ...hubitatEvent, currentValue: hubitatEvent.value });
+          msg.should.have.property('payload', { ...hubitatEvent, value: 'updated-value' });
           done();
         } catch (err) {
           done(err);
@@ -80,7 +80,7 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'raw-value',
       dataType: 'overriden attribute',
       extra: 'extra-arg',
     };
@@ -91,7 +91,7 @@ describe('Hubitat Device Node', () => {
         42: {
           attributes: {
             testAttribute: {
-              name: 'testAttribute', value: 'old-value', deviceId: '42', dataType: 'STRING',
+              name: 'testAttribute', value: 'updated-value', deviceId: '42', dataType: 'STRING', currentValue: 'updated-value',
             },
           },
         },
@@ -101,8 +101,8 @@ describe('Hubitat Device Node', () => {
           msg.should.have.property('payload', {
             deviceId: '42',
             name: 'testAttribute',
-            value: 'new-value',
-            currentValue: 'new-value',
+            value: 'updated-value',
+            currentValue: 'updated-value',
             dataType: 'STRING',
             extra: 'extra-arg',
           });
@@ -225,17 +225,17 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'value',
     };
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = { 42: { attributes: { testAttribute: { value: 'old-value' } } } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { value: 'value' } } } };
       n2.on('input', (msg) => {
         try {
-          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'new-value');
+          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'value');
           msg.payload.value = 'overwrite-value';
-          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'new-value');
+          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'value');
           done();
         } catch (err) {
           done(err);
