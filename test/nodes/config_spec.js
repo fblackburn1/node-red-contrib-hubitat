@@ -101,7 +101,6 @@ describe('Hubitat Config Node', () => {
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
       n0.initDevice(1).then((device) => {
-        clearTimeout(n0.invalidCacheTimeout);
         try {
           should.equal(nbGetDeviceCalled, 1);
         } catch (err) {
@@ -130,7 +129,6 @@ describe('Hubitat Config Node', () => {
         }
       });
       n0.initDevice(2).then((device) => {
-        clearTimeout(n0.invalidCacheTimeout);
         try {
           device.should.have.property('id', '2');
           done();
@@ -145,7 +143,6 @@ describe('Hubitat Config Node', () => {
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
       n0.initDevice('slow').then((device) => {
-        clearTimeout(n0.invalidCacheTimeout);
         try {
           should.equal(nbGetDeviceCalled, 1);
           device.should.have.property('id', 'slow');
@@ -169,7 +166,6 @@ describe('Hubitat Config Node', () => {
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
       n0.initDevice('switch-off-duplicate').then((device) => {
-        clearTimeout(n0.invalidCacheTimeout);
         try {
           should.equal(nbGetDeviceCalled, 1);
           device.should.have.property('id', 'switch-off-duplicate');

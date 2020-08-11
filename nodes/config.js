@@ -135,9 +135,6 @@ module.exports = function HubitatConfigModule(RED) {
       return mode;
     };
 
-    function invalidateCache() {
-      node.deviceCache = {};
-    }
     node.initDevice = async (deviceId) => {
       if (!node.devices[deviceId]) {
         node.devices[deviceId] = { pending: true };
@@ -175,12 +172,6 @@ module.exports = function HubitatConfigModule(RED) {
 
         node.debug(`device: ${JSON.stringify(device)}`);
         node.devices[deviceId] = device;
-
-        // FIXME: invalidate cache 30s after the last request to avoid caching wrong state too long
-        // Next step: the config node should track all device states and
-        // no need to invalidate cache anymore
-        clearTimeout(this.invalidCacheTimeout);
-        node.invalidCacheTimeout = setTimeout(() => { invalidateCache(); }, 30000);
       } else if (node.devices[deviceId].pending) {
         await sleep(40);
         return node.initDevice(deviceId);
