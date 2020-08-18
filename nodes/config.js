@@ -201,7 +201,7 @@ module.exports = function HubitatConfigModule(RED) {
       return hsm;
     };
     node.updateDevice = (event) => {
-      if (node.devices[event.deviceId].attributes === undefined) {
+      if (!node.devices[event.deviceId] || node.devices[event.deviceId].attributes === undefined) {
         node.debug(`Untracking device event received: ${JSON.stringify(event)}`);
         return;
       }
