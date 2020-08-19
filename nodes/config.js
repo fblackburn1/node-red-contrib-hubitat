@@ -213,6 +213,7 @@ module.exports = function HubitatConfigModule(RED) {
     function eventDispatcher(event) {
       if (node.autoRefresh && event.name === 'systemStart') {
         node.log('Resynchronize all hubitat\'s nodes');
+        node.devices = {};
         node.hubitatEvent.emit('systemStart');
       }
       node.hubitatEvent.emit('event', event);
