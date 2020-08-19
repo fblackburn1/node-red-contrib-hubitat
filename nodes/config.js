@@ -96,6 +96,8 @@ module.exports = function HubitatConfigModule(RED) {
     this.webhookPath = config.webhookPath;
     this.autoRefresh = config.autoRefresh;
     this.useWebsocket = config.useWebsocket;
+    this.wsStatusOk = false;
+    this.wsFirstInitPending = true;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
     this.devices = {};
@@ -274,6 +276,8 @@ module.exports = function HubitatConfigModule(RED) {
 
         socket.on('open', () => {
           node.log('Websocket connected');
+          node.wsStatusOk = true;
+          node.wsFirstInitPending = false;
           node.hubitatEvent.emit('websocket-opened');
           reconnectAttempt = 0;
           heartbeat();
@@ -281,6 +285,8 @@ module.exports = function HubitatConfigModule(RED) {
         socket.on('ping', heartbeat);
         socket.on('close', () => {
           node.log('Websocket closed');
+          node.wsStatusOk = false;
+          node.wsFirstInitPending = false;
           node.hubitatEvent.emit('websocket-closed');
           clearTimeout(this.pingTimeout);
           if (!node.closing) {
@@ -299,6 +305,8 @@ module.exports = function HubitatConfigModule(RED) {
         });
         socket.on('error', (err) => {
           node.error(`Websocket error: ${JSON.stringify(err)}`);
+          node.wsStatusOk = false;
+          node.wsFirstInitPending = false;
           node.hubitatEvent.emit('websocket-error', { error: err });
           reconnectAttempt += 1;
           reconnect('error');
