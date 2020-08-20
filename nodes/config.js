@@ -11,9 +11,11 @@ module.exports = function HubitatConfigModule(RED) {
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
 
   let requestPool = MAXSIMULTANEOUSREQUESTS;
+
   function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
   }
+
   async function acquireLock() {
     // eslint-disable-next-line no-constant-condition
     while (true) {
@@ -28,6 +30,58 @@ module.exports = function HubitatConfigModule(RED) {
 
   function releaseLock() {
     requestPool += 1;
+  }
+  function castHubitatValue(node, dataType, value) {
+    function defaultAction() {
+      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
+      return value;
+    }
+
+    if (typeof value !== 'string') {
+      return value;
+    }
+    switch (dataType) {
+      case 'STRING':
+      case 'ENUM':
+      case 'DATE':
+      case 'JSON_OBJECT': // Maker API always return it as String
+        return value;
+      case 'NUMBER':
+        return parseFloat(value);
+      case 'BOOL':
+        return value === 'true';
+      case 'VECTOR3': {
+        if (value === 'null') {
+          return null;
+        }
+        if (!value) {
+          return value;
+        }
+        const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
+        const threeAxesMatch = value.match(threeAxesRegexp);
+        if (threeAxesMatch) {
+          const result = {};
+          for (let i = 1; i < 4; i += 1) {
+            const [axis, point] = threeAxesMatch[i].split(':', 2);
+            result[axis] = parseFloat(point);
+          }
+          return result;
+        }
+        // Some devices use VECTOR3 for range (ex: Ecobee4 thermostat)
+        const rangeRegexp = new RegExp(/^\[(.*),(.*)\]$/);
+        const rangeMatch = value.match(rangeRegexp);
+        if (rangeMatch) {
+          const result = [];
+          for (let i = 1; i < 3; i += 1) {
+            result.push(parseFloat(rangeMatch[i]));
+          }
+          return result;
+        }
+        return defaultAction();
+      }
+      default:
+        return defaultAction();
+    }
   }
 
   function HubitatConfigNode(config) {
@@ -44,6 +98,8 @@ module.exports = function HubitatConfigModule(RED) {
     this.useWebsocket = config.useWebsocket;
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
+    this.devices = {};
+    this.expiredDevices = {};
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -80,30 +136,48 @@ module.exports = function HubitatConfigModule(RED) {
       return mode;
     };
 
-    node.getDevice = async (deviceId) => {
-      const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
-      const options = { method: 'GET' };
-      let device;
+    node.initDevice = async (deviceId) => {
+      if (!node.devices[deviceId]) {
+        node.devices[deviceId] = { pending: true };
 
-      try {
-        await acquireLock();
-        const response = await fetch(url, options);
-        if (response.status >= 400) {
-          throw new Error(await response.text());
+        const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
+        const options = { method: 'GET' };
+        let device;
+        try {
+          await acquireLock();
+          const response = await fetch(url, options);
+          if (response.status >= 400) {
+            throw new Error(await response.text());
+          }
+          device = await response.json();
+        } catch (err) {
+          node.warn(`Unable to fetch device(${deviceId}): ${err}`);
+          throw err;
+        } finally {
+          releaseLock();
         }
-        device = await response.json();
-      } catch (err) {
-        node.warn(`Unable to fetch device(${deviceId}): ${err}`);
-        throw err;
-      } finally {
-        releaseLock();
-      }
-      device.attributes = device.attributes.filter(
-        (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
-      );
 
-      node.debug(`device: ${JSON.stringify(device)}`);
-      return device;
+        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
+
+        // remove duplicate attribute name
+        device.attributes = device.attributes.filter(
+          (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
+        );
+
+        // refactor add default attributes
+        device.attributes = device.attributes.reduce((obj, item) => {
+          // eslint-disable-next-line no-param-reassign
+          obj[item.name] = { ...item, value: item.currentValue, deviceId };
+          return obj;
+        }, {});
+
+        node.debug(`device: ${JSON.stringify(device)}`);
+        node.devices[deviceId] = device;
+      } else if (node.devices[deviceId].pending) {
+        await sleep(40);
+        return node.initDevice(deviceId);
+      }
+      return node.devices[deviceId];
     };
 
     node.getHsm = async () => {
@@ -127,14 +201,26 @@ module.exports = function HubitatConfigModule(RED) {
       node.debug(`hsm: ${JSON.stringify(hsm)}`);
       return hsm;
     };
+    node.updateDevice = (event) => {
+      if (!node.devices[event.deviceId] || node.devices[event.deviceId].attributes === undefined) {
+        node.debug(`Untracking device event received: ${JSON.stringify(event)}`);
+        return;
+      }
+      const attribute = node.devices[event.deviceId].attributes[event.name];
+      attribute.value = castHubitatValue(node, attribute.dataType, event.value);
+      attribute.currentValue = attribute.value; // deprecated since 0.0.18
+    };
 
     function eventDispatcher(event) {
       if (node.autoRefresh && event.name === 'systemStart') {
         node.log('Resynchronize all hubitat\'s nodes');
+        node.expiredDevices = node.devices;
+        node.devices = {};
         node.hubitatEvent.emit('systemStart');
       }
       node.hubitatEvent.emit('event', event);
       if (event.deviceId != null) {
+        node.updateDevice(event);
         node.hubitatEvent.emit(`device.${event.deviceId}`, event);
       } else if (event.name === 'mode') {
         node.hubitatEvent.emit('mode', event);

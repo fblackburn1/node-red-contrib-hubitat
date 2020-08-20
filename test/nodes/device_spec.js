@@ -54,15 +54,15 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'raw-value',
     };
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value', deviceId: '42' } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'updated-value', deviceId: '42' } } } };
       n2.on('input', (msg) => {
         try {
-          msg.should.have.property('payload', { ...hubitatEvent, currentValue: hubitatEvent.value });
+          msg.should.have.property('payload', { ...hubitatEvent, value: 'updated-value' });
           done();
         } catch (err) {
           done(err);
@@ -80,16 +80,20 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'raw-value',
       dataType: 'overriden attribute',
       extra: 'extra-arg',
     };
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = {
-        testAttribute: {
-          name: 'testAttribute', value: 'old-value', deviceId: '42', dataType: 'STRING',
+      n1.hubitat.devices = {
+        42: {
+          attributes: {
+            testAttribute: {
+              name: 'testAttribute', value: 'updated-value', deviceId: '42', dataType: 'STRING', currentValue: 'updated-value',
+            },
+          },
         },
       };
       n2.on('input', (msg) => {
@@ -97,8 +101,8 @@ describe('Hubitat Device Node', () => {
           msg.should.have.property('payload', {
             deviceId: '42',
             name: 'testAttribute',
-            value: 'new-value',
-            currentValue: 'new-value',
+            value: 'updated-value',
+            currentValue: 'updated-value',
             dataType: 'STRING',
             extra: 'extra-arg',
           });
@@ -177,10 +181,10 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'old-value' } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'old-value' } } } };
       n2.on('input', (msg) => {
         try {
-          msg.should.have.property('payload', { ...n1.currentAttributes });
+          msg.should.have.property('payload', { ...n1.hubitat.devices['42'].attributes });
           done();
         } catch (err) {
           done(err);
@@ -198,12 +202,12 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'value' } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'value' } } } };
       n2.on('input', (msg) => {
         try {
           // eslint-disable-next-line no-param-reassign
           msg.payload.value = 'update value in another node';
-          n1.currentAttributes.should.containEql({ testAttribute: { name: 'testAttribute', value: 'value' } });
+          n1.hubitat.devices['42'].attributes.should.containEql({ testAttribute: { name: 'testAttribute', value: 'value' } });
           done();
         } catch (err) {
           done(err);
@@ -221,199 +225,17 @@ describe('Hubitat Device Node', () => {
     const hubitatEvent = {
       deviceId: '42',
       name: 'testAttribute',
-      value: 'new-value',
+      value: 'value',
     };
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: 'old-value' } };
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { value: 'value' } } } };
       n2.on('input', (msg) => {
         try {
-          n1.currentAttributes.testAttribute.should.have.property('value', 'new-value');
+          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'value');
           msg.payload.value = 'overwrite-value';
-          n1.currentAttributes.testAttribute.should.have.property('value', 'new-value');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType NUMBER to integer', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: '-2.5' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: 1, dataType: 'NUMBER' } };
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', -2.5);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType BOOL to boolean', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: 'true' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: false, dataType: 'BOOL' } };
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', true);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType three axes VECTOR3 to object', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: '[x:2,y:-4,z:1.5]' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: { x: -9, y: 1, z: -2 }, dataType: 'VECTOR3' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', { x: 2, y: -4, z: 1.5 });
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType range VECTOR3 to object', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: '[42.5,24]' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', [42.5, 24]);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType null VECTOR3 to object', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: 'null' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', null);
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType empty VECTOR3 to object', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: '' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: [1, 2], dataType: 'VECTOR3' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', '');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should cast event dataType UNDEFINED to string', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: 'string' };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: 'undefined', dataType: 'UNDEFINED' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', 'string');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-      n1.hubitat.hubitatEvent.emit('device.42', hubitatEvent);
-    });
-  });
-  it('should not cast event with object value', (done) => {
-    const flow = [
-      defaultConfigNode,
-      { ...defaultDeviceNode, wires: [['n2']] },
-      { id: 'n2', type: 'helper' },
-    ];
-    const hubitatEvent = { name: 'testAttribute', value: { object: 'val' } };
-    helper.load([deviceNode, configNode], flow, () => {
-      const n1 = helper.getNode('n1');
-      const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { value: 'string', dataType: 'UNDEFINED' } };
-
-      n2.on('input', (msg) => {
-        try {
-          msg.payload.should.have.property('value', { object: 'val' });
+          n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'value');
           done();
         } catch (err) {
           done(err);
@@ -431,8 +253,14 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'desync' } };
-      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'desync' } } } };
+      n1.hubitat.initDevice = () => new Promise((res) => {
+        n1.hubitat.devices['42'] = {
+          attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
+        };
+        res();
+      });
+
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('name', 'testAttribute');
@@ -454,8 +282,16 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = { testAttribute: { name: 'testAttribute', value: 'sync' } };
-      n1.hubitat.getDevice = () => new Promise((res) => res({ attributes: [{ name: 'testAttribute', currentValue: 'sync', dataType: 'STRING' }] }));
+      n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'sync' } } } };
+      n1.hubitat.initDevice = () => new Promise((res) => res({
+        attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
+      }));
+      n1.hubitat.initDevice = () => new Promise((res) => {
+        n1.hubitat.devices['42'] = {
+          attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
+        };
+        res();
+      });
       let inError = false;
       n2.on('input', () => {
         inError = true;
@@ -479,18 +315,25 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.currentAttributes = {
-        desync1: { name: 'desync1', value: 'desync' },
-        sync: { name: 'sync', value: 'sync' },
-        desync2: { name: 'desync2', value: 'desync' },
+      n1.hubitat.expiredDevices = {
+        42: {
+          attributes: {
+            desync1: { name: 'desync1', value: 'desync' },
+            sync: { name: 'sync', value: 'sync' },
+            desync2: { name: 'desync2', value: 'desync' },
+          },
+        },
       };
-      n1.hubitat.getDevice = () => new Promise((res) => res({
-        attributes: [
-          { name: 'desync1', currentValue: 'sync', dataType: 'STRING' },
-          { name: 'sync', currentValue: 'sync', dataType: 'STRING' },
-          { name: 'desync2', currentValue: 'sync', dataType: 'STRING' },
-        ],
-      }));
+      n1.hubitat.initDevice = () => new Promise((res) => {
+        n1.hubitat.devices['42'] = {
+          attributes: {
+            desync1: { name: 'desync1', value: 'sync', dataType: 'STRING' },
+            sync: { name: 'sync', value: 'sync', dataType: 'STRING' },
+            desync2: { name: 'desync2', value: 'sync', dataType: 'STRING' },
+          },
+        };
+        res();
+      });
       let eventRecevied = 0;
       n2.on('input', (msg) => {
         try {

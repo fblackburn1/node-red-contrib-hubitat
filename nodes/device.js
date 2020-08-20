@@ -1,58 +1,5 @@
 /* eslint-disable no-param-reassign */
 module.exports = function HubitatDeviceModule(RED) {
-  function castHubitatValue(node, dataType, value) {
-    function defaultAction() {
-      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
-      return value;
-    }
-
-    if (typeof value !== 'string') {
-      return value;
-    }
-    switch (dataType) {
-      case 'STRING':
-      case 'ENUM':
-      case 'DATE':
-      case 'JSON_OBJECT': // Maker API always return it as String
-        return value;
-      case 'NUMBER':
-        return parseFloat(value);
-      case 'BOOL':
-        return value === 'true';
-      case 'VECTOR3': {
-        if (value === 'null') {
-          return null;
-        }
-        if (!value) {
-          return value;
-        }
-        const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
-        const threeAxesMatch = value.match(threeAxesRegexp);
-        if (threeAxesMatch) {
-          const result = {};
-          for (let i = 1; i < 4; i += 1) {
-            const [axis, point] = threeAxesMatch[i].split(':', 2);
-            result[axis] = parseFloat(point);
-          }
-          return result;
-        }
-        // Some devices use VECTOR3 for range (ex: Ecobee4 thermostat)
-        const rangeRegexp = new RegExp(/^\[(.*),(.*)\]$/);
-        const rangeMatch = value.match(rangeRegexp);
-        if (rangeMatch) {
-          const result = [];
-          for (let i = 1; i < 3; i += 1) {
-            result.push(parseFloat(rangeMatch[i]));
-          }
-          return result;
-        }
-        return defaultAction();
-      }
-      default:
-        return defaultAction();
-    }
-  }
-
   function HubitatDeviceNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -61,7 +8,6 @@ module.exports = function HubitatDeviceModule(RED) {
     this.deviceId = config.deviceId;
     this.sendEvent = config.sendEvent;
     this.attribute = config.attribute;
-    this.currentAttributes = undefined;
     this.shape = this.sendEvent ? 'dot' : 'ring';
     this.currentStatusText = '';
     this.currentStatusFill = undefined;
@@ -102,17 +48,9 @@ module.exports = function HubitatDeviceModule(RED) {
     };
 
     async function initializeDevice() {
-      return node.hubitat.getDevice(node.deviceId).then((device) => {
-        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
-
-        // delete attribute.currentValue;  // kept for compatibility
-        node.currentAttributes = device.attributes.reduce((obj, item) => {
-          obj[item.name] = { ...item, value: item.currentValue, deviceId: node.deviceId };
-          return obj;
-        }, {});
-
+      return node.hubitat.initDevice(node.deviceId).then(() => {
         if (node.attribute) {
-          const attribute = node.currentAttributes[node.attribute];
+          const attribute = node.hubitat.devices[node.deviceId].attributes[node.attribute];
           if (!attribute) {
             throw new Error(`Selected attribute (${node.attribute}) is not handled by device`);
           }
@@ -131,20 +69,18 @@ module.exports = function HubitatDeviceModule(RED) {
 
     const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
-      if (node.currentAttributes === undefined) {
+      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
         try {
           await initializeDevice();
         } catch (err) {
           return;
         }
       }
-      const attribute = node.currentAttributes[event.name];
+      const attribute = node.hubitat.devices[node.deviceId].attributes[event.name];
       if (!attribute) {
         node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
       }
-      attribute.value = castHubitatValue(node, attribute.dataType, event.value);
-      attribute.currentValue = attribute.value; // deprecated since 0.0.18
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
           node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
@@ -162,13 +98,14 @@ module.exports = function HubitatDeviceModule(RED) {
     this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, eventCallback);
 
     const systemStartCallback = async () => {
-      const previousAttributes = node.currentAttributes;
+      const previousDevice = node.hubitat.expiredDevices[node.deviceId];
+      const previousAttributes = previousDevice ? previousDevice.attributes : undefined;
       try {
         await initializeDevice();
       } catch (err) {
         return;
       }
-      Object.values(node.currentAttributes)
+      Object.values(node.hubitat.devices[node.deviceId].attributes)
         .filter((attribute) => attribute.value !== previousAttributes[attribute.name].value)
         .forEach((attribute) => {
           node.log(`Fix "${attribute.name}" attribute desynchronization: "${previousAttributes[attribute.name].value}" --> "${attribute.value}"`);
@@ -199,7 +136,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('input', async (msg, send, done) => {
       node.debug('Input received');
-      if (node.currentAttributes === undefined) {
+      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
         try {
           await initializeDevice();
         } catch (err) {
@@ -209,7 +146,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const attributeSearched = msg.attribute || node.attribute;
       if (!attributeSearched) {
-        msg.payload = { ...node.currentAttributes };
+        msg.payload = { ...node.hubitat.devices[node.deviceId].attributes };
         msg.topic = node.name;
         send(msg);
         node.updateStatus();
@@ -217,7 +154,7 @@ module.exports = function HubitatDeviceModule(RED) {
         return;
       }
 
-      const attribute = node.currentAttributes[attributeSearched];
+      const attribute = node.hubitat.devices[node.deviceId].attributes[attributeSearched];
       if (!attribute) {
         node.updateStatus('red', `Invalid attribute: ${attributeSearched}`);
         done();
