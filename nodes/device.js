@@ -98,7 +98,8 @@ module.exports = function HubitatDeviceModule(RED) {
     this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, eventCallback);
 
     const systemStartCallback = async () => {
-      const previousAttributes = node.hubitat.devices[node.deviceId].attributes;
+      const previousDevice = node.hubitat.expiredDevices[node.deviceId];
+      const previousAttributes = previousDevice ? previousDevice.attributes : undefined;
       try {
         await initializeDevice();
       } catch (err) {

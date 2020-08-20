@@ -253,7 +253,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'desync' } } } };
+      n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'desync' } } } };
       n1.hubitat.initDevice = () => new Promise((res) => {
         n1.hubitat.devices['42'] = {
           attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
@@ -282,7 +282,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'sync' } } } };
+      n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'sync' } } } };
       n1.hubitat.initDevice = () => new Promise((res) => res({
         attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
       }));
@@ -315,7 +315,7 @@ describe('Hubitat Device Node', () => {
     helper.load([deviceNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = {
+      n1.hubitat.expiredDevices = {
         42: {
           attributes: {
             desync1: { name: 'desync1', value: 'desync' },

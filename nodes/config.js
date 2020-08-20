@@ -99,6 +99,7 @@ module.exports = function HubitatConfigModule(RED) {
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
     this.devices = {};
+    this.expiredDevices = {};
 
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
@@ -213,6 +214,7 @@ module.exports = function HubitatConfigModule(RED) {
     function eventDispatcher(event) {
       if (node.autoRefresh && event.name === 'systemStart') {
         node.log('Resynchronize all hubitat\'s nodes');
+        node.expiredDevices = node.devices;
         node.devices = {};
         node.hubitatEvent.emit('systemStart');
       }
