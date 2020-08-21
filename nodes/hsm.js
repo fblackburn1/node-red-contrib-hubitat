@@ -9,7 +9,6 @@ module.exports = function HubitatHsmModule(RED) {
     this.shape = this.sendEvent ? 'dot' : 'ring';
     this.currentStatusText = '';
     this.currentStatusFill = undefined;
-    this.currentStatusWs = 'NOK';
     this.alert = false;
 
     const node = this;
@@ -37,7 +36,7 @@ module.exports = function HubitatHsmModule(RED) {
         } else if (fill === 'blue') {
           status.fill = 'green';
         }
-        if (node.currentStatusWs !== 'OK') {
+        if (!node.hubitat.wsStatusOk) {
           status.fill = 'red';
           status.text = 'WS ERROR';
         }
@@ -110,12 +109,10 @@ module.exports = function HubitatHsmModule(RED) {
     this.hubitat.hubitatEvent.on('systemStart', systemStartCallback);
 
     const wsOpened = async () => {
-      node.currentStatusWs = 'OK';
       node.updateStatus(node.currentStatusFill, node.currentStatusText);
     };
     this.hubitat.hubitatEvent.on('websocket-opened', wsOpened);
     const wsClosed = async () => {
-      node.currentStatusWs = 'NOK';
       node.updateStatus(node.currentStatusFill, node.currentStatusText);
     };
     this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);

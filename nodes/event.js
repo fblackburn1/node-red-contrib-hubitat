@@ -35,6 +35,16 @@ module.exports = function HubitatEventModule(RED) {
     this.hubitat.hubitatEvent.on('websocket-closed', wsClosed);
     this.hubitat.hubitatEvent.on('websocket-error', wsClosed);
 
+    if (node.hubitat.useWebsocket) {
+      if (node.hubitat.wsFirstInitPending) {
+        node.status({ fill: 'red', shape: 'dot', text: 'Initialization...' });
+      } else if (node.hubitat.wsStatusOk) {
+        wsOpened();
+      } else {
+        wsClosed();
+      }
+    }
+
     node.on('close', () => {
       node.debug('Closed');
       this.hubitat.hubitatEvent.removeListener('event', callback);
