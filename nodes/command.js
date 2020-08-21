@@ -9,6 +9,14 @@ module.exports = function HubitatCommandModule(RED) {
     this.deviceId = config.deviceId;
     this.command = config.command;
     this.commandArgs = config.commandArgs;
+    this.defaultStatus = {};
+    if (this.command) {
+      if (this.commandArgs) {
+        this.defaultStatus = { text: `>> ${this.command}: ${this.commandArgs}` };
+      } else {
+        this.defaultStatus = { text: `>> ${this.command}` };
+      }
+    }
 
     const node = this;
 
@@ -16,6 +24,7 @@ module.exports = function HubitatCommandModule(RED) {
       node.error('Hubitat server not configured');
       return;
     }
+    node.status(node.defaultStatus);
 
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
@@ -57,7 +66,7 @@ module.exports = function HubitatCommandModule(RED) {
           return;
         }
         const output = { ...msg, response: await response.json() };
-        node.status({});
+        node.status(node.defaultStatus);
         send(output);
         done();
       } catch (err) {
