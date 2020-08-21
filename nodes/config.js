@@ -10,27 +10,6 @@ module.exports = function HubitatConfigModule(RED) {
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
 
-  let requestPool = MAXSIMULTANEOUSREQUESTS;
-
-  function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
-  }
-
-  async function acquireLock() {
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      if (requestPool) {
-        requestPool -= 1;
-        return;
-      }
-      // eslint-disable-next-line no-await-in-loop
-      await sleep(40);
-    }
-  }
-
-  function releaseLock() {
-    requestPool += 1;
-  }
   function castHubitatValue(node, dataType, value) {
     function defaultAction() {
       node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
@@ -103,6 +82,28 @@ module.exports = function HubitatConfigModule(RED) {
     this.devices = {};
     this.expiredDevices = {};
 
+    this.requestPool = MAXSIMULTANEOUSREQUESTS;
+
+    function sleep(ms) {
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    }
+
+    this.acquireLock = async () => {
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        if (this.requestPool) {
+          this.requestPool -= 1;
+          return;
+        }
+        // eslint-disable-next-line no-await-in-loop
+        await sleep(40);
+      }
+    };
+
+    this.releaseLock = () => {
+      this.requestPool += 1;
+    };
+
     const scheme = ((this.usetls) ? 'https' : 'http');
     this.baseUrl = `${scheme}://${this.host}:${this.port}/apps/api/${this.appId}`;
 
@@ -121,7 +122,7 @@ module.exports = function HubitatConfigModule(RED) {
       const options = { method: 'GET' };
       let mode;
       try {
-        await acquireLock();
+        await node.acquireLock();
         const response = await fetch(url, options);
         if (response.status >= 400) {
           throw new Error(await response.text());
@@ -131,7 +132,7 @@ module.exports = function HubitatConfigModule(RED) {
         node.warn(`Unable to fetch modes: ${err}`);
         throw err;
       } finally {
-        releaseLock();
+        node.releaseLock();
       }
 
       node.debug(`mode: ${JSON.stringify(mode)}`);
@@ -146,7 +147,7 @@ module.exports = function HubitatConfigModule(RED) {
         const options = { method: 'GET' };
         let device;
         try {
-          await acquireLock();
+          await node.acquireLock();
           const response = await fetch(url, options);
           if (response.status >= 400) {
             throw new Error(await response.text());
@@ -156,7 +157,7 @@ module.exports = function HubitatConfigModule(RED) {
           node.warn(`Unable to fetch device(${deviceId}): ${err}`);
           throw err;
         } finally {
-          releaseLock();
+          node.releaseLock();
         }
 
         if (!device.attributes) { throw new Error(JSON.stringify(device)); }
@@ -187,7 +188,7 @@ module.exports = function HubitatConfigModule(RED) {
       const options = { method: 'GET' };
       let hsm;
       try {
-        await acquireLock();
+        await node.acquireLock();
         const response = await fetch(url, options);
         if (response.status >= 400) {
           throw new Error(await response.text());
@@ -197,7 +198,7 @@ module.exports = function HubitatConfigModule(RED) {
         node.warn(`Unable to fetch hsm: ${err}`);
         throw err;
       } finally {
-        releaseLock();
+        node.releaseLock();
       }
 
       node.debug(`hsm: ${JSON.stringify(hsm)}`);

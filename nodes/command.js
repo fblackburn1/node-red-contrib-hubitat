@@ -49,6 +49,7 @@ module.exports = function HubitatCommandModule(RED) {
       const options = { method: 'GET' };
 
       try {
+        await node.hubitat.acquireLock();
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
@@ -62,6 +63,8 @@ module.exports = function HubitatCommandModule(RED) {
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
         done(err);
+      } finally {
+        node.hubitat.releaseLock();
       }
     });
   }

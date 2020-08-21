@@ -37,6 +37,10 @@ describe('Hubitat Command Node', () => {
   }
 
   before((done) => {
+    testApp.get('/apps/api/1/devices/slow/:command/:arguments', (req, res) => {
+      setTimeout(() => { res.json({ deviceId: 'slow' }); }, 100);
+    });
+    testApp.get('/apps/api/1/devices/fast/:command/:arguments', (req, res) => { res.json({ deviceId: 'fast' }); });
     testApp.get('/apps/api/1/devices/:deviceId/errorCommand', (req, res) => { res.sendStatus(500); });
     testApp.get('/apps/api/1/devices/:deviceId/:command/:arguments', (req, res) => { res.json(req.params); });
     testApp.get('/apps/api/1/devices/:deviceId/:command', (req, res) => { res.json(req.params); });
@@ -252,6 +256,34 @@ describe('Hubitat Command Node', () => {
           done();
         }
       }, 20);
+    });
+  });
+  it('should throttling requests', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultCommandNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    const expected = ['fast', 'slow', 'slow'];
+    helper.load([commandNode, configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n2.on('input', (msg) => {
+        try {
+          const deviceId = expected.pop();
+          msg.response.should.have.property('deviceId', deviceId);
+          if (deviceId === 'fast') {
+            done();
+          }
+        } catch (err) {
+          done(err);
+        }
+      });
+      n0.requestPool = 2;
+      n1.receive({ deviceId: 'slow' });
+      n1.receive({ deviceId: 'slow' });
+      n1.receive({ deviceId: 'fast' });
     });
   });
 });
