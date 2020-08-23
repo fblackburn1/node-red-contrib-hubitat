@@ -1,5 +1,13 @@
 # Changelog
 
+## 1.3.0
+
+* `command`: add status text about the current command/arguments configuration
+* `device`: use global cache shared by all device nodes and only initialize it once by device ID
+* `command`: throttling requests to prevent errors from Maker API
+* `command`: update `setLevel` template to add an example with new syntax: `{"hex":"15fe21"}`
+* fix websocket error status on partial deployment
+
 ## 1.2.1
 
 * reword websocket documentation
