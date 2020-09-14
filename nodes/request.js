@@ -19,8 +19,9 @@ module.exports = function HubitatRequestModule(RED) {
 
       const path = msg.path || node.path;
       if (!path) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined path' });
-        done('undefined path');
+        const errorMsg = 'undefined path';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        done(errorMsg);
         return;
       }
       const url = `${node.hubitat.baseUrl}/${path}?access_token=${node.hubitat.token}`;

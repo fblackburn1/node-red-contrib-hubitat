@@ -49,8 +49,9 @@ module.exports = function HubitatModeSetterModule(RED) {
       }
 
       if (!modeId) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined mode' });
-        done('undefined mode');
+        const errorMsg = 'undefined mode';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        done(errorMsg);
         return;
       }
 

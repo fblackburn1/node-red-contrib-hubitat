@@ -58,15 +58,17 @@ module.exports = function HubitatModeSetterModule(RED) {
 
       const rawState = msg.state || node.state;
       if (!rawState) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined state' });
-        done('undefined hsm');
+        const errorMsg = 'invalid state';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        done(errorMsg);
         return;
       }
 
       const state = convertAlarmState(rawState);
       if (state === 'invalid') {
-        node.status({ fill: 'red', shape: node.shape, text: 'invalid state' });
-        done('invalid state');
+        const errorMsg = 'invalid state';
+        node.status({ fill: 'red', shape: node.shape, text: errorMsg });
+        done(errorMsg);
         return;
       }
 

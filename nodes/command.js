@@ -31,8 +31,9 @@ module.exports = function HubitatCommandModule(RED) {
 
       const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
       if (!deviceId) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined deviceId' });
-        done('undefined deviceId');
+        const errorMsg = 'undefined deviceId';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        done(errorMsg);
         return;
       }
 
@@ -45,8 +46,9 @@ module.exports = function HubitatCommandModule(RED) {
         commandArgs = msg.arguments;
       }
       if (!command) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined command' });
-        done('undefined command');
+        const errorMsg = 'undefined deviceId';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        done(errorMsg);
         return;
       }
 
