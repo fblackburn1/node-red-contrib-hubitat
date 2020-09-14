@@ -1,6 +1,7 @@
 /* eslint-disable global-require */
 module.exports = function HubitatModeSetterModule(RED) {
   const fetch = require('node-fetch');
+  const doneWithId = require('./utils/done-with-id');
 
   // All possible HE event values: https://github.com/fblackburn1/node-red-contrib-hubitat/pull/9#issuecomment-602258248
   // Conveniant to pass the event value directly in the message property
@@ -60,7 +61,7 @@ module.exports = function HubitatModeSetterModule(RED) {
       if (!rawState) {
         const errorMsg = 'invalid state';
         node.status({ fill: 'red', shape: 'ring', text: errorMsg });
-        done(errorMsg);
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -68,7 +69,7 @@ module.exports = function HubitatModeSetterModule(RED) {
       if (state === 'invalid') {
         const errorMsg = 'invalid state';
         node.status({ fill: 'red', shape: node.shape, text: errorMsg });
-        done(errorMsg);
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -79,7 +80,7 @@ module.exports = function HubitatModeSetterModule(RED) {
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          done(await response.text());
+          doneWithId(node, done, await response.text());
           return;
         }
         const output = { ...msg, response: await response.json() };
@@ -88,7 +89,7 @@ module.exports = function HubitatModeSetterModule(RED) {
         done();
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
-        done(err);
+        doneWithId(node, done, err);
       }
     });
   }

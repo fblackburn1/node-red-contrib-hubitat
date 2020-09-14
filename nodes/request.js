@@ -1,6 +1,7 @@
 /* eslint-disable global-require */
 module.exports = function HubitatRequestModule(RED) {
   const fetch = require('node-fetch');
+  const doneWithId = require('./utils/done-with-id');
 
   function HubitatRequestNode(config) {
     RED.nodes.createNode(this, config);
@@ -21,7 +22,7 @@ module.exports = function HubitatRequestModule(RED) {
       if (!path) {
         const errorMsg = 'undefined path';
         node.status({ fill: 'red', shape: 'ring', text: errorMsg });
-        done(errorMsg);
+        doneWithId(node, done, errorMsg);
         return;
       }
       const url = `${node.hubitat.baseUrl}/${path}?access_token=${node.hubitat.token}`;
@@ -31,7 +32,7 @@ module.exports = function HubitatRequestModule(RED) {
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          done(await response.text());
+          doneWithId(node, done, await response.text());
           return;
         }
         const output = { ...msg, payload: await response.json() };
@@ -40,7 +41,7 @@ module.exports = function HubitatRequestModule(RED) {
         done();
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
-        done(err);
+        doneWithId(node, done, err);
       }
     });
   }
