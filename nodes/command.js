@@ -1,6 +1,7 @@
 /* eslint-disable global-require */
 module.exports = function HubitatCommandModule(RED) {
   const fetch = require('node-fetch');
+  const doneWithId = require('./utils/done-with-id');
 
   function HubitatCommandNode(config) {
     RED.nodes.createNode(this, config);
@@ -31,8 +32,9 @@ module.exports = function HubitatCommandModule(RED) {
 
       const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
       if (!deviceId) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined deviceId' });
-        done('undefined deviceId');
+        const errorMsg = 'undefined deviceId';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -45,8 +47,9 @@ module.exports = function HubitatCommandModule(RED) {
         commandArgs = msg.arguments;
       }
       if (!command) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined command' });
-        done('undefined command');
+        const errorMsg = 'undefined deviceId';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -62,7 +65,7 @@ module.exports = function HubitatCommandModule(RED) {
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          done(await response.text());
+          doneWithId(node, done, await response.text());
           return;
         }
         const output = { ...msg, response: await response.json() };

@@ -1,6 +1,7 @@
 /* eslint-disable global-require */
 module.exports = function HubitatModeSetterModule(RED) {
   const fetch = require('node-fetch');
+  const doneWithId = require('./utils/done-with-id');
 
   function HubitatModeSetterNode(config) {
     RED.nodes.createNode(this, config);
@@ -49,8 +50,9 @@ module.exports = function HubitatModeSetterModule(RED) {
       }
 
       if (!modeId) {
-        node.status({ fill: 'red', shape: 'ring', text: 'undefined mode' });
-        done('undefined mode');
+        const errorMsg = 'undefined mode';
+        node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -61,7 +63,7 @@ module.exports = function HubitatModeSetterModule(RED) {
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          done(await response.text());
+          doneWithId(node, done, await response.text());
           return;
         }
         const output = { ...msg, response: await response.json() };
@@ -70,7 +72,7 @@ module.exports = function HubitatModeSetterModule(RED) {
         done();
       } catch (err) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
-        done(err);
+        doneWithId(node, done, err);
       }
     });
   }
