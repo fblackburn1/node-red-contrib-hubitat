@@ -13,7 +13,7 @@
       value = `${value}_`;
       $('#node-config-input-webhookPath').val(value);
     }
-    const pattern = new RegExp('^(\\/[-a-z\\d%_.~+]*)*$');
+    const pattern = new RegExp('^(\\/[\\w%.~+-]*)*$');
     if (!pattern.test(value)) {
       return false;
     }
