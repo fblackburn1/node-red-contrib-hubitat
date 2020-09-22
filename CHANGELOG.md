@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+* `config`: allow to configure webhook path with uppercase
+* improve log: force to display node ID when node has name
+
 ## 1.3.0
 
 * `command`: add status text about the current command/arguments configuration
