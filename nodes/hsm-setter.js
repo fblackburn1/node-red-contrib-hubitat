@@ -73,14 +73,17 @@ module.exports = function HubitatModeSetterModule(RED) {
         return;
       }
 
-      const url = `${node.hubitat.baseUrl}/hsm/${state}?access_token=${node.hubitat.token}`;
+      const baseUrl = `${node.hubitat.baseUrl}/hsm/${state}`;
+      const url = `${baseUrl}?access_token=${node.hubitat.token}`;
       const options = { method: 'GET' };
 
       try {
+        node.debug(`Request: ${baseUrl}`);
         const response = await fetch(url, options);
         if (response.status >= 400) {
           node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          doneWithId(node, done, await response.text());
+          const message = `${baseUrl}: ${await response.text()}`;
+          doneWithId(node, done, message);
           return;
         }
         const output = { ...msg, response: await response.json() };
