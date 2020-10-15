@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2
+
+* improve error message when a request fail
+
 ## 1.3.1
 
 * `config`: allow to configure webhook path with uppercase
