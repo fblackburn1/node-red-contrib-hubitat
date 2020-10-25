@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.3
+
+* fix mode events not received when using websocket
+
 ## 1.3.2
 
 * improve error message when a request fail
