@@ -222,7 +222,7 @@ module.exports = function HubitatConfigModule(RED) {
         node.hubitatEvent.emit('systemStart');
       }
       node.hubitatEvent.emit('event', event);
-      if (event.deviceId != null) {
+      if (event.deviceId) { // webhook: deviceId=null, websocket: deviceId=0
         node.updateDevice(event);
         node.hubitatEvent.emit(`device.${event.deviceId}`, event);
       } else if (event.name === 'mode') {
