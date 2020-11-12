@@ -87,6 +87,7 @@ ${dataType}: ${value} \
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
     this.devices = {};
     this.expiredDevices = {};
+    this.devicesInitialized = false;
 
     this.requestPool = MAXSIMULTANEOUSREQUESTS;
 
@@ -145,48 +146,58 @@ ${dataType}: ${value} \
       return mode;
     };
 
-    node.initDevice = async (deviceId) => {
-      if (!node.devices[deviceId]) {
-        node.devices[deviceId] = { pending: true };
-
-        const url = `${node.baseUrl}/devices/${deviceId}?access_token=${node.token}`;
-        const options = { method: 'GET' };
-        let device;
-        try {
-          await node.acquireLock();
-          const response = await fetch(url, options);
-          if (response.status >= 400) {
-            throw new Error(await response.text());
-          }
-          device = await response.json();
-        } catch (err) {
-          node.warn(`Unable to fetch device(${deviceId}): ${err}`);
-          throw err;
-        } finally {
-          node.releaseLock();
-        }
-
-        if (!device.attributes) { throw new Error(JSON.stringify(device)); }
-
-        // remove duplicate attribute name
-        device.attributes = device.attributes.filter(
-          (attribute, index, self) => index === self.findIndex((t) => (t.name === attribute.name)),
-        );
-
-        // refactor add default attributes
-        device.attributes = device.attributes.reduce((obj, item) => {
-          // eslint-disable-next-line no-param-reassign
-          obj[item.name] = { ...item, value: item.currentValue, deviceId };
-          return obj;
-        }, {});
-
-        node.debug(`device: ${JSON.stringify(device)}`);
-        node.devices[deviceId] = device;
-      } else if (node.devices[deviceId].pending) {
-        await sleep(40);
-        return node.initDevice(deviceId);
+    node.devicesFetcher = async () => {
+      if (node.devicesInitialized === true) {
+        return;
       }
-      return node.devices[deviceId];
+      if (node.devicesInitialized === 'pending') {
+        await sleep(40);
+        node.devicesFetcher();
+        return;
+      }
+      node.devicesInitialized = 'pending';
+
+      const url = `${node.baseUrl}/devices/*?access_token=${node.token}`;
+      const options = { method: 'GET' };
+      let devices;
+      try {
+        await node.acquireLock();
+        const response = await fetch(url, options);
+        if (response.status >= 400) {
+          throw new Error(await response.text());
+        }
+        devices = await response.json();
+      } catch (err) {
+        node.warn(`Unable to fetch devices: ${err}`);
+        throw err;
+      } finally {
+        node.releaseLock();
+      }
+
+      // convert list to map + refactor
+      devices = devices.reduce((obj, device) => {
+        // remove duplicate attribute name
+        // eslint-disable-next-line no-param-reassign
+        device.attributes = device.attributes.filter(
+          (attribute, index, self) => index === self.findIndex(
+            (t) => (t.name === attribute.name),
+          ),
+        );
+        // convert to map + add default attributes
+        // eslint-disable-next-line no-param-reassign
+        device.attributes = device.attributes.reduce((obj_, attr) => {
+          // eslint-disable-next-line no-param-reassign
+          obj_[attr.name] = { ...attr, value: attr.currentValue, deviceId: device.id };
+          return obj_;
+        }, {});
+        // eslint-disable-next-line no-param-reassign
+        obj[device.id] = device;
+        return obj;
+      }, {});
+
+      node.debug(`devices: ${JSON.stringify(devices[1])}`);
+      node.devices = devices;
+      node.devicesInitialized = true;
     };
 
     node.getHsm = async () => {
@@ -225,6 +236,7 @@ ${dataType}: ${value} \
         node.log('Resynchronize all hubitat\'s nodes');
         node.expiredDevices = node.devices;
         node.devices = {};
+        node.devicesInitialized = false;
         node.hubitatEvent.emit('systemStart');
       }
       node.hubitatEvent.emit('event', event);

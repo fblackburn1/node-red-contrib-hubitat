@@ -47,28 +47,32 @@ module.exports = function HubitatDeviceModule(RED) {
     };
 
     async function initializeDevice() {
-      return node.hubitat.initDevice(node.deviceId).then(() => {
-        if (node.attribute) {
-          const attribute = node.hubitat.devices[node.deviceId].attributes[node.attribute];
-          if (!attribute) {
-            throw new Error(`Selected attribute (${node.attribute}) is not handled by device`);
-          }
-          node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
-          node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
-        } else {
-          node.updateStatus();
-          node.log('Initialized');
-        }
-      }).catch((err) => {
+      try {
+        await node.hubitat.devicesFetcher();
+      } catch (err) {
         node.warn(`Unable to initialize device: ${err.message}`);
         node.updateStatus('red', 'Uninitialized');
         throw err;
-      });
+      }
+      if (node.attribute) {
+        const attribute = node.hubitat.devices[node.deviceId].attributes[node.attribute];
+        if (!attribute) {
+          const msg = `Selected attribute (${node.attribute}) is not handled by device`;
+          node.warn(msg);
+          node.updateStatus('red', 'Invalid attribute');
+          throw new Error(msg);
+        }
+        node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
+        node.log(`Initialized. ${node.attribute}: ${attribute.value}`);
+      } else {
+        node.updateStatus();
+        node.log('Initialized');
+      }
     }
 
     const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
-      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
+      if (!node.hubitat.devicesInitialized) {
         try {
           await initializeDevice();
         } catch (err) {
@@ -133,7 +137,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('input', async (msg, send, done) => {
       node.debug('Input received');
-      if (node.hubitat.devices[node.deviceId].attributes === undefined) {
+      if (!node.hubitat.devicesInitialized) {
         try {
           await initializeDevice();
         } catch (err) {
