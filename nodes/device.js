@@ -86,7 +86,7 @@ module.exports = function HubitatDeviceModule(RED) {
           node.log(`${node.attribute}: ${attribute.value}`);
         } else {
           node.updateStatus();
-          node.log('Attributes refreshed');
+          node.log(`${event.name}: ${attribute.value}`);
         }
         if (node.sendEvent) {
           const msg = { ...event, ...attribute };
