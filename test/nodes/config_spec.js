@@ -36,15 +36,15 @@ describe('Hubitat Config Node', () => {
   }
 
   before((done) => {
-    testApp.get('/apps/api/1/devices/slow', (req, res) => {
+    testApp.responseDelay = 0;
+    testApp.get('/apps/api/1/devices/*', (req, res) => {
       setTimeout(() => {
-        res.json({ id: 'slow', attributes: [{ name: 'switch' }] });
-      }, 100);
+        res.json([
+          { id: 1, attributes: [{ name: 'switch' }] },
+          { id: 'switch-off-duplicate', attributes: [{ name: 'switch', currentValue: 'off' }, { name: 'switch', currentValue: 'off' }] },
+        ]);
+      }, testApp.responseDelay);
     });
-    testApp.get('/apps/api/1/devices/switch-off-duplicate', (req, res) => {
-      res.json({ id: 'switch-off-duplicate', attributes: [{ name: 'switch', currentValue: 'off' }, { name: 'switch', currentValue: 'off' }] });
-    });
-    testApp.get('/apps/api/1/devices/:deviceId', (req, res) => { res.json({ id: req.params.deviceId, attributes: [{ name: 'switch' }] }); });
 
     startServer((err) => {
       if (err) {
@@ -96,18 +96,18 @@ describe('Hubitat Config Node', () => {
       }
     });
   });
-  it('should fetch initDevice only once by deviceId', (done) => {
+  it('should fetch devicesFetcher only once', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.initDevice(1).then((device) => {
+      n0.devicesFetcher().then((device) => {
         try {
           should.equal(nbGetDeviceCalled, 1);
         } catch (err) {
           done(err);
         }
       });
-      n0.initDevice(1).then((device) => {
+      n0.devicesFetcher().then((device) => {
         try {
           should.equal(nbGetDeviceCalled, 1);
           done();
@@ -117,20 +117,22 @@ describe('Hubitat Config Node', () => {
       });
     });
   });
-  it('should not mixed up initDevice cache', (done) => {
+  it('should wait on slow devicesFetcher until first request is completed', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.initDevice(1).then((device) => {
+      n0.devicesFetcher().then(() => {
         try {
-          device.should.have.property('id', '1');
+          should.equal(nbGetDeviceCalled, 1);
+          n0.devices[1].should.have.property('id', 1);
         } catch (err) {
           done(err);
         }
       });
-      n0.initDevice(2).then((device) => {
+      n0.devicesFetcher().then((device) => {
         try {
-          device.should.have.property('id', '2');
+          should.equal(nbGetDeviceCalled, 1);
+          n0.devices[1].should.have.property('id', 1);
           done();
         } catch (err) {
           done(err);
@@ -138,35 +140,13 @@ describe('Hubitat Config Node', () => {
       });
     });
   });
-  it('should wait on slow initDevice until first request is completed', (done) => {
+  it('devicesFetcher should reorder and remove duplicate attributes', (done) => {
     const flow = [defaultConfigNode];
     helper.load(configNode, flow, () => {
       const n0 = helper.getNode('n0');
-      n0.initDevice('slow').then((device) => {
+      n0.devicesFetcher().then(() => {
         try {
-          should.equal(nbGetDeviceCalled, 1);
-          device.should.have.property('id', 'slow');
-        } catch (err) {
-          done(err);
-        }
-      });
-      n0.initDevice('slow').then((device) => {
-        try {
-          should.equal(nbGetDeviceCalled, 1);
-          device.should.have.property('id', 'slow');
-          done();
-        } catch (err) {
-          done(err);
-        }
-      });
-    });
-  });
-  it('initDevice should reorder and remove duplicate attributes', (done) => {
-    const flow = [defaultConfigNode];
-    helper.load(configNode, flow, () => {
-      const n0 = helper.getNode('n0');
-      n0.initDevice('switch-off-duplicate').then((device) => {
-        try {
+          const device = n0.devices['switch-off-duplicate'];
           should.equal(nbGetDeviceCalled, 1);
           device.should.have.property('id', 'switch-off-duplicate');
           device.attributes.switch.should.have.property('value', 'off');
