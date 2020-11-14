@@ -145,9 +145,17 @@ module.exports = function HubitatDeviceModule(RED) {
         }
       }
 
+      const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
+      if (!deviceId) {
+        const errorMsg = 'undefined deviceId';
+        node.updateStatus('red', `Invalid attribute: ${errorMsg}`);
+        done();
+        return;
+      }
+
       const attributeSearched = msg.attribute || node.attribute;
       if (!attributeSearched) {
-        msg.payload = { ...node.hubitat.devices[node.deviceId].attributes };
+        msg.payload = { ...node.hubitat.devices[deviceId].attributes };
         msg.topic = node.name;
         send(msg);
         node.updateStatus();
@@ -155,7 +163,7 @@ module.exports = function HubitatDeviceModule(RED) {
         return;
       }
 
-      const attribute = node.hubitat.devices[node.deviceId].attributes[attributeSearched];
+      const attribute = node.hubitat.devices[deviceId].attributes[attributeSearched];
       if (!attribute) {
         node.updateStatus('red', `Invalid attribute: ${attributeSearched}`);
         done();
