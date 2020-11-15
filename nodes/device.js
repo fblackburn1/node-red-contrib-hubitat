@@ -98,7 +98,6 @@ module.exports = function HubitatDeviceModule(RED) {
         }
       }
     };
-    this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, eventCallback);
 
     const systemStartCallback = async () => {
       const previousDevice = node.hubitat.expiredDevices[node.deviceId];
@@ -121,7 +120,10 @@ module.exports = function HubitatDeviceModule(RED) {
           eventCallback(event);
         });
     };
-    this.hubitat.hubitatEvent.on('systemStart', systemStartCallback);
+    if (node.deviceId) {
+      this.hubitat.hubitatEvent.on(`device.${node.deviceId}`, eventCallback);
+      this.hubitat.hubitatEvent.on('systemStart', systemStartCallback);
+    }
 
     const wsOpened = async () => {
       node.updateStatus(node.currentStatusFill, node.currentStatusText);
@@ -147,8 +149,8 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
       if (!deviceId) {
-        const errorMsg = 'undefined deviceId';
-        node.updateStatus('red', `Invalid attribute: ${errorMsg}`);
+        const errorMsg = 'Undefined device ID';
+        node.updateStatus('red', errorMsg);
         done();
         return;
       }
@@ -183,8 +185,10 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('close', () => {
       node.debug('Closed');
-      this.hubitat.hubitatEvent.removeListener(`device.${node.deviceId}`, eventCallback);
-      this.hubitat.hubitatEvent.removeListener('systemStart', systemStartCallback);
+      if (node.deviceId) {
+        this.hubitat.hubitatEvent.removeListener(`device.${node.deviceId}`, eventCallback);
+        this.hubitat.hubitatEvent.removeListener('systemStart', systemStartCallback);
+      }
       this.hubitat.hubitatEvent.removeListener('websocket-opened', wsOpened);
       this.hubitat.hubitatEvent.removeListener('websocket-closed', wsClosed);
       this.hubitat.hubitatEvent.removeListener('websocket-error', wsClosed);

@@ -376,4 +376,33 @@ describe('Hubitat Device Node', () => {
       n1.receive({ deviceId: '42' });
     });
   });
+  it('should output an error when empty deviceId is provided', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultDeviceNode,
+        deviceId: 1,
+        attribute: 'test',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 1: { attributes: { test: { name: 'test', value: 'attr' } } } };
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({ deviceId: '' });
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no deviceId allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
 });
