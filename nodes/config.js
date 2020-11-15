@@ -10,9 +10,15 @@ module.exports = function HubitatConfigModule(RED) {
   const MAXLISTERNERS = 500;
   const MAXSIMULTANEOUSREQUESTS = 4; // 4 simultaneous requests seem to never cause issue
 
-  function castHubitatValue(node, dataType, value) {
+  function castHubitatValue(node, dataType, event) {
+    const { value } = event;
+
     function defaultAction() {
-      node.warn(`Unable to cast to dataType. Open an issue to report back the following output: ${dataType}: ${value}`);
+      node.warn(`\
+Unable to cast to dataType for device ID (${event.deviceId}) with attribute: (${event.name}). \
+Open an issue (https://github.com/fblackburn1/node-red-contrib-hubitat/issues) to report back the following output: \
+${dataType}: ${value} \
+      `);
       return value;
     }
 
@@ -210,7 +216,7 @@ module.exports = function HubitatConfigModule(RED) {
         return;
       }
       const attribute = node.devices[event.deviceId].attributes[event.name];
-      attribute.value = castHubitatValue(node, attribute.dataType, event.value);
+      attribute.value = castHubitatValue(node, attribute.dataType, event);
       attribute.currentValue = attribute.value; // deprecated since 0.0.18
     };
 
