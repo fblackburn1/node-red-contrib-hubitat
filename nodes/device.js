@@ -1,5 +1,8 @@
 /* eslint-disable no-param-reassign */
+/* eslint-disable global-require */
 module.exports = function HubitatDeviceModule(RED) {
+  const doneWithId = require('./utils/done-with-id');
+
   function HubitatDeviceNode(config) {
     RED.nodes.createNode(this, config);
 
@@ -151,7 +154,7 @@ module.exports = function HubitatDeviceModule(RED) {
       if (!deviceId) {
         const errorMsg = 'Undefined device ID';
         node.updateStatus('red', errorMsg);
-        done();
+        doneWithId(node, done, errorMsg);
         return;
       }
 
@@ -167,8 +170,9 @@ module.exports = function HubitatDeviceModule(RED) {
 
       const attribute = node.hubitat.devices[deviceId].attributes[attributeSearched];
       if (!attribute) {
-        node.updateStatus('red', `Invalid attribute: ${attributeSearched}`);
-        done();
+        const errorMsg = `Invalid attribute: ${attributeSearched}`;
+        node.updateStatus('red', errorMsg);
+        doneWithId(node, done, errorMsg);
         return;
       }
 
