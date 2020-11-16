@@ -45,6 +45,7 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId) {
+            enableSendEventCheckbox();
             if (server.credentials) {
               listHubitatDeviceAttributes(server, deviceId, this.attribute);
             } else {
@@ -56,6 +57,7 @@
             }
           } else {
             cleanHubitatDeviceAttributes();
+            disableSendEventCheckbox();
           }
         });
       });
@@ -130,6 +132,14 @@
     const option = $('<option>', { value: '', text: 'All' });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
+  }
+  function disableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheckbox.prop('disabled', true);
+  }
+  function enableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheckbox.prop('disabled', false);
   }
 </script>
 
