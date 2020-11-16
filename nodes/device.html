@@ -17,7 +17,9 @@
     },
     paletteLabel: 'device',
     oneditprepare: function() {
+      let sendEventCheked = true;
       $('document').ready(() => {
+        sendEventCheked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -45,6 +47,7 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId) {
+            enableHubitatDeviceAttributes();
             enableSendEventCheckbox();
             if (server.credentials) {
               listHubitatDeviceAttributes(server, deviceId, this.attribute);
@@ -56,7 +59,7 @@
               });
             }
           } else {
-            cleanHubitatDeviceAttributes();
+            disableHubitatDeviceAttributes();
             disableSendEventCheckbox();
           }
         });
@@ -126,19 +129,27 @@
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
   }
-  function cleanHubitatDeviceAttributes() {
+  function disableHubitatDeviceAttributes() {
     const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'All' });
+    const option = $('<option>', { value: '', text: 'N/A' });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
+    selectMenu.prop('disabled', true);
+  }
+  function enableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-attribute');
+    selectMenu.prop('disabled', false);
   }
   function disableSendEventCheckbox() {
     const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheked = $('#node-input-sendEvent').is(':checked');
+    sendEventCheckbox.prop('checked', false);
     sendEventCheckbox.prop('disabled', true);
   }
   function enableSendEventCheckbox() {
     const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheckbox.prop('checked', sendEventCheked);
     sendEventCheckbox.prop('disabled', false);
   }
 </script>
