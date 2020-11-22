@@ -5,7 +5,7 @@
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
-      deviceId: { value: '', required: true },
+      deviceId: { value: '' },
       attribute: { value: '' },
       sendEvent: { value: true },
     },
@@ -17,7 +17,9 @@
     },
     paletteLabel: 'device',
     oneditprepare: function() {
+      let sendEventCheked = true;
       $('document').ready(() => {
+        sendEventCheked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -45,6 +47,8 @@
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId) {
+            enableHubitatDeviceAttributes();
+            enableSendEventCheckbox();
             if (server.credentials) {
               listHubitatDeviceAttributes(server, deviceId, this.attribute);
             } else {
@@ -55,7 +59,8 @@
               });
             }
           } else {
-            cleanHubitatDeviceAttributes();
+            disableHubitatDeviceAttributes();
+            disableSendEventCheckbox();
           }
         });
       });
@@ -124,12 +129,28 @@
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
   }
-  function cleanHubitatDeviceAttributes() {
+  function disableHubitatDeviceAttributes() {
     const selectMenu = $('#node-input-attribute');
     selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'All' });
+    const option = $('<option>', { value: '', text: 'N/A' });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
+    selectMenu.prop('disabled', true);
+  }
+  function enableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-attribute');
+    selectMenu.prop('disabled', false);
+  }
+  function disableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheked = $('#node-input-sendEvent').is(':checked');
+    sendEventCheckbox.prop('checked', false);
+    sendEventCheckbox.prop('disabled', true);
+  }
+  function enableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheckbox.prop('checked', sendEventCheked);
+    sendEventCheckbox.prop('disabled', false);
   }
 </script>
 
@@ -160,6 +181,10 @@
   <p>A node that keep the current state of Hubitat device.</p>
 
   <h3>Inputs</h3>
+    <dl class="message-properties">
+      <dt class="optional">msg.deviceId <span class="property-type">string</span></dt>
+      <dd>Allow to overwrite the device.</dd>
+    </dl>
     <dl class="message-properties">
       <dt class="optional">msg.attribute <span class="property-type">string</span></dt>
       <dd>If set, this is used to force the node to ouput the current state of this attribute</dd>

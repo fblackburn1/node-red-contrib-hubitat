@@ -254,7 +254,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'desync' } } } };
-      n1.hubitat.initDevice = () => new Promise((res) => {
+      n1.hubitat.devicesFetcher = () => new Promise((res) => {
         n1.hubitat.devices['42'] = {
           attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
         };
@@ -283,10 +283,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.expiredDevices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'sync' } } } };
-      n1.hubitat.initDevice = () => new Promise((res) => res({
-        attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
-      }));
-      n1.hubitat.initDevice = () => new Promise((res) => {
+      n1.hubitat.devicesFetcher = () => new Promise((res) => {
         n1.hubitat.devices['42'] = {
           attributes: { testAttribute: { name: 'testAttribute', value: 'sync', dataType: 'STRING' } },
         };
@@ -324,7 +321,7 @@ describe('Hubitat Device Node', () => {
           },
         },
       };
-      n1.hubitat.initDevice = () => new Promise((res) => {
+      n1.hubitat.devicesFetcher = () => new Promise((res) => {
         n1.hubitat.devices['42'] = {
           attributes: {
             desync1: { name: 'desync1', value: 'sync', dataType: 'STRING' },
@@ -351,6 +348,61 @@ describe('Hubitat Device Node', () => {
         }
       });
       n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
+  it('should take deviceId from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultDeviceNode,
+        deviceId: 1,
+        attribute: 'test',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { test: { name: 'test', value: 'attr-of-id-42' } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('value', 'attr-of-id-42');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ deviceId: '42' });
+    });
+  });
+  it('should output an error when empty deviceId is provided', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultDeviceNode,
+        deviceId: 1,
+        attribute: 'test',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 1: { attributes: { test: { name: 'test', value: 'attr' } } } };
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({ deviceId: '' });
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no deviceId allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
     });
   });
 });
