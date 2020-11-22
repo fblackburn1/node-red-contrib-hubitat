@@ -195,7 +195,7 @@ ${dataType}: ${value} \
         return obj;
       }, {});
 
-      node.debug(`devices: ${JSON.stringify(devices[1])}`);
+      node.debug(`devices: ${JSON.stringify(devices)}`);
       node.devices = devices;
       node.devicesInitialized = true;
     };
