@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.0
+
+* `device`: allow to override device with the device ID (e.i. msg.deviceId = 12)
+* `config`: support `httpNodeRoot` option for webhook configuration (e.g. Homme Assistant use `/endpoint`)
+* improve logs about unsupported dataType
+
 ## 1.3.3
 
 * fix mode events not received when using websocket
