@@ -15,7 +15,7 @@ module.exports = function HubitatConfigModule(RED) {
 
     function defaultAction() {
       node.warn(`\
-Unable to cast to dataType for device ID (${event.deviceId}) with attribute: (${event.name}). \
+Unable to cast to dataType for device ID (${event.deviceId}) with attribute (${event.name}). \
 Open an issue (https://github.com/fblackburn1/node-red-contrib-hubitat/issues) to report back the following output: \
 ${dataType}: ${value} \
       `);
