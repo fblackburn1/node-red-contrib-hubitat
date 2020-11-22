@@ -1,4 +1,5 @@
 <script type="text/javascript">
+  let sendEventCheked = true;
   RED.nodes.registerType('hubitat device',{
     category: 'hubitat',
     color: '#ACE043',
@@ -17,7 +18,6 @@
     },
     paletteLabel: 'device',
     oneditprepare: function() {
-      let sendEventCheked = true;
       $('document').ready(() => {
         sendEventCheked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
