@@ -85,6 +85,19 @@
         label: 'Advanced',
       });
 
+      let httpNodeRoot = RED.settings.httpNodeRoot;
+      if (httpNodeRoot.slice(-1) === '/') {
+        httpNodeRoot = httpNodeRoot.slice(0, -1);
+      }
+
+      const httpNodeRootInput = $('#node-config-input-httpNodeRoot');
+      if (httpNodeRoot === '') {
+        httpNodeRootInput.hide()
+      } else {
+        httpNodeRootInput.width((httpNodeRoot.length) * 8);
+        httpNodeRootInput.val(httpNodeRoot);
+      }
+
       let nodeRedServer = $('#node-config-input-nodeRedServer');
       nodeRedServer.attr('placeholder', window.location.origin);
       if (!nodeRedServer.val()) {
@@ -203,10 +216,11 @@
       <div class="form-row">
         <p><b>Webhook configuration</b></p>
       </div>
-      <div class="form-row" style="padding-right: 200px">
+      <div class="form-row" style="display: flex; flex-direction: row;">
         <label for="node-config-input-nodeRedServer"><i class="fa fa-globe"></i> Node-RED</label>
-        <input type="text" id="node-config-input-nodeRedServer">
-        <input type="text" id="node-config-input-webhookPath" style="width:200px; margin-right:-200px; float:right;" placeholder="/hubitat/webhook">
+        <input type="text" id="node-config-input-nodeRedServer" style="width:205px;">
+        <input type="text" id="node-config-input-httpNodeRoot" readonly>
+        <input type="text" id="node-config-input-webhookPath" style="width:auto" placeholder="/hubitat/webhook">
       </div>
       <div class="form-row">
         <button id="node-config-button-webhookConfigure" onclick="configureHubitat()">Configure webhook</button>
