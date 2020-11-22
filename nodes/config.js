@@ -485,7 +485,11 @@ ${dataType}: ${value} \
     const scheme = ((req.body.usetls === 'true') ? 'https' : 'http');
     const baseUrl = `${scheme}://${req.body.host}:${req.body.port}/apps/api/${req.body.appId}`;
     const options = { method: 'GET' };
-    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}${req.body.webhookPath}`);
+    let { httpNodeRoot } = RED.settings;
+    if (httpNodeRoot.slice(-1) === '/') {
+      httpNodeRoot = httpNodeRoot.slice(0, -1);
+    }
+    const nodeRedURL = encodeURIComponent(`${req.body.nodeRedServer}${httpNodeRoot}${req.body.webhookPath}`);
     let url = `${baseUrl}/postURL/${nodeRedURL}`;
     console.log(`GET ${url}`);
     url = `${url}?access_token=${req.body.token}`;
