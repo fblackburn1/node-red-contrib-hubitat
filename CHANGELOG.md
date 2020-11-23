@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+* `device`: fix empty status on initialization
+
 ## 1.4.0
 
 * `device`: allow to override device with the device ID (e.i. msg.deviceId = 12)
