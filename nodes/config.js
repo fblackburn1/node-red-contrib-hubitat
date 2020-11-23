@@ -152,7 +152,7 @@ ${dataType}: ${value} \
       }
       if (node.devicesInitialized === 'pending') {
         await sleep(40);
-        node.devicesFetcher();
+        await node.devicesFetcher();
         return;
       }
       node.devicesInitialized = 'pending';
