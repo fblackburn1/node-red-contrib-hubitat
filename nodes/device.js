@@ -75,7 +75,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
-      if (!node.hubitat.devicesInitialized) {
+      if (node.hubitat.devicesInitialized !== true) {
         try {
           await initializeDevice();
         } catch (err) {
@@ -142,7 +142,7 @@ module.exports = function HubitatDeviceModule(RED) {
 
     node.on('input', async (msg, send, done) => {
       node.debug('Input received');
-      if (!node.hubitat.devicesInitialized) {
+      if (node.hubitat.devicesInitialized !== true) {
         try {
           await initializeDevice();
         } catch (err) {
