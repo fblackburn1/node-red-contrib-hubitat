@@ -60,6 +60,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'updated-value', deviceId: '42' } } } };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           msg.should.have.property('payload', { ...hubitatEvent, value: 'updated-value' });
@@ -96,6 +97,7 @@ describe('Hubitat Device Node', () => {
           },
         },
       };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           msg.should.have.property('payload', {
@@ -182,6 +184,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'old-value' } } } };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           msg.should.have.property('payload', { ...n1.hubitat.devices['42'].attributes });
@@ -203,6 +206,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'value' } } } };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           // eslint-disable-next-line no-param-reassign
@@ -231,6 +235,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 42: { attributes: { testAttribute: { value: 'value' } } } };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           n1.hubitat.devices['42'].attributes.testAttribute.should.have.property('value', 'value');
@@ -365,6 +370,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 42: { attributes: { test: { name: 'test', value: 'attr-of-id-42' } } } };
+      n1.hubitat.devicesInitialized = true;
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', 'attr-of-id-42');
@@ -391,6 +397,7 @@ describe('Hubitat Device Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.hubitat.devices = { 1: { attributes: { test: { name: 'test', value: 'attr' } } } };
+      n1.hubitat.devicesInitialized = true;
       let inError = false;
       n2.on('input', (msg) => {
         inError = true;
