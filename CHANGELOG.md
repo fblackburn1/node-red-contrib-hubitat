@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.2
+
+* `device`: fix traceback when receiving input or event before initialization
+
 ## 1.4.1
 
 * `device`: fix empty status on initialization
