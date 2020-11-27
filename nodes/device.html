@@ -4,6 +4,7 @@
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
+      deviceLabel: { value: '' },
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
       deviceId: { value: '' },
@@ -14,11 +15,12 @@
     outputs:1,
     icon: 'icons/device.svg',
     label: function() {
-        return this.name || 'device';
+        return this.name || this.deviceLabel || 'device';
     },
     paletteLabel: 'device',
     oneditprepare: function() {
       $('document').ready(() => {
+        $('#node-input-deviceLabel').hide();
         sendEventCheked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
@@ -40,9 +42,11 @@
         $('#node-input-deviceId').change(() => {
           const deviceLabel = $('#node-input-deviceId option:selected').text();
           const deviceId = $('#node-input-deviceId option:selected').val();
-          const name = $('#node-input-name').val();
-          if ((!name) && (deviceId)) {
-            $('#node-input-name').val(deviceLabel);
+          if (deviceId) {
+            $('#node-input-name').attr('placeholder', deviceLabel);
+            if(!this.name) {
+              $('#node-input-deviceLabel').val(deviceLabel);
+            }
           }
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -61,8 +65,18 @@
           } else {
             disableHubitatDeviceAttributes();
             disableSendEventCheckbox();
+            $('#node-input-deviceLabel').val('');
+            $('#node-input-name').attr('placeholder', 'device');
           }
         });
+        $('#node-input-name').change(() => {
+          const name = $('#node-input-name').val();
+          const deviceId = $('#node-input-deviceId option:selected').val();
+          if ((!name) && (deviceId)) {
+            const deviceLabel = $('#node-input-deviceId option:selected').text();
+            $('#node-input-deviceLabel').val(deviceLabel);
+          }
+        })
       });
     }
   });
@@ -174,6 +188,11 @@
   <div class="form-row">
     <label for="node-input-sendEvent" style="width: auto"><i class="fa fa-rocket"></i> Send events </label>
     <input type="checkbox" id="node-input-sendEvent" style="display: inline-block; width: auto; vertical-align: top;" checked>
+  </div>
+  <!-- to be handled by NR framework-->
+  <div class="form-row">
+    <label for="node-input-deviceLabel"></label>
+    <input type="text" id="node-input-deviceLabel">
   </div>
 </script>
 
