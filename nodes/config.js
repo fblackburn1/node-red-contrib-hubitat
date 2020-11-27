@@ -14,11 +14,18 @@ module.exports = function HubitatConfigModule(RED) {
     const { value } = event;
 
     function defaultAction() {
-      node.warn(`\
-Unable to cast to dataType for device ID (${event.deviceId}) with attribute (${event.name}). \
-Open an issue (https://github.com/fblackburn1/node-red-contrib-hubitat/issues) to report back the following output: \
-${dataType}: ${value} \
-      `);
+      if (!node.devicesWarning[event.deviceId]) {
+        node.warn(`\
+The device (${event.deviceId}) sends an event (${event.name}) with non-official dataType (${dataType}). \
+The default behaviour is to leave the attribute value (${value}) as string. \
+It may result in a difference when getting attribute value with input vs event (e.g., json vs string). \
+You should report back this issue to the device driver maintainer. \
+Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
+        `);
+        // eslint-disable-next-line no-param-reassign
+        node.devicesWarning[event.deviceId] = true;
+      }
+
       return value;
     }
 
@@ -86,6 +93,7 @@ ${dataType}: ${value} \
     this.hubitatEvent = new events.EventEmitter();
     this.hubitatEvent.setMaxListeners(MAXLISTERNERS);
     this.devices = {};
+    this.devicesWarning = {};
     this.expiredDevices = {};
     this.devicesInitialized = false;
 
@@ -197,6 +205,11 @@ ${dataType}: ${value} \
 
       node.debug(`devices: ${JSON.stringify(devices)}`);
       node.devices = devices;
+      node.devicesWarning = Object.keys(devices).reduce((obj_, id) => {
+        // eslint-disable-next-line no-param-reassign
+        obj_[id] = false;
+        return obj_;
+      }, {});
       node.devicesInitialized = true;
     };
 
