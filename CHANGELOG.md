@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0
+
+* `device`: set name dynamically according the label. It will be updated when the node will be saved.
+* `config`: display `dataType` warning only once by device instead of at each event.
+
 ## 1.4.2
 
 * `device`: fix traceback when receiving input or event before initialization
