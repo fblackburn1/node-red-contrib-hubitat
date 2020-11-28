@@ -3,6 +3,7 @@
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
+      deviceLabel: { value: '' },
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
       deviceId: { value: '' },
@@ -14,11 +15,12 @@
     align: 'right',
     icon: 'icons/command.svg',
     label: function() {
-        return this.name || 'command';
+        return this.name || this.deviceLabel || 'command';
     },
     paletteLabel: 'command',
     oneditprepare: function() {
       $('document').ready(() => {
+        $('#node-input-deviceLabel').hide();
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
@@ -37,8 +39,15 @@
           }
         });
         $('#node-input-deviceId').change(() => {
-          const serverId = $('#node-input-server option:selected').val();
+          const deviceLabel = $('#node-input-deviceId option:selected').text();
           const deviceId = $('#node-input-deviceId option:selected').val();
+          if (deviceId) {
+            $('#node-input-name').attr('placeholder', deviceLabel);
+            if(!this.name) {
+              $('#node-input-deviceLabel').val(deviceLabel);
+            }
+          }
+          const serverId = $('#node-input-server option:selected').val();
           server = RED.nodes.node(serverId);
           if (server && deviceId ) {
             if (server.credentials) {
@@ -52,14 +61,18 @@
             }
           } else {
             cleanHubitatDeviceCommands();
-          }
-
-          const deviceLabel = $('#node-input-deviceId option:selected').text();
-          const name = $('#node-input-name').val();
-          if ((!name) && (deviceId)) {
-            $('#node-input-name').val(deviceLabel);
+            $('#node-input-deviceLabel').val('');
+            $('#node-input-name').attr('placeholder', 'device');
           }
         });
+        $('#node-input-name').change(() => {
+          const name = $('#node-input-name').val();
+          const deviceId = $('#node-input-deviceId option:selected').val();
+          if ((!name) && (deviceId)) {
+            const deviceLabel = $('#node-input-deviceId option:selected').text();
+            $('#node-input-deviceLabel').val(deviceLabel);
+          }
+        })
         $('#node-input-command').change(() => {
           let placeholder = $('#node-input-command option:selected').attr('args_placeholder');
           const commandArgsInput = $('#node-input-commandArgs');
@@ -173,6 +186,11 @@
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <!-- to be handled by NR framework-->
+  <div class="form-row">
+    <label for="node-input-deviceLabel"></label>
+    <input type="text" id="node-input-deviceLabel">
   </div>
 </script>
 
