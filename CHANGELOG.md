@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1
+
+* `command`: use same logic than device node for dynamic name.
+
 ## 1.5.0
 
 * `device`: set name dynamically according the label. It will be updated when the node will be saved.
