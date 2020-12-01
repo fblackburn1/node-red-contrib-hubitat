@@ -15,6 +15,7 @@ module.exports = function HubitatDeviceModule(RED) {
     this.currentStatusText = '';
     this.currentStatusFill = undefined;
     this.wsState = '';
+    this.topic = this.name || config.deviceLabel;
     const node = this;
 
     if (!node.hubitat) {
@@ -97,7 +98,7 @@ module.exports = function HubitatDeviceModule(RED) {
         }
         if (node.sendEvent) {
           const msg = { ...event, ...attribute };
-          node.send({ payload: msg, topic: node.name });
+          node.send({ payload: msg, topic: node.topic });
         }
       }
     };
@@ -161,7 +162,7 @@ module.exports = function HubitatDeviceModule(RED) {
       const attributeSearched = msg.attribute || node.attribute;
       if (!attributeSearched) {
         msg.payload = { ...node.hubitat.devices[deviceId].attributes };
-        msg.topic = node.name;
+        msg.topic = node.topic;
         send(msg);
         node.updateStatus();
         done();
@@ -177,7 +178,7 @@ module.exports = function HubitatDeviceModule(RED) {
       }
 
       msg.payload = { ...attribute };
-      msg.topic = node.name;
+      msg.topic = node.topic;
       send(msg);
       if (!node.attribute) {
         node.updateStatus();
