@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.2
+
+* `device`: set msg.topic to device label when name is empty
+* `command`: fix name placeholder when no device selected
+
 ## 1.5.1
 
 * `command`: use same logic than device node for dynamic name.
