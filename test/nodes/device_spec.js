@@ -45,6 +45,33 @@ describe('Hubitat Device Node', () => {
       }
     });
   });
+  it('should send event with fallback topic on deviceLabel when input received', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultDeviceNode,
+        name: '',
+        deviceLabel: 'fallback',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { testAttribute: { name: 'testAttribute', value: 'updated-value', deviceId: '42' } } } };
+      n1.hubitat.devicesInitialized = true;
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('topic', 'fallback');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
   it('should send event when event received', (done) => {
     const flow = [
       defaultConfigNode,
