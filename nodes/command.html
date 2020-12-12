@@ -82,6 +82,9 @@
       deviceId: { value: '' },
       command: { value: '' },
       commandArgs: { value: '' },
+      haltEnabled: { value: false },
+      haltAttribute: { value: '' },
+      haltAttributeVal: { value: '' },
     },
     inputs: 1,
     outputs: 1,
@@ -92,6 +95,8 @@
     oneditprepare() {
       $('document').ready(() => {
         $('#node-input-deviceLabel').hide();
+        haltEnabledChanged();
+
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
@@ -119,19 +124,23 @@
             }
           }
           const serverId = $('#node-input-server option:selected').val();
-          const server = RED.nodes.node(serverId);
-          if (server && deviceId) {
+          server = RED.nodes.node(serverId);
+          if (server && deviceId ) {
+            enableHubitatDeviceAttributes();
             if (server.credentials) {
               listHubitatDeviceCommands(server, deviceId, this.command);
+              listHubitatDeviceAttributesForCommand(server, deviceId, this.haltAttribute);
             } else {
               $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
                 server.credentials = data;
                 server.credentials._ = $.extend(true, {}, data);
                 listHubitatDeviceCommands(server, deviceId, this.command);
+                listHubitatDeviceAttributesForCommand(server, deviceId, this.haltAttribute);
               });
             }
           } else {
             cleanHubitatDeviceCommands();
+            disableHubitatDeviceAttributes();
             $('#node-input-deviceLabel').val('');
             $('#node-input-name').attr('placeholder', 'command');
           }
@@ -145,7 +154,8 @@
           }
         });
         $('#node-input-command').change(() => {
-          let placeholder = $('#node-input-command option:selected').attr('args_placeholder');
+          const commandInput = $('#node-input-command option:selected');
+          let placeholder = commandInput.attr('args_placeholder');
           const commandArgsInput = $('#node-input-commandArgs');
           if (placeholder === 'n/a') {
             commandArgsInput.val('');
@@ -157,10 +167,103 @@
             placeholder = '{"hue":88,"saturation":50,"level":90} or {"hex":"15fe21"}';
           }
           commandArgsInput.attr('placeholder', placeholder);
+          commandArgsInput.trigger('change');
+
+
+          let commandLower = commandInput.val().toLowerCase();
+          if (commandLower === 'on' || commandLower === 'off') {
+            commandLower = 'switch';
+          }
+          let matchWeight = 0;
+          $("#node-input-haltAttribute option").each(function() {
+            const attr = $(this).val()
+            const attrLower = attr.toLowerCase();
+            if ((commandLower.length > matchWeight) && (attrLower.search(commandLower) !== -1)) {
+              matchWeight = commandLower.length;
+              $("#node-input-haltAttribute").val(attr);
+            }
+          });
+          $("#node-input-haltAttribute option").each(function() {
+            const attr = $(this).val()
+            const attrLower = attr.toLowerCase();
+            if ((attrLower.length > matchWeight) && commandLower.search(attrLower) !== -1) {
+              matchWeight = attrLower.length;
+              $("#node-input-haltAttribute").val(attr);
+            }
+          });
         });
       });
-    },
+      $('#node-input-commandArgs').change(() => {
+        const attrPlaceHolder = $('#node-input-commandArgs').prop('placeholder');
+        const command = $('#node-input-command option:selected').val();
+        let value = $('#node-input-commandArgs').val();
+        if (attrPlaceHolder === 'n/a') {
+          if (command === 'on' || command === 'off') {
+            value = command;
+          }
+        }
+        $('#node-input-haltAttributeVal').attr('placeholder', value);
+
+      });
+      $('#node-input-haltEnabled').change(() => {
+        haltEnabledChanged();
+      });
+    }
   });
+
+  function haltEnabledChanged() {
+    const haltEnabled = $('#node-input-haltEnabled').is(":checked");
+      if (haltEnabled) {
+        $('#node-input-halt-div').show();
+      } else {
+        $('#node-input-halt-div').hide();
+      }
+  }
+
+  function listHubitatDeviceAttributesForCommand(server, deviceId, attribute) {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'Choose attribute...' });
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.credentials.token,
+    };
+
+    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
+      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
+        if (!(value.name in accumulator)) {
+          accumulator[value.name] = value;
+        }
+        return accumulator;
+      }, {})
+      Object.values(uniqueAttrs).map(item => {
+        selectMenu.append($('<option>', {
+          value: item.name,
+          text: item.name,
+        }));
+      });
+      if (attribute in uniqueAttrs) {
+        selectMenu.val(attribute).trigger('change');
+      }
+    });
+  }
+
+  function disableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'N/A' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+    selectMenu.prop('disabled', true);
+  }
+  function enableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.prop('disabled', false);
+  }
 </script>
 
 <script type="text/html" data-template-name="hubitat command">
@@ -179,6 +282,16 @@
   <div class="form-row">
     <label for="node-input-commandArgs"><i class="fa fa-bars"></i> Arguments</label>
     <input type="text" id="node-input-commandArgs">
+  </div>
+  <div class="form-row">
+    <label for="node-input-haltEnabled" style="width: auto; margin-right: 5px;"><i class="fa fa-hand-paper-o"></i> Do not always send command</label>
+    <input type="checkbox" id="node-input-haltEnabled" style="display: inline-block; width: auto; vertical-align: top;">
+  </div>
+  <div id="node-input-halt-div" class="form-row">
+    <label for="node-input-haltAttribute"><i class="fa fa-hand-paper-o"></i> Halt if </label>
+    <select id="node-input-haltAttribute" style="width: auto;margin-righ: 5px;"></select>
+    is
+    <input type="text" id="node-input-haltAttributeVal" style="width: 120px;margin-left: 5px;">
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>

@@ -10,13 +10,16 @@ module.exports = function HubitatCommandModule(RED) {
     this.deviceId = config.deviceId;
     this.command = config.command;
     this.commandArgs = config.commandArgs;
+    this.haltEnabled = config.haltEnabled;
+    this.haltAttribute = config.haltAttribute;
     this.defaultStatus = {};
+    this.haltAttributeValue = config.haltAttributeValue;
+
     if (this.command) {
-      if (this.commandArgs) {
-        this.defaultStatus = { text: `>> ${this.command}: ${this.commandArgs}` };
-      } else {
-        this.defaultStatus = { text: `>> ${this.command}` };
-      }
+      const base = `>> ${this.command}`;
+      const args = (this.commandArgs) ? `: ${this.commandArgs}` : '';
+      const halt = ((this.haltEnabled) ? ' | 🖑' : '');
+      this.defaultStatus = { text: `${base}${args}${halt}` };
     }
 
     const node = this;
@@ -26,6 +29,13 @@ module.exports = function HubitatCommandModule(RED) {
       return;
     }
     node.status(node.defaultStatus);
+
+    if ((!this.haltAttributeValue) && (this.haltAttributeValue !== 0)) {
+      this.haltAttributeValue = this.commandArgs;
+      if ((this.haltAttribute === 'switch') && (!this.commandArgs)) {
+        this.haltAttributeValue = this.command;
+      }
+    }
 
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
@@ -51,6 +61,24 @@ module.exports = function HubitatCommandModule(RED) {
         node.status({ fill: 'red', shape: 'ring', text: errorMsg });
         doneWithId(node, done, errorMsg);
         return;
+      }
+
+      if (this.haltEnabled) {
+        let currentValue;
+        try {
+          currentValue = node.hubitat.devices[deviceId].attributes[this.haltAttribute].value;
+        } catch (err) {
+          const errorMsg = `Device(${deviceId}) not initialized`;
+          node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+          done(errorMsg);
+          return;
+        }
+        if (currentValue === this.haltAttributeValue) {
+          node.status(node.defaultStatus);
+          send(msg);
+          done();
+          return;
+        }
       }
 
       let commandWithArgs = command;
