@@ -39,6 +39,49 @@
     $('#node-config-input-host').val(value);
     return true;
   }
+
+  function setNodeColor(node, color) {
+    const workspace = $("#red-ui-workspace-chart").contents();
+    const node_rect = workspace.find('[id="' + node.id + '"]').find('.red-ui-flow-node');
+    node_rect.attr('fill', color);
+  }
+  function updateHubitatNodeAttr(node) {
+    if (node._def.category !== 'hubitat') {
+        return;
+      }
+      configNode = RED.nodes.node(node.server)
+      let color = '#ACE043'
+      if (configNode && configNode.color) {
+        color = configNode.color;
+      }
+      setNodeColor(node, color);
+  }
+  function updateHubitatConfigNodeAttr(node) {
+    const color = node.color || '#ACE043';
+    node.users.forEach((child) => {
+      setNodeColor(child, color);
+    });
+  }
+  RED.events.on('nodes:change', (node) => {
+    if (node.type === 'hubitat config') {
+      updateHubitatConfigNodeAttr(node);
+    } else {
+      updateHubitatNodeAttr(node);
+    }
+  });
+  RED.events.on('nodes:add', (node) => {
+    setTimeout(updateHubitatNodeAttr.bind(this, node), 5);
+  });
+  RED.events.on('workspace:change', (workspace) => {
+    setTimeout(function() {
+      RED.nodes.eachConfig((node) => {
+        if (node.type === 'hubitat config') {
+          updateHubitatConfigNodeAttr(node);
+        }
+      })
+    }, 5); // 0 is enough, but just to be sure
+  });
+
   RED.nodes.registerType('hubitat config', {
     category: 'config',
     defaults: {
@@ -51,6 +94,7 @@
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
       useWebsocket: { value: false },
+      color: { value: '#ACE043' },
     },
     credentials: { token: { required: true, type: 'text' } },
     label() {
@@ -250,6 +294,10 @@
         <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
+      <div class="form-row">
+        <label for="node-config-input-color"><i class="fa fa-paint-brush"></i> Color</label>
+        <input type="color" id="node-config-input-color" style="width: 39px">
+      </div>
     </div>
   </div>
 </script>
@@ -288,6 +336,9 @@
       <p>
         <b>Warning:</b> Using websocket is not officially supported, and it's at your own risk!
       </p>
+    </p>
+    <p>
+      <b>Color</b> option will define a color for all nodes that use this configuration.
     </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
