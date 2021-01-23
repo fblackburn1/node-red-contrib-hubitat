@@ -47,7 +47,7 @@ module.exports = function HubitatCommandModule(RED) {
         commandArgs = msg.arguments;
       }
       if (!command) {
-        const errorMsg = 'undefined deviceId';
+        const errorMsg = 'undefined command';
         node.status({ fill: 'red', shape: 'ring', text: errorMsg });
         doneWithId(node, done, errorMsg);
         return;
