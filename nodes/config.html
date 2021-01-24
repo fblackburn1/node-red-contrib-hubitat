@@ -45,21 +45,24 @@
     const node_rect = workspace.find('[id="' + node.id + '"]').find('.red-ui-flow-node');
     node_rect.attr('fill', color);
   }
+  function getHubitatNodeColor(configNode, node) {
+    if (configNode && configNode.colorEnabled && configNode.color) {
+      return configNode.color;
+    }
+    return RED.utils.getNodeColor(node.type, node._def)
+  }
   function updateHubitatNodeAttr(node) {
     if (node._def.category !== 'hubitat') {
         return;
-      }
-      configNode = RED.nodes.node(node.server)
-      let color = '#ACE043'
-      if (configNode && configNode.color) {
-        color = configNode.color;
-      }
-      setNodeColor(node, color);
+    }
+    configNode = RED.nodes.node(node.server)
+    const color = getHubitatNodeColor(configNode, node);
+    setNodeColor(node, color);
   }
-  function updateHubitatConfigNodeAttr(node) {
-    const color = node.color || '#ACE043';
-    node.users.forEach((child) => {
-      setNodeColor(child, color);
+  function updateHubitatConfigNodeAttr(configNode) {
+    configNode.users.forEach((node) => {
+      const color = getHubitatNodeColor(configNode, node);
+      setNodeColor(node, color);
     });
   }
   RED.events.on('nodes:change', (node) => {
@@ -94,6 +97,7 @@
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
       useWebsocket: { value: false },
+      colorEnabled: { value: false },
       color: { value: '#ACE043' },
     },
     credentials: { token: { required: true, type: 'text' } },
@@ -162,6 +166,17 @@
       }
       useWebsocket.click(disableWebhook);
       disableWebhook();
+
+      const colorEnabled = $('#node-config-input-colorEnabled');
+      function disableColor() {
+        if(colorEnabled.is(':checked')){
+          $('#node-config-input-color').show();
+        } else {
+          $('#node-config-input-color').hide();
+        }
+      }
+      colorEnabled.click(disableColor);
+      disableColor();
     },
   });
 
@@ -294,8 +309,9 @@
         <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
-      <div class="form-row">
-        <label for="node-config-input-color"><i class="fa fa-paint-brush"></i> Color</label>
+      <div class="form-row" style="height:20px; display: flex; align-items:center;">
+        <label for="node-config-input-color" style="width:auto; margin-right: 5px;"><i class="fa fa-paint-brush"></i> Use custom color</label>
+        <input type="checkbox" id="node-config-input-colorEnabled" style="width:auto; margin-right: 5px;">
         <input type="color" id="node-config-input-color" style="width: 39px">
       </div>
     </div>
