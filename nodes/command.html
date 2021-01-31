@@ -83,6 +83,8 @@
       command: { value: '' },
       commandArgs: { value: '' },
       haltEnabled: { value: false },
+      haltCommand: { value: '' },
+      haltCommandArgs: { value: '' },
       haltAttribute: { value: '' },
       haltAttributeValue: { value: '' },
       haltAttributeValueType: {value: 'str' },
@@ -156,7 +158,7 @@
         });
         $('#node-input-command').change(() => {
           const commandInput = $('#node-input-command option:selected');
-          let placeholder = commandInput.attr('args_placeholder');
+          const placeholder = getCommandArgsPlaceholder(commandInput);
           const commandArgsInput = $('#node-input-commandArgs');
           if (placeholder === 'n/a') {
             commandArgsInput.val('');
@@ -164,14 +166,33 @@
           } else {
             commandArgsInput.prop('disabled', false);
           }
-          if (placeholder === 'COLOR_MAP') {
-            placeholder = '{"hue":88,"saturation":50,"level":90} or {"hex":"15fe21"}';
-          }
           commandArgsInput.attr('placeholder', placeholder);
           commandArgsInput.trigger('change');
 
+          const haltCommandInput = $('#node-input-haltCommand');
+          const command = commandInput.val();
+          if (command !== '') {
+            haltCommandInput.prop('disabled', true);
+            haltCommandInput.val(command);
+            haltCommandInput.trigger('change');
+          } else {
+            haltCommandInput.prop('disabled', false);
+          }
+        });
+        $('#node-input-haltCommand').change(() => {
+          const haltCommandInput = $('#node-input-haltCommand option:selected');
+          const placeholder = getCommandArgsPlaceholder(haltCommandInput);
+          const haltCommandArgsScope = $('#node-input-haltCommandArgs-scope');
+          if (placeholder === 'n/a') {
+            $('#node-input-haltCommandArgs').val('');
+            haltCommandArgsScope.css('display', 'none');
+          } else {
+            haltCommandArgsScope.css('display', 'inline-block');
+          }
+          $('#node-input-haltCommandArgs').attr('placeholder', placeholder);
+          $('#node-input-haltCommandArgs').trigger('change');
 
-          let commandLower = commandInput.val().toLowerCase();
+          let commandLower = haltCommandInput.val().toLowerCase();
           if (commandLower === 'on' || commandLower === 'off') {
             commandLower = 'switch';
           }
@@ -195,9 +216,20 @@
         });
       });
       $('#node-input-commandArgs').change(() => {
-        const attrPlaceHolder = $('#node-input-commandArgs').prop('placeholder');
-        const command = $('#node-input-command option:selected').val();
-        let value = $('#node-input-commandArgs').val();
+        const haltCommandArgsInput = $('#node-input-haltCommandArgs');
+        const commandArgs = $('#node-input-commandArgs').val();
+        if (commandArgs !== '') {
+          haltCommandArgsInput.prop('disabled', true);
+          haltCommandArgsInput.val(commandArgs);
+          haltCommandArgsInput.trigger('change');
+        } else {
+          haltCommandArgsInput.prop('disabled', false);
+        }
+      });
+      $('#node-input-haltCommandArgs').change(() => {
+        const attrPlaceHolder = $('#node-input-haltCommandArgs').prop('placeholder');
+        const command = $('#node-input-haltCommand option:selected').val();
+        let value = $('#node-input-haltCommandArgs').val();
         let valueType = 'str';
         if (attrPlaceHolder === 'n/a') {
           if (command === 'on' || command === 'off') {
@@ -209,8 +241,9 @@
             valueType = 'num';
           }
         }
-        if ($('#node-input-haltAttributeValue') === ''){
-          $('#node-input-haltAttributeValue').typedInput('type', valueType);
+        const haltAttributeValueInput = $('#node-input-haltAttributeValue');
+        if (haltAttributeValueInput.val() === ''){
+          haltAttributeValueInput.typedInput('type', valueType);
         }
         $('#node-input-haltAttributeValue-scope .red-ui-typedInput-input').prop('placeholder', value);
       });
@@ -228,6 +261,13 @@
       haltAttributeValueInput.typedInput('type', this.haltAttributeValueType);
     }
   });
+  function getCommandArgsPlaceholder(commandInput) {
+    let placeholder = commandInput.attr('args_placeholder');
+    if (placeholder === 'COLOR_MAP') {
+      placeholder = '{"hue":88,"saturation":50,"level":90} or {"hex":"15fe21"}';
+    }
+    return placeholder;
+  }
 
   function haltEnabledChanged() {
     const haltEnabled = $('#node-input-haltEnabled').is(":checked");
@@ -305,13 +345,23 @@
     <label for="node-input-haltEnabled" style="width: auto; margin-right: 5px;"><i class="fa fa-hand-paper-o"></i> Do not always send command</label>
     <input type="checkbox" id="node-input-haltEnabled" style="display: inline-block; width: auto; vertical-align: top;">
   </div>
-  <div id="node-input-haltAttribute-div" class="form-row">
-    <label for="node-input-haltAttribute"><i class="fa fa-hand-paper-o"></i> Halt if </label>
-    <select id="node-input-haltAttribute" style="width: auto;margin-righ: 5px;"></select>
-    is
-    <div id="node-input-haltAttributeValue-scope" style="display: inline-block;">
-      <input type="hidden" id="node-input-haltAttributeValueType">
-      <input type="text" id="node-input-haltAttributeValue" style="width: 120px;margin-left: 5px;">
+  <div id="node-input-haltParams-div" style="margin-left: 10px;">
+    <div class="form-row">
+      <label for="node-input-haltCommand" style="width: auto;">Halt if command </label>
+      <select id="node-input-haltCommand" style="width: auto;margin-righ: 5px;margin-left: 5px;"></select>
+      <div id="node-input-haltCommandArgs-scope" style="display: inline-block;">
+        is
+        <input type="text" id="node-input-haltCommandArgs" style="width: 120px;margin-left: 5px;">
+      </div>
+    </div>
+    <div class="form-row" style="margin-left: 10px;">
+      <label for="node-input-haltAttribute">and attribute </label>
+      <select id="node-input-haltAttribute" style="width: auto;margin-righ: 5px;"></select>
+      is
+      <div id="node-input-haltAttributeValue-scope" style="display: inline-block;">
+        <input type="hidden" id="node-input-haltAttributeValueType">
+        <input type="text" id="node-input-haltAttributeValue" style="width: 120px;margin-left: 5px;">
+      </div>
     </div>
   </div>
   <div class="form-row">
