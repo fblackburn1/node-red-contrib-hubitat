@@ -84,7 +84,7 @@
       commandArgs: { value: '' },
       haltEnabled: { value: false },
       haltAttribute: { value: '' },
-      haltAttributeVal: { value: '' },
+      haltAttributeValue: { value: '' },
     },
     inputs: 1,
     outputs: 1,
@@ -202,7 +202,7 @@
             value = command;
           }
         }
-        $('#node-input-haltAttributeVal').attr('placeholder', value);
+        $('#node-input-haltAttributeValue').attr('placeholder', value);
 
       });
       $('#node-input-haltEnabled').change(() => {
@@ -291,7 +291,7 @@
     <label for="node-input-haltAttribute"><i class="fa fa-hand-paper-o"></i> Halt if </label>
     <select id="node-input-haltAttribute" style="width: auto;margin-righ: 5px;"></select>
     is
-    <input type="text" id="node-input-haltAttributeVal" style="width: 120px;margin-left: 5px;">
+    <input type="text" id="node-input-haltAttributeValue" style="width: 120px;margin-left: 5px;">
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
