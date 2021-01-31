@@ -85,6 +85,7 @@
       haltEnabled: { value: false },
       haltAttribute: { value: '' },
       haltAttributeValue: { value: '' },
+      haltAttributeValueType: {value: 'str' },
     },
     inputs: 1,
     outputs: 1,
@@ -197,26 +198,43 @@
         const attrPlaceHolder = $('#node-input-commandArgs').prop('placeholder');
         const command = $('#node-input-command option:selected').val();
         let value = $('#node-input-commandArgs').val();
+        let valueType = 'str';
         if (attrPlaceHolder === 'n/a') {
           if (command === 'on' || command === 'off') {
             value = command;
+            valueType = 'str'
+          }
+        } else {
+          if (!isNaN(value)) {
+            valueType = 'num';
           }
         }
-        $('#node-input-haltAttributeValue').attr('placeholder', value);
-
+        if ($('#node-input-haltAttributeValue') === ''){
+          $('#node-input-haltAttributeValue').typedInput('type', valueType);
+        }
+        $('#node-input-haltAttributeValue-scope .red-ui-typedInput-input').prop('placeholder', value);
       });
+
       $('#node-input-haltEnabled').change(() => {
         haltEnabledChanged();
       });
+
+      const haltAttributeValueInput = $('#node-input-haltAttributeValue');
+      haltAttributeValueInput.typedInput({
+        default: 'str',
+        typeField: $("#node-input-haltAttributeValueType"),
+        types:['str', 'num', 'bool', 'json']
+      });
+      haltAttributeValueInput.typedInput('type', this.haltAttributeValueType);
     }
   });
 
   function haltEnabledChanged() {
     const haltEnabled = $('#node-input-haltEnabled').is(":checked");
       if (haltEnabled) {
-        $('#node-input-halt-div').show();
+        $('#node-input-haltParams-div').show();
       } else {
-        $('#node-input-halt-div').hide();
+        $('#node-input-haltParams-div').hide();
       }
   }
 
@@ -287,11 +305,14 @@
     <label for="node-input-haltEnabled" style="width: auto; margin-right: 5px;"><i class="fa fa-hand-paper-o"></i> Do not always send command</label>
     <input type="checkbox" id="node-input-haltEnabled" style="display: inline-block; width: auto; vertical-align: top;">
   </div>
-  <div id="node-input-halt-div" class="form-row">
+  <div id="node-input-haltAttribute-div" class="form-row">
     <label for="node-input-haltAttribute"><i class="fa fa-hand-paper-o"></i> Halt if </label>
     <select id="node-input-haltAttribute" style="width: auto;margin-righ: 5px;"></select>
     is
-    <input type="text" id="node-input-haltAttributeValue" style="width: 120px;margin-left: 5px;">
+    <div id="node-input-haltAttributeValue-scope" style="display: inline-block;">
+      <input type="hidden" id="node-input-haltAttributeValueType">
+      <input type="text" id="node-input-haltAttributeValue" style="width: 120px;margin-left: 5px;">
+    </div>
   </div>
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
