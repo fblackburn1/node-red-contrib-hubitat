@@ -1,21 +1,18 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat hsm',{
+  RED.nodes.registerType('hubitat hsm', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
-      sendEvent: { value: true }
+      sendEvent: { value: true },
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: 'icons/hsm.svg',
-    label: function() {
-        return this.name || 'hsm';
-    },
+    label() { return this.name || 'hsm'; },
     paletteLabel: 'hsm',
   });
-
 </script>
 
 <script type="text/html" data-template-name="hubitat hsm">

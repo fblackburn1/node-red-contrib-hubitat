@@ -1,21 +1,17 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat event',{
+  RED.nodes.registerType('hubitat event', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
     },
-    inputs:0,
-    outputs:1,
+    inputs: 0,
+    outputs: 1,
     icon: 'icons/event.svg',
-    label: function() {
-        return this.name || 'events';
-    },
+    label() { return this.name || 'events'; },
     paletteLabel: 'events',
   });
-
-
 </script>
 
 <script type="text/html" data-template-name="hubitat event">

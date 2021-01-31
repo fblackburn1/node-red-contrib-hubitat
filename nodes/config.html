@@ -1,15 +1,16 @@
 <script type="text/javascript">
-  function validatorWebhookPath(value) {
+  function validatorWebhookPath(rawValue) {
+    let value = rawValue;
     if (!value) {
       value = '/hubitat/webhook';
-      $("#node-config-input-webhookPath").val(value);
+      $('#node-config-input-webhookPath').val(value);
     }
-    if (!value.startsWith("/")) {
+    if (!value.startsWith('/')) {
       value = `/${value}`;
       $('#node-config-input-webhookPath').val(value);
     }
     const internalEndpoints = ['/', '/auth/token', '/auth/revoke', '/flows', '/flow', '/nodes'];
-    if (internalEndpoints.includes(value)) {
+    if (internalEndpoints.includes(value)) {
       value = `${value}_`;
       $('#node-config-input-webhookPath').val(value);
     }
@@ -18,24 +19,24 @@
       return false;
     }
     RED.nodes.eachConfig((node) => {
-      if ((this.id !== node.id) && (node.type === 'hubitat config') && (node.webhookPath === value)) {
+      if ((this.id !== node.id) && (node.type === 'hubitat config') && (node.webhookPath === value)) {
         value = `${value}_`;
-        $("#node-config-input-webhookPath").val(value);
+        $('#node-config-input-webhookPath').val(value);
       }
     });
     return true;
   }
-  function validatorNodeRedServer(value) {
-    value = value.replace(new RegExp(' ', 'g'),'');
+  function validatorNodeRedServer(rawValue) {
+    let value = rawValue.replace(new RegExp(' ', 'g'), '');
     if (!value.startsWith('http://') && !value.startsWith('https://')) {
       value = `http://${value}`;
     }
-    $("#node-config-input-nodeRedServer").val(value);
+    $('#node-config-input-nodeRedServer').val(value);
     return true;
   }
-  function validatorRemoveScheme(value) {
-    value = value.replace(new RegExp('^http[s]?://'),'');
-    $("#node-config-input-host").val(value);
+  function validatorRemoveScheme(rawValue) {
+    const value = rawValue.replace(new RegExp('^http[s]?://'), '');
+    $('#node-config-input-host').val(value);
     return true;
   }
   RED.nodes.registerType('hubitat config', {
@@ -52,24 +53,23 @@
       useWebsocket: { value: false },
     },
     credentials: { token: { required: true, type: 'text' } },
-    label: function() {
+    label() {
       if (this.name) {
         return this.name;
       }
       const scheme = ((this.usetls) ? 'https' : 'http');
       if ((this.port === '80') || (this.port === '443')) {
         return `${scheme}://${this.host}`;
-      } else {
-        return `${scheme}://${this.host}:${this.port}`;
       }
+      return `${scheme}://${this.host}:${this.port}`;
     },
-    oneditprepare: function () {
-      let tabs = RED.tabs.create({
+    oneditprepare() {
+      const tabs = RED.tabs.create({
         id: 'node-config-hubitat-config-tabs',
-        onchange: function(tab) {
+        onchange(tab) {
           $('#node-config-hubitat-config-tabs-content').children().hide();
           $(`#${tab.id}`).show();
-        }
+        },
       });
 
       tabs.addTab({
@@ -85,20 +85,20 @@
         label: 'Advanced',
       });
 
-      let httpNodeRoot = RED.settings.httpNodeRoot;
+      let { httpNodeRoot } = RED.settings;
       if (httpNodeRoot.slice(-1) === '/') {
         httpNodeRoot = httpNodeRoot.slice(0, -1);
       }
 
       const httpNodeRootInput = $('#node-config-input-httpNodeRoot');
       if (httpNodeRoot === '') {
-        httpNodeRootInput.hide()
+        httpNodeRootInput.hide();
       } else {
         httpNodeRootInput.width((httpNodeRoot.length) * 8);
         httpNodeRootInput.val(httpNodeRoot);
       }
 
-      let nodeRedServer = $('#node-config-input-nodeRedServer');
+      const nodeRedServer = $('#node-config-input-nodeRedServer');
       nodeRedServer.attr('placeholder', window.location.origin);
       if (!nodeRedServer.val()) {
         nodeRedServer.val(window.location.origin);
@@ -106,7 +106,7 @@
 
       const useWebsocket = $('#node-config-input-useWebsocket');
       function disableWebhook() {
-        if(useWebsocket.is(':checked')){
+        if (useWebsocket.is(':checked')) {
           $('#node-config-input-nodeRedServer').attr('disabled', 'disabled');
           $('#node-config-input-webhookPath').attr('disabled', 'disabled');
           $('#node-config-button-webhookConfigure').attr('disabled', 'disabled');
@@ -118,14 +118,15 @@
       }
       useWebsocket.click(disableWebhook);
       disableWebhook();
-    }
+    },
   });
 
+  // eslint-disable-next-line no-unused-vars
   function configureHubitat() {
     $('#node-config-input-webhookConfigured').html('');
     $('#node-config-text-webhookWarning').hide();
-    const failIcon = '&#10060;';  // Red cross mark
-    const successIcon = '&#9989;';  // Green check mark
+    const failIcon = '&#10060;'; // Red cross mark
+    const successIcon = '&#9989;'; // Green check mark
 
     const host = $('#node-config-input-host').val();
     if (!host) {
@@ -160,31 +161,31 @@
 
     const params = {
       usetls: $('#node-config-input-usetls').is(':checked'),
-      host: host,
-      port: port,
-      appId: appId,
-      token: token,
-      nodeRedServer: nodeRedServer,
-      webhookPath: webhookPath,
+      host,
+      port,
+      appId,
+      token,
+      nodeRedServer,
+      webhookPath,
     };
 
+    // eslint-disable-next-line no-unused-vars
     $.post('hubitat/configure', params, (res) => {
       $('#node-config-input-webhookConfigured').html(successIcon);
       $('#node-config-text-webhookWarning').show();
-    })
-    .fail((xhr, status, error) => {
-      let reason
+    // eslint-disable-next-line no-unused-vars
+    }).fail((xhr, status, error) => {
+      let reason;
       if (xhr.status === 401) {
-        reason = 'Invalid Token'
-      } else if(xhr.status === 404) {
-        reason = 'Invalid Application ID'
+        reason = 'Invalid Token';
+      } else if (xhr.status === 404) {
+        reason = 'Invalid Application ID';
       } else {
-        reason = 'Invalid connection information (Server, Port, TLS)'
+        reason = 'Invalid connection information (Server, Port, TLS)';
       }
       $('#node-config-input-webhookConfigured').html(`${failIcon} Fail to set webhoook. ${reason}`);
     });
   }
-
 </script>
 
 <script type="text/html" data-template-name="hubitat config">

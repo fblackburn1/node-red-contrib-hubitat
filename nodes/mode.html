@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat mode',{
+  RED.nodes.registerType('hubitat mode', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
@@ -7,24 +7,12 @@
       server: { type: 'hubitat config', required: true },
       sendEvent: { value: true },
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: 'icons/mode.svg',
-    label: function() {
-        return this.name || 'mode';
-    },
+    label() { return this.name || 'mode'; },
     paletteLabel: 'mode',
-    oneditprepare: function() {
-      $('document').ready(() => {
-        $('#node-input-server').change(() => {
-          const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
-        });
-      });
-    }
   });
-
-
 </script>
 
 <script type="text/html" data-template-name="hubitat mode">
