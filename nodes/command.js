@@ -66,6 +66,7 @@ module.exports = function HubitatCommandModule(RED) {
         return;
       }
       if (this.haltEnabled) {
+        node.debug('Halt enabled');
         if (msg.haltCommand !== undefined) {
           haltCommand = msg.haltCommand;
           haltCommandArgs = msg.haltCommandArgs;
@@ -114,11 +115,18 @@ module.exports = function HubitatCommandModule(RED) {
           return;
         }
 
+        node.debug(`haltCommand: ${typeof haltCommand} - ${haltCommand}`);
+        node.debug(`command: ${typeof command} - ${command}`);
+        node.debug(`haltCommandArgs: ${typeof haltCommandArgs} - ${haltCommandArgs}`);
+        node.debug(`commandArgs: ${typeof commandArgs} - ${commandArgs}`);
+        node.debug(`haltAttributeValue: ${typeof haltAttributeValue} - ${haltAttributeValue}`);
+        node.debug(`attribute.value: ${typeof attribute.value} - ${attribute.value}`);
         if (
           (haltCommand === command)
           && (((!haltCommandArgs) && (!commandArgs)) || (haltCommandArgs === commandArgs))
           && (haltAttributeValue === attribute.value)
         ) {
+          node.debug(`Command halted: ${command}/${commandArgs}`);
           node.status(node.defaultStatus);
           send(msg);
           done();
