@@ -286,7 +286,39 @@ describe('Hubitat Command Node', () => {
       n1.receive({ deviceId: 'fast' });
     });
   });
-
+  it('should take halt command', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        command: 'setLevel',
+        commandArgs: '0',
+        deviceId: 42,
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '0',
+        haltAttribute: 'level',
+        haltAttributeValue: '0',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { level: { name: 'level', value: 0 } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
   it('should take halt parameters from message', (done) => {
     const flow = [
       defaultConfigNode,
@@ -306,7 +338,7 @@ describe('Hubitat Command Node', () => {
     helper.load([commandNode, configNode], flow, () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
-      n1.hubitat.devices = { 42: { attributes: { msgAttribute: { name: 'msgAttribute', value: 666, deviceId: '42' } } } };
+      n1.hubitat.devices = { 42: { attributes: { msgAttribute: { name: 'msgAttribute', value: 666 } } } };
       n2.on('input', (msg) => {
         try {
           msg.should.not.have.property('response');
@@ -323,6 +355,266 @@ describe('Hubitat Command Node', () => {
         haltAttribute: 'msgAttribute',
         haltAttributeValue: 666,
       });
+    });
+  });
+  it('should convert on/off to switch attribute', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: 42,
+        command: 'on',
+        commandArgs: '',
+        haltEnabled: true,
+        haltCommand: 'on',
+        haltCommandArgs: '',
+        haltAttribute: 'switch',
+        haltAttributeValue: '',
+        haltAttributeValueType: 'str',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { switch: { name: 'switch', value: 'on' } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
+  it('should not take haltCommandArgs from node when haltCommand comes from message without haltCommandArgs', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: 42,
+        command: 'on',
+        commandArgs: '',
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '50',
+        haltAttribute: 'switch',
+        haltAttributeValue: '',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { switch: { name: 'switch', value: 'on' } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ haltCommand: 'on' });
+    });
+  });
+  it('should take only haltCommandArgs from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: 42,
+        command: 'setLevel',
+        commandArgs: '50',
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '25',
+        haltAttribute: 'level',
+        haltAttributeValue: '50',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { level: { name: 'level', value: 50 } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ haltCommandArgs: '50' });
+    });
+  });
+  it('should take only haltAttributeValue from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: 42,
+        command: 'setLevel',
+        commandArgs: '50',
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '50',
+        haltAttribute: 'level',
+        haltAttributeValue: '25',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { level: { name: 'level', value: 50 } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ haltAttributeValue: 50 });
+    });
+  });
+  it('should output an error when empty haltCommand is provided', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        haltEnabled: true,
+        haltCommand: '',
+        haltCommandArgs: '50',
+        haltAttribute: 'level',
+        haltAttributeValue: '25',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({});
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no haltCommand allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
+  it('should output an error when empty haltAttribute is provided', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '50',
+        haltAttribute: '',
+        haltAttributeValue: '25',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({});
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no haltAttribute allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
+  it('should output an error when empty haltAttributeValue is provided', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '50',
+        haltAttribute: 'level',
+        haltAttributeValue: '',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({});
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no haltAttributeValue allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
+  it('should output an error when empty haltAttribute does not exist', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        haltEnabled: true,
+        haltCommand: 'setLevel',
+        haltCommandArgs: '50',
+        haltAttribute: 'invalid',
+        haltAttributeValue: '50',
+        haltAttributeValueType: 'num',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({});
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('no invalid haltAttribute allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
     });
   });
 });

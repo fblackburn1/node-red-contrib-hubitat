@@ -15,6 +15,7 @@ module.exports = function HubitatCommandModule(RED) {
     this.haltCommandArgs = config.haltCommandArgs;
     this.haltAttribute = config.haltAttribute;
     this.haltAttributeValue = config.haltAttributeValue;
+    this.haltAttributeValueType = config.haltAttributeValueType;
     this.defaultStatus = {};
 
     if (this.command) {
@@ -83,21 +84,20 @@ module.exports = function HubitatCommandModule(RED) {
           haltAttributeValue = msg.haltAttributeValue;
         } else if (msg.haltAttributeValue !== undefined) {
           haltAttributeValue = msg.haltAttributeValue;
+        } else if (!haltAttributeValue) {
+          haltAttributeValue = commandArgs;
+          if ((haltAttribute === 'switch') && (!commandArgs)) {
+            haltAttributeValue = command;
+          }
         } else {
           haltAttributeValue = RED.util.evaluateNodeProperty(
             haltAttributeValue,
             this.haltAttributeValueType,
             this,
           );
-          if ((!haltAttributeValue) && (haltAttributeValue !== 0)) {
-            haltAttributeValue = commandArgs;
-            if ((haltAttribute === 'switch') && (!commandArgs)) {
-              haltAttributeValue = command;
-            }
-          }
         }
 
-        if ((!haltAttribute) || !(haltAttributeValue)) {
+        if ((!haltAttribute) || (!(haltAttributeValue) && haltAttributeValue !== 0)) {
           const errorMsg = 'undefined halt attribute/value';
           node.status({ fill: 'red', shape: 'ring', text: errorMsg });
           doneWithId(node, done, errorMsg);
@@ -116,7 +116,7 @@ module.exports = function HubitatCommandModule(RED) {
 
         if (
           (haltCommand === command)
-          && (haltCommandArgs === commandArgs)
+          && (((!haltCommandArgs) && (!commandArgs)) || (haltCommandArgs === commandArgs))
           && (haltAttributeValue === attribute.value)
         ) {
           node.status(node.defaultStatus);
