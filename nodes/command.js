@@ -11,9 +11,11 @@ module.exports = function HubitatCommandModule(RED) {
     this.command = config.command;
     this.commandArgs = config.commandArgs;
     this.haltEnabled = config.haltEnabled;
+    this.haltCommand = config.haltCommand;
+    this.haltCommandArgs = config.haltCommandArgs;
     this.haltAttribute = config.haltAttribute;
-    this.defaultStatus = {};
     this.haltAttributeValue = config.haltAttributeValue;
+    this.defaultStatus = {};
 
     if (this.command) {
       const base = `>> ${this.command}`;
@@ -30,13 +32,6 @@ module.exports = function HubitatCommandModule(RED) {
     }
     node.status(node.defaultStatus);
 
-    if ((!this.haltAttributeValue) && (this.haltAttributeValue !== 0)) {
-      this.haltAttributeValue = this.commandArgs;
-      if ((this.haltAttribute === 'switch') && (!this.commandArgs)) {
-        this.haltAttributeValue = this.command;
-      }
-    }
-
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
@@ -48,8 +43,15 @@ module.exports = function HubitatCommandModule(RED) {
         return;
       }
 
-      let { command } = node;
-      let { commandArgs } = node;
+      let {
+        command,
+        commandArgs,
+        haltCommand,
+        haltCommandArgs,
+        haltAttribute,
+        haltAttributeValue,
+      } = node;
+
       if (msg.command !== undefined) {
         command = msg.command;
         commandArgs = msg.arguments;
@@ -62,18 +64,61 @@ module.exports = function HubitatCommandModule(RED) {
         doneWithId(node, done, errorMsg);
         return;
       }
-
       if (this.haltEnabled) {
-        let currentValue;
+        if (msg.haltCommand !== undefined) {
+          haltCommand = msg.haltCommand;
+          haltCommandArgs = msg.haltCommandArgs;
+        } else if (msg.haltCommandArgs !== undefined) {
+          haltCommandArgs = msg.haltCommandArgs;
+        }
+        if (!haltCommand) {
+          const errorMsg = 'undefined halt command';
+          node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+          doneWithId(node, done, errorMsg);
+          return;
+        }
+
+        if (msg.haltAttribute !== undefined) {
+          haltAttribute = msg.haltAttribute;
+          haltAttributeValue = msg.haltAttributeValue;
+        } else if (msg.haltAttributeValue !== undefined) {
+          haltAttributeValue = msg.haltAttributeValue;
+        } else {
+          haltAttributeValue = RED.util.evaluateNodeProperty(
+            haltAttributeValue,
+            this.haltAttributeValueType,
+            this,
+          );
+          if ((!haltAttributeValue) && (haltAttributeValue !== 0)) {
+            haltAttributeValue = commandArgs;
+            if ((haltAttribute === 'switch') && (!commandArgs)) {
+              haltAttributeValue = command;
+            }
+          }
+        }
+
+        if ((!haltAttribute) || !(haltAttributeValue)) {
+          const errorMsg = 'undefined halt attribute/value';
+          node.status({ fill: 'red', shape: 'ring', text: errorMsg });
+          doneWithId(node, done, errorMsg);
+          return;
+        }
+
+        let attribute;
         try {
-          currentValue = node.hubitat.devices[deviceId].attributes[this.haltAttribute].value;
+          attribute = node.hubitat.devices[deviceId].attributes[haltAttribute];
         } catch (err) {
           const errorMsg = `Device(${deviceId}) not initialized`;
           node.status({ fill: 'red', shape: 'ring', text: errorMsg });
           done(errorMsg);
           return;
         }
-        if (currentValue === this.haltAttributeValue) {
+
+        if (
+          (haltCommand === command)
+          && (haltCommandArgs === commandArgs)
+          && (haltAttributeValue === attribute.value)
+        ) {
           node.status(node.defaultStatus);
           send(msg);
           done();

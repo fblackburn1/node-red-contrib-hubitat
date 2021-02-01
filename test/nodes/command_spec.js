@@ -286,4 +286,43 @@ describe('Hubitat Command Node', () => {
       n1.receive({ deviceId: 'fast' });
     });
   });
+
+  it('should take halt parameters from message', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: 42,
+        haltEnabled: true,
+        haltCommand: 'haltCommand',
+        haltCommandArgs: 'haltCommandArgs',
+        haltAttribute: 'haltAttribute',
+        haltAttributeValue: 'haltAttributeValue',
+        haltAttributeValueType: 'str',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = { 42: { attributes: { msgAttribute: { name: 'msgAttribute', value: 666, deviceId: '42' } } } };
+      n2.on('input', (msg) => {
+        try {
+          msg.should.not.have.property('response');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({
+        command: 'msgCommand',
+        arguments: 'msgArguments',
+        haltCommand: 'msgCommand',
+        haltCommandArgs: 'msgArguments',
+        haltAttribute: 'msgAttribute',
+        haltAttributeValue: 666,
+      });
+    });
+  });
 });
