@@ -131,13 +131,13 @@
           if (server && deviceId ) {
             enableHubitatDeviceAttributes();
             if (server.credentials) {
-              listHubitatDeviceCommands(server, deviceId, this.command);
+              listHubitatDeviceCommands(server, deviceId, this.command, this.haltCommand);
               listHubitatDeviceAttributesForCommand(server, deviceId, this.haltAttribute);
             } else {
               $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
                 server.credentials = data;
                 server.credentials._ = $.extend(true, {}, data);
-                listHubitatDeviceCommands(server, deviceId, this.command);
+                listHubitatDeviceCommands(server, deviceId, this.command, this.haltCommand);
                 listHubitatDeviceAttributesForCommand(server, deviceId, this.haltAttribute);
               });
             }
