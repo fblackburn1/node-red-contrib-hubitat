@@ -1,5 +1,35 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat mode-setter',{
+  function cleanHubitatModes() {
+    const selectMenu = $('#node-input-modeId');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'Choose mode...' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+  }
+  function listHubitatModes(server, modeId) {
+    $('#node-input-modeId').find('option').remove().end();
+    const selectMenu = $('#node-input-modeId');
+    const defaultOption = $('<option>', { value: '', text: 'Choose mode...' });
+    selectMenu.append(defaultOption);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.credentials.token,
+    };
+    $.getJSON('hubitat/modes', params, (res) => {
+      res.forEach((item) => {
+        const selected = modeId === item.id;
+        const option = $('<option>', { value: item.id, text: item.name });
+        selectMenu.append(option);
+        if (selected) { selectMenu.val(item.id).trigger('change'); }
+      });
+      if (!modeId) { selectMenu.val('').trigger('change'); }
+    }).fail(() => cleanHubitatModes());
+  }
+
+  RED.nodes.registerType('hubitat mode-setter', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
@@ -7,19 +37,17 @@
       server: { type: 'hubitat config', required: true },
       modeId: { value: '' },
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     align: 'right',
     icon: 'icons/mode.svg',
-    label: function() {
-        return this.name || 'set mode';
-    },
+    label() { return this.name || 'set mode'; },
     paletteLabel: 'set mode',
-    oneditprepare: function() {
+    oneditprepare() {
       $('document').ready(() => {
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
+          const server = RED.nodes.node(serverId);
           if (server) {
             if (server.credentials) {
               listHubitatModes(server, this.modeId);
@@ -37,40 +65,6 @@
       });
     },
   });
-
-  function listHubitatModes(server, modeId) {
-    $('#node-input-modeId').find('option').remove().end();
-    const selectMenu = $('#node-input-modeId');
-    const option = $('<option>', { value: '', text: 'Choose mode...' });
-    selectMenu.append(option);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-
-    $.getJSON(`hubitat/modes`, params, (res) => {
-      res.map(item => {
-        const selected = modeId == item.id;
-        const option = $('<option>', { value: item.id, text: item.name });
-        selectMenu.append(option);
-        if (selected) { selectMenu.val(item.id).trigger('change'); }
-      });
-      if (!modeId) { selectMenu.val('').trigger('change'); }
-    })
-    .fail(() => cleanHubitatModes());
-  }
-
-  function cleanHubitatModes() {
-    const selectMenu = $('#node-input-modeId');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose mode...' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
-  }
-
 </script>
 
 <script type="text/html" data-template-name="hubitat mode-setter">

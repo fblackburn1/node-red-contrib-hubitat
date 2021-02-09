@@ -9,7 +9,10 @@
     ],
     "globals": {
         "Atomics": "readonly",
-        "SharedArrayBuffer": "readonly"
+        "SharedArrayBuffer": "readonly",
+        "RED": "readonly",
+        "$": "readonly",
+        "window": "readonly"
     },
     "parserOptions": {
         "ecmaVersion": 2018,
@@ -17,5 +20,8 @@
     },
     "rules": {
         "no-unused-vars": ["error", { "argsIgnorePattern": "next" }]
-    }
+    },
+    "plugins": [
+        "html"
+    ]
 }

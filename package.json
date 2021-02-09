@@ -46,6 +46,7 @@
     "@types/ws": "^7.4.0",
     "eslint": "^7.15.0",
     "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-html": "^6.1.1",
     "eslint-plugin-import": "^2.22.1",
     "express": "4.17.1",
     "markdownlint-cli": "^0.23.2",
@@ -57,7 +58,7 @@
     "stoppable": "^1.1.0"
   },
   "scripts": {
-    "linter": "markdownlint *.md && npx eslint nodes/*.js test/nodes/*.js",
+    "linter": "markdownlint *.md && npx eslint nodes/**/*.js nodes/**/*.html test/nodes/*.js",
     "test": "mocha test/*",
     "bump:prepare": "git checkout master && git pull origin master",
     "bump:patch": "npm run-script bump:prepare && npm version patch && npm run-script bump:complete",

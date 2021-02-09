@@ -1,6 +1,90 @@
 <script type="text/javascript">
   let sendEventCheked = true;
-  RED.nodes.registerType('hubitat device',{
+
+  function cleanHubitatDevicesForDeviceNode() {
+    const selectMenu = $('#node-input-deviceId');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'Choose device...' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+  }
+  function listHubitatDevicesForDeviceNode(server, deviceId) {
+    $('#node-input-deviceId').find('option').remove().end();
+    const selectMenu = $('#node-input-deviceId');
+    const defaultOption = $('<option>', { value: '', text: 'Choose device...' });
+    selectMenu.append(defaultOption);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.credentials.token,
+    };
+
+    $.getJSON('hubitat/devices', params, (res) => {
+      res.forEach((item) => {
+        const selected = deviceId === item.id;
+        const option = $('<option>', { value: item.id, text: item.label });
+        selectMenu.append(option);
+        if (selected) { selectMenu.val(item.id).trigger('change'); }
+      });
+      if (!deviceId) { selectMenu.val('').trigger('change'); }
+    }).fail(() => cleanHubitatDevicesForDeviceNode());
+  }
+  function listHubitatDeviceAttributes(server, deviceId, attribute) {
+    const selectMenu = $('#node-input-attribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'All' });
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.credentials.token,
+    };
+    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
+      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
+        if (!(value.name in accumulator)) {
+          accumulator[value.name] = value;
+        }
+        return accumulator;
+      }, {});
+      Object.values(uniqueAttrs).forEach((item) => {
+        selectMenu.append($('<option>', {
+          value: item.name,
+          text: item.name,
+        }));
+      });
+      if (attribute in uniqueAttrs) {
+        selectMenu.val(attribute).trigger('change');
+      }
+    });
+  }
+  function disableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-attribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'N/A' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+    selectMenu.prop('disabled', true);
+  }
+  function enableHubitatDeviceAttributes() {
+    const selectMenu = $('#node-input-attribute');
+    selectMenu.prop('disabled', false);
+  }
+  function disableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheked = $('#node-input-sendEvent').is(':checked');
+    sendEventCheckbox.prop('checked', false);
+    sendEventCheckbox.prop('disabled', true);
+  }
+  function enableSendEventCheckbox() {
+    const sendEventCheckbox = $('#node-input-sendEvent');
+    sendEventCheckbox.prop('checked', sendEventCheked);
+    sendEventCheckbox.prop('disabled', false);
+  }
+  RED.nodes.registerType('hubitat device', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
@@ -11,20 +95,18 @@
       attribute: { value: '' },
       sendEvent: { value: true },
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     icon: 'icons/device.svg',
-    label: function() {
-        return this.name || this.deviceLabel || 'device';
-    },
+    label() { return this.name || this.deviceLabel || 'device'; },
     paletteLabel: 'device',
-    oneditprepare: function() {
+    oneditprepare() {
       $('document').ready(() => {
         $('#node-input-deviceLabel').hide();
         sendEventCheked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
+          const server = RED.nodes.node(serverId);
           if (server) {
             if (server.credentials) {
               listHubitatDevicesForDeviceNode(server, this.deviceId);
@@ -44,12 +126,12 @@
           const deviceId = $('#node-input-deviceId option:selected').val();
           if (deviceId) {
             $('#node-input-name').attr('placeholder', deviceLabel);
-            if(!this.name) {
+            if (!this.name) {
               $('#node-input-deviceLabel').val(deviceLabel);
             }
           }
           const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
+          const server = RED.nodes.node(serverId);
           if (server && deviceId) {
             enableHubitatDeviceAttributes();
             enableSendEventCheckbox();
@@ -76,96 +158,10 @@
             const deviceLabel = $('#node-input-deviceId option:selected').text();
             $('#node-input-deviceLabel').val(deviceLabel);
           }
-        })
+        });
       });
-    }
+    },
   });
-
-  function listHubitatDevicesForDeviceNode(server, deviceId) {
-    $('#node-input-deviceId').find('option').remove().end();
-    const selectMenu = $('#node-input-deviceId');
-    const option = $('<option>', { value: '', text: 'Choose device...' });
-    selectMenu.append(option);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-
-    $.getJSON(`hubitat/devices`, params, (res) => {
-      res.map(item => {
-        const selected = deviceId == item.id;
-        const option = $('<option>', { value: item.id, text: item.label });
-        selectMenu.append(option);
-        if (selected) { selectMenu.val(item.id).trigger('change'); }
-      });
-      if (!deviceId) { selectMenu.val('').trigger('change'); }
-    })
-    .fail(() => cleanHubitatDevicesForDeviceNode());
-  }
-  function listHubitatDeviceAttributes(server, deviceId, attribute) {
-    const selectMenu = $('#node-input-attribute');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'All' });
-    selectMenu.append(option);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-
-    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
-      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
-        if (!(value.name in accumulator)) {
-          accumulator[value.name] = value;
-        }
-        return accumulator;
-      }, {})
-      Object.values(uniqueAttrs).map(item => {
-        selectMenu.append($('<option>', {
-          value: item.name,
-          text: item.name,
-        }));
-      });
-      if (attribute in uniqueAttrs) {
-        selectMenu.val(attribute).trigger('change');
-      }
-    });
-  }
-  function cleanHubitatDevicesForDeviceNode() {
-    const selectMenu = $('#node-input-deviceId');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose device...' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
-  }
-  function disableHubitatDeviceAttributes() {
-    const selectMenu = $('#node-input-attribute');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'N/A' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
-    selectMenu.prop('disabled', true);
-  }
-  function enableHubitatDeviceAttributes() {
-    const selectMenu = $('#node-input-attribute');
-    selectMenu.prop('disabled', false);
-  }
-  function disableSendEventCheckbox() {
-    const sendEventCheckbox = $('#node-input-sendEvent');
-    sendEventCheked = $('#node-input-sendEvent').is(':checked');
-    sendEventCheckbox.prop('checked', false);
-    sendEventCheckbox.prop('disabled', true);
-  }
-  function enableSendEventCheckbox() {
-    const sendEventCheckbox = $('#node-input-sendEvent');
-    sendEventCheckbox.prop('checked', sendEventCheked);
-    sendEventCheckbox.prop('disabled', false);
-  }
 </script>
 
 <script type="text/html" data-template-name="hubitat device">

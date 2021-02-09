@@ -1,5 +1,5 @@
 <script type="text/javascript">
-  RED.nodes.registerType('hubitat request',{
+  RED.nodes.registerType('hubitat request', {
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
@@ -7,13 +7,11 @@
       server: { type: 'hubitat config', required: true },
       path: { value: '' },
     },
-    inputs:1,
-    outputs:1,
+    inputs: 1,
+    outputs: 1,
     align: 'right',
     icon: 'icons/request.svg',
-    label: function() {
-        return this.name || 'request';
-    },
+    label() { return this.name || 'request'; },
     paletteLabel: 'request',
   });
 </script>
