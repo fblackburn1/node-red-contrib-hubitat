@@ -1,4 +1,5 @@
 <script type="text/javascript">
+  /* eslint-disable no-underscore-dangle */
   function validatorWebhookPath(rawValue) {
     let value = rawValue;
     if (!value) {
@@ -41,21 +42,21 @@
   }
 
   function setNodeColor(node, color) {
-    const workspace = $("#red-ui-workspace-chart").contents();
-    const node_rect = workspace.find('[id="' + node.id + '"]').find('.red-ui-flow-node');
-    node_rect.attr('fill', color);
+    const workspace = $('#red-ui-workspace-chart').contents();
+    const nodeRect = workspace.find(`[id="${node.id}"]`).find('.red-ui-flow-node');
+    nodeRect.attr('fill', color);
   }
   function getHubitatNodeColor(configNode, node) {
     if (configNode && configNode.colorEnabled && configNode.color) {
       return configNode.color;
     }
-    return RED.utils.getNodeColor(node.type, node._def)
+    return RED.utils.getNodeColor(node.type, node._def);
   }
   function updateHubitatNodeAttr(node) {
     if (node._def.category !== 'hubitat') {
-        return;
+      return;
     }
-    configNode = RED.nodes.node(node.server)
+    const configNode = RED.nodes.node(node.server);
     const color = getHubitatNodeColor(configNode, node);
     setNodeColor(node, color);
   }
@@ -75,13 +76,14 @@
   RED.events.on('nodes:add', (node) => {
     setTimeout(updateHubitatNodeAttr.bind(this, node), 5);
   });
+  // eslint-disable-next-line no-unused-vars
   RED.events.on('workspace:change', (workspace) => {
-    setTimeout(function() {
+    setTimeout(() => {
       RED.nodes.eachConfig((node) => {
         if (node.type === 'hubitat config') {
           updateHubitatConfigNodeAttr(node);
         }
-      })
+      });
     }, 5); // 0 is enough, but just to be sure
   });
 
@@ -169,7 +171,7 @@
 
       const colorEnabled = $('#node-config-input-colorEnabled');
       function disableColor() {
-        if(colorEnabled.is(':checked')){
+        if (colorEnabled.is(':checked')) {
           $('#node-config-input-color').show();
         } else {
           $('#node-config-input-color').hide();
