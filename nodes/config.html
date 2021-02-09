@@ -1,4 +1,5 @@
 <script type="text/javascript">
+  /* eslint-disable no-underscore-dangle */
   function validatorWebhookPath(rawValue) {
     let value = rawValue;
     if (!value) {
@@ -39,6 +40,53 @@
     $('#node-config-input-host').val(value);
     return true;
   }
+
+  function setNodeColor(node, color) {
+    const workspace = $('#red-ui-workspace-chart').contents();
+    const nodeRect = workspace.find(`[id="${node.id}"]`).find('.red-ui-flow-node');
+    nodeRect.attr('fill', color);
+  }
+  function getHubitatNodeColor(configNode, node) {
+    if (configNode && configNode.colorEnabled && configNode.color) {
+      return configNode.color;
+    }
+    return RED.utils.getNodeColor(node.type, node._def);
+  }
+  function updateHubitatNodeAttr(node) {
+    if (node._def.category !== 'hubitat') {
+      return;
+    }
+    const configNode = RED.nodes.node(node.server);
+    const color = getHubitatNodeColor(configNode, node);
+    setNodeColor(node, color);
+  }
+  function updateHubitatConfigNodeAttr(configNode) {
+    configNode.users.forEach((node) => {
+      const color = getHubitatNodeColor(configNode, node);
+      setNodeColor(node, color);
+    });
+  }
+  RED.events.on('nodes:change', (node) => {
+    if (node.type === 'hubitat config') {
+      updateHubitatConfigNodeAttr(node);
+    } else {
+      updateHubitatNodeAttr(node);
+    }
+  });
+  RED.events.on('nodes:add', (node) => {
+    setTimeout(updateHubitatNodeAttr.bind(this, node), 5);
+  });
+  // eslint-disable-next-line no-unused-vars
+  RED.events.on('workspace:change', (workspace) => {
+    setTimeout(() => {
+      RED.nodes.eachConfig((node) => {
+        if (node.type === 'hubitat config') {
+          updateHubitatConfigNodeAttr(node);
+        }
+      });
+    }, 5); // 0 is enough, but just to be sure
+  });
+
   RED.nodes.registerType('hubitat config', {
     category: 'config',
     defaults: {
@@ -51,6 +99,8 @@
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
       useWebsocket: { value: false },
+      colorEnabled: { value: false },
+      color: { value: '#ACE043' },
     },
     credentials: { token: { required: true, type: 'text' } },
     label() {
@@ -118,6 +168,17 @@
       }
       useWebsocket.click(disableWebhook);
       disableWebhook();
+
+      const colorEnabled = $('#node-config-input-colorEnabled');
+      function disableColor() {
+        if (colorEnabled.is(':checked')) {
+          $('#node-config-input-color').show();
+        } else {
+          $('#node-config-input-color').hide();
+        }
+      }
+      colorEnabled.click(disableColor);
+      disableColor();
     },
   });
 
@@ -250,6 +311,11 @@
         <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
+      <div class="form-row" style="height:20px; display: flex; align-items:center;">
+        <label for="node-config-input-color" style="width:auto; margin-right: 5px;"><i class="fa fa-paint-brush"></i> Use custom color</label>
+        <input type="checkbox" id="node-config-input-colorEnabled" style="width:auto; margin-right: 5px;">
+        <input type="color" id="node-config-input-color" style="width: 39px">
+      </div>
     </div>
   </div>
 </script>
@@ -288,6 +354,9 @@
       <p>
         <b>Warning:</b> Using websocket is not officially supported, and it's at your own risk!
       </p>
+    </p>
+    <p>
+      <b>Color</b> option will define a color for all nodes that use this configuration.
     </p>
     <p>
       <b>Warning:</b> This node add an unauthenticated webhook endpoint (default: <code>/hubitat/webhook</code>),
