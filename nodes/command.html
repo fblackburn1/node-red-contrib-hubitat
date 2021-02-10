@@ -64,12 +64,73 @@
     });
   }
 
+  function listHubitatDeviceAttributesForCommand(server, deviceId, attribute) {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'Choose attribute...' });
+    selectMenu.append(option);
+    const params = {
+      usetls: server.usetls,
+      host: server.host,
+      port: server.port,
+      appId: server.appId,
+      token: server.credentials.token,
+    };
+
+    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
+      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
+        if (!(value.name in accumulator)) {
+          accumulator[value.name] = value;
+        }
+        return accumulator;
+      }, {});
+      Object.values(uniqueAttrs).forEach((item) => {
+        selectMenu.append($('<option>', {
+          value: item.name,
+          text: item.name,
+        }));
+      });
+      if (attribute in uniqueAttrs) {
+        selectMenu.val(attribute).trigger('change');
+      }
+    });
+  }
+
   function cleanHubitatDeviceCommands() {
     const selectMenu = $('#node-input-command');
     selectMenu.find('option').remove().end();
     const option = $('<option>', { value: '', text: 'Choose command...' });
     selectMenu.append(option);
     selectMenu.val('').trigger('change');
+  }
+  function getCommandArgsPlaceholder(commandInput) {
+    let placeholder = commandInput.attr('args_placeholder');
+    if (placeholder === 'COLOR_MAP') {
+      placeholder = '{"hue":88,"saturation":50,"level":90} or {"hex":"15fe21"}';
+    }
+    return placeholder;
+  }
+
+  function haltEnabledChanged() {
+    const haltEnabled = $('#node-input-haltEnabled').is(':checked');
+    if (haltEnabled) {
+      $('#node-input-haltParams-div').show();
+    } else {
+      $('#node-input-haltParams-div').hide();
+    }
+  }
+
+  function disableHubitatHaltAttributes() {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.find('option').remove().end();
+    const option = $('<option>', { value: '', text: 'N/A' });
+    selectMenu.append(option);
+    selectMenu.val('').trigger('change');
+    selectMenu.prop('disabled', true);
+  }
+  function enableHubitatHaltAttributes() {
+    const selectMenu = $('#node-input-haltAttribute');
+    selectMenu.prop('disabled', false);
   }
 
   RED.nodes.registerType('hubitat command', {
@@ -87,7 +148,7 @@
       haltCommandArgs: { value: '' },
       haltAttribute: { value: '' },
       haltAttributeValue: { value: '' },
-      haltAttributeValueType: {value: 'str' },
+      haltAttributeValueType: { value: 'str' },
     },
     inputs: 1,
     outputs: 1,
@@ -127,9 +188,9 @@
             }
           }
           const serverId = $('#node-input-server option:selected').val();
-          server = RED.nodes.node(serverId);
-          if (server && deviceId ) {
-            enableHubitatDeviceAttributes();
+          const server = RED.nodes.node(serverId);
+          if (server && deviceId) {
+            enableHubitatHaltAttributes();
             if (server.credentials) {
               listHubitatDeviceCommands(server, deviceId, this.command, this.haltCommand);
               listHubitatDeviceAttributesForCommand(server, deviceId, this.haltAttribute);
@@ -143,7 +204,7 @@
             }
           } else {
             cleanHubitatDeviceCommands();
-            disableHubitatDeviceAttributes();
+            disableHubitatHaltAttributes();
             $('#node-input-deviceLabel').val('');
             $('#node-input-name').attr('placeholder', 'command');
           }
@@ -197,20 +258,20 @@
             commandLower = 'switch';
           }
           let matchWeight = 0;
-          $("#node-input-haltAttribute option").each(function() {
-            const attr = $(this).val()
+          $('#node-input-haltAttribute option').each(function checkWeight() {
+            const attr = $(this).val();
             const attrLower = attr.toLowerCase();
             if ((commandLower.length > matchWeight) && (attrLower.search(commandLower) !== -1)) {
               matchWeight = commandLower.length;
-              $("#node-input-haltAttribute").val(attr);
+              $('#node-input-haltAttribute').val(attr);
             }
           });
-          $("#node-input-haltAttribute option").each(function() {
-            const attr = $(this).val()
+          $('#node-input-haltAttribute option').each(function checkWeight() {
+            const attr = $(this).val();
             const attrLower = attr.toLowerCase();
             if ((attrLower.length > matchWeight) && commandLower.search(attrLower) !== -1) {
               matchWeight = attrLower.length;
-              $("#node-input-haltAttribute").val(attr);
+              $('#node-input-haltAttribute').val(attr);
             }
           });
         });
@@ -234,15 +295,13 @@
         if (attrPlaceHolder === 'n/a') {
           if (command === 'on' || command === 'off') {
             value = command;
-            valueType = 'str'
+            valueType = 'str';
           }
-        } else {
-          if (!isNaN(value)) {
-            valueType = 'num';
-          }
+        } else if (!Number.isNaN(value)) {
+          valueType = 'num';
         }
         const haltAttributeValueInput = $('#node-input-haltAttributeValue');
-        if (haltAttributeValueInput.val() === ''){
+        if (haltAttributeValueInput.val() === '') {
           haltAttributeValueInput.typedInput('type', valueType);
         }
         $('#node-input-haltAttributeValue-scope .red-ui-typedInput-input').prop('placeholder', value);
@@ -255,73 +314,12 @@
       const haltAttributeValueInput = $('#node-input-haltAttributeValue');
       haltAttributeValueInput.typedInput({
         default: 'str',
-        typeField: $("#node-input-haltAttributeValueType"),
-        types:['str', 'num', 'bool', 'json']
+        typeField: $('#node-input-haltAttributeValueType'),
+        types: ['str', 'num', 'bool', 'json'],
       });
       haltAttributeValueInput.typedInput('type', this.haltAttributeValueType);
-    }
+    },
   });
-  function getCommandArgsPlaceholder(commandInput) {
-    let placeholder = commandInput.attr('args_placeholder');
-    if (placeholder === 'COLOR_MAP') {
-      placeholder = '{"hue":88,"saturation":50,"level":90} or {"hex":"15fe21"}';
-    }
-    return placeholder;
-  }
-
-  function haltEnabledChanged() {
-    const haltEnabled = $('#node-input-haltEnabled').is(":checked");
-      if (haltEnabled) {
-        $('#node-input-haltParams-div').show();
-      } else {
-        $('#node-input-haltParams-div').hide();
-      }
-  }
-
-  function listHubitatDeviceAttributesForCommand(server, deviceId, attribute) {
-    const selectMenu = $('#node-input-haltAttribute');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose attribute...' });
-    selectMenu.append(option);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-
-    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
-      const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
-        if (!(value.name in accumulator)) {
-          accumulator[value.name] = value;
-        }
-        return accumulator;
-      }, {})
-      Object.values(uniqueAttrs).map(item => {
-        selectMenu.append($('<option>', {
-          value: item.name,
-          text: item.name,
-        }));
-      });
-      if (attribute in uniqueAttrs) {
-        selectMenu.val(attribute).trigger('change');
-      }
-    });
-  }
-
-  function disableHubitatDeviceAttributes() {
-    const selectMenu = $('#node-input-haltAttribute');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'N/A' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
-    selectMenu.prop('disabled', true);
-  }
-  function enableHubitatDeviceAttributes() {
-    const selectMenu = $('#node-input-haltAttribute');
-    selectMenu.prop('disabled', false);
-  }
 </script>
 
 <script type="text/html" data-template-name="hubitat command">
