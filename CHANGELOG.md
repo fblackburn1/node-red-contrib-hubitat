@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+## 1.6.0 (2021-02-13)
+
+* `config`: allow to change nodes color according their configuration
+* `command`: fix command error message
+
 ## 1.5.2 (2020-12-02)
 
 * `device`: set msg.topic to device label when name is empty
