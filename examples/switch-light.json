@@ -1,0 +1,89 @@
+[
+    {
+        "id":"560ac76b.479898",
+        "type":"tab",
+        "label":"Example",
+        "disabled":false,"info":""
+    },
+    {
+        "id":"7547eaf1.825834",
+        "type":"hubitat device",
+        "z":"560ac76b.479898",
+        "name":"Button",
+        "server":"3b6080dc.a2527",
+        "deviceId":"65",
+        "attribute":"pushed",
+        "sendEvent":true,
+        "x":90,
+        "y":80,
+        "wires":[["460f9c07.53eb34"]]
+    },
+    {
+        "id":"460f9c07.53eb34",
+        "type":"hubitat device",
+        "z":"560ac76b.479898",
+        "name":"Outlet",
+        "server":"3b6080dc.a2527",
+        "deviceId":"35",
+        "attribute":"switch",
+        "sendEvent":false,
+        "x":220,
+        "y":80,
+        "wires":[["97b3dfb.e3b132"]]
+    },
+    {
+        "id":"97b3dfb.e3b132",
+        "type":"switch",
+        "z":"560ac76b.479898",
+        "name":"",
+        "property":"payload.value",
+        "propertyType":"msg",
+        "rules":[{"t":"eq","v":"on","vt":"str"},{"t":"eq","v":"off","vt":"str"}],
+        "checkall":"true",
+        "repair":false,
+        "outputs":2,
+        "x":340,
+        "y":80,
+        "wires":[["53788eae.3d28"],["e63faae1.84e368"]]
+    },
+    {
+        "id":"53788eae.3d28",
+        "type":"hubitat command",
+        "z":"560ac76b.479898",
+        "name":"Outlet OFF",
+        "server":"3b6080dc.a2527",
+        "deviceId":"35",
+        "command":"off",
+        "commandArgs":"",
+        "x":500,
+        "y":60,
+        "wires":[[]]
+    },
+    {
+        "id":"e63faae1.84e368",
+        "type":"hubitat command",
+        "z":"560ac76b.479898",
+        "name":"Outlet ON",
+        "server":"3b6080dc.a2527",
+        "deviceId":"35",
+        "command":"on",
+        "commandArgs":"",
+        "x":490,
+        "y":100,
+        "wires":[[]]
+    },
+    {
+        "id":"3b6080dc.a2527",
+        "type":"hubitat config",
+        "z":"",
+        "name":"",
+        "usetls":false,
+        "host":"192.168.1.1",
+        "port":"80",
+        "appId":"1",
+        "nodeRedServer":"http://192.168.1.2:1880",
+        "webhookPath":"/hubitat/webhook",
+        "autoRefresh":true,
+        "useWebsocket":false
+    }
+]
