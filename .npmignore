@@ -1,2 +1,5 @@
-.git*
+.eslintrc
+.github/
+.markdownlint.yml
 images/
+tests/
