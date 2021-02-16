@@ -1,24 +1,14 @@
+<script src="/hubitat/js/common.js"></script>
+
 <script type="text/javascript">
+  /* global cleanHubitatSelectMenu, resetHubitatSelectMenu, loadCrendetials, paramsFromServer */
   function cleanHubitatModes() {
-    const selectMenu = $('#node-input-modeId');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose mode...' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
+    cleanHubitatSelectMenu('node-input-modeId', 'Choose mode...');
   }
+
   function listHubitatModes(server, modeId) {
-    $('#node-input-modeId').find('option').remove().end();
-    const selectMenu = $('#node-input-modeId');
-    const defaultOption = $('<option>', { value: '', text: 'Choose mode...' });
-    selectMenu.append(defaultOption);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-    $.getJSON('hubitat/modes', params, (res) => {
+    const selectMenu = resetHubitatSelectMenu('node-input-modeId', 'Choose mode...');
+    $.getJSON('hubitat/modes', paramsFromServer(server), (res) => {
       res.forEach((item) => {
         const selected = parseInt(modeId, 10) === item.id;
         const option = $('<option>', { value: item.id, text: item.name });
@@ -49,15 +39,7 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server) {
-            if (server.credentials) {
-              listHubitatModes(server, this.modeId);
-            } else {
-              $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
-                server.credentials = data;
-                server.credentials._ = $.extend(true, {}, data);
-                listHubitatModes(server, this.modeId);
-              });
-            }
+            loadCrendetials(server).then(() => { listHubitatModes(server, this.modeId); });
           } else {
             cleanHubitatModes();
           }
