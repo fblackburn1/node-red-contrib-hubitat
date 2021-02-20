@@ -45,6 +45,7 @@ describe('Hubitat Config Node', () => {
         ]);
       }, testApp.responseDelay);
     });
+    testApp.get('/apps/api/400/devices/*', (req, res) => { res.sendStatus(400); });
 
     startServer((err) => {
       if (err) {
@@ -136,6 +137,20 @@ describe('Hubitat Config Node', () => {
           done();
         } catch (err) {
           done(err);
+        }
+      });
+    });
+  });
+  it('should reset devicesInitialized on devicesFetcher error', (done) => {
+    const flow = [{ ...defaultConfigNode, appId: 400 }];
+    helper.load(configNode, flow, () => {
+      const n0 = helper.getNode('n0');
+      n0.devicesFetcher().catch((err) => {
+        try {
+          should.equal(n0.devicesInitialized, false);
+          done();
+        } catch (error) {
+          done(error);
         }
       });
     });

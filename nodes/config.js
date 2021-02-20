@@ -177,6 +177,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
         devices = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch devices: ${err}`);
+        node.devicesInitialized = false;
         throw err;
       } finally {
         node.releaseLock();
