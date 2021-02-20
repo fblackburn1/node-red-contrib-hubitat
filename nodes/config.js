@@ -104,10 +104,12 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
     }
 
     this.acquireLock = async () => {
+      this.debug('Acquiring lock...');
       // eslint-disable-next-line no-constant-condition
       while (true) {
         if (this.requestPool) {
           this.requestPool -= 1;
+          this.debug(`Lock acquired. Remaining: ${this.requestPool}/${MAXSIMULTANEOUSREQUESTS}`);
           return;
         }
         // eslint-disable-next-line no-await-in-loop
@@ -117,6 +119,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
 
     this.releaseLock = () => {
       this.requestPool += 1;
+      this.debug(`Lock released. Remaining: ${this.requestPool}/${MAXSIMULTANEOUSREQUESTS}`);
     };
 
     const scheme = ((this.usetls) ? 'https' : 'http');
@@ -177,6 +180,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
         devices = await response.json();
       } catch (err) {
         node.warn(`Unable to fetch devices: ${err}`);
+        node.devicesInitialized = false;
         throw err;
       } finally {
         node.releaseLock();
