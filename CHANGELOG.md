@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.1 (2021-02-20)
+
+* `config`: fix device initialization process lock on error
+
 ## 1.6.0 (2021-02-13)
 
 * `config`: allow to change nodes color according their configuration
