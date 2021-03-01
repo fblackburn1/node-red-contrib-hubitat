@@ -20,7 +20,7 @@
     };
     $.getJSON('hubitat/modes', params, (res) => {
       res.forEach((item) => {
-        const selected = modeId === item.id;
+        const selected = parseInt(modeId, 10) === item.id;
         const option = $('<option>', { value: item.id, text: item.name });
         selectMenu.append(option);
         if (selected) { selectMenu.val(item.id).trigger('change'); }
