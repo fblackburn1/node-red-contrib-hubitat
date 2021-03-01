@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+## 1.6.2 (2021-03-01)
+
+* `mode`: fix dropdown when mode is already selected
+
 ## 1.6.1 (2021-02-20)
 
 * `config`: fix device initialization process lock on error
