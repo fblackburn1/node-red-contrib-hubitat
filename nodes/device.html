@@ -1,49 +1,13 @@
+<script src="/hubitat/js/common.js"></script>
+
 <script type="text/javascript">
+  /* global cleanHubitatDevices, resetHubitatSelectMenu, listHubitatDevices,
+  loadCrendetials, paramsFromServer */
   let sendEventCheked = true;
 
-  function cleanHubitatDevicesForDeviceNode() {
-    const selectMenu = $('#node-input-deviceId');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'Choose device...' });
-    selectMenu.append(option);
-    selectMenu.val('').trigger('change');
-  }
-  function listHubitatDevicesForDeviceNode(server, deviceId) {
-    $('#node-input-deviceId').find('option').remove().end();
-    const selectMenu = $('#node-input-deviceId');
-    const defaultOption = $('<option>', { value: '', text: 'Choose device...' });
-    selectMenu.append(defaultOption);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-
-    $.getJSON('hubitat/devices', params, (res) => {
-      res.forEach((item) => {
-        const selected = deviceId === item.id;
-        const option = $('<option>', { value: item.id, text: item.label });
-        selectMenu.append(option);
-        if (selected) { selectMenu.val(item.id).trigger('change'); }
-      });
-      if (!deviceId) { selectMenu.val('').trigger('change'); }
-    }).fail(() => cleanHubitatDevicesForDeviceNode());
-  }
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
-    const selectMenu = $('#node-input-attribute');
-    selectMenu.find('option').remove().end();
-    const option = $('<option>', { value: '', text: 'All' });
-    selectMenu.append(option);
-    const params = {
-      usetls: server.usetls,
-      host: server.host,
-      port: server.port,
-      appId: server.appId,
-      token: server.credentials.token,
-    };
-    $.getJSON(`hubitat/devices/${deviceId}`, params, (res) => {
+    const selectMenu = resetHubitatSelectMenu('node-input-attribute', 'All');
+    $.getJSON(`hubitat/devices/${deviceId}`, paramsFromServer(server), (res) => {
       const uniqueAttrs = res.attributes.reduce((accumulator, value) => {
         if (!(value.name in accumulator)) {
           accumulator[value.name] = value;
@@ -108,17 +72,9 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server) {
-            if (server.credentials) {
-              listHubitatDevicesForDeviceNode(server, this.deviceId);
-            } else {
-              $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
-                server.credentials = data;
-                server.credentials._ = $.extend(true, {}, data);
-                listHubitatDevicesForDeviceNode(server, this.deviceId);
-              });
-            }
+            loadCrendetials(server).then(() => { listHubitatDevices(server, this.deviceId); });
           } else {
-            cleanHubitatDevicesForDeviceNode();
+            cleanHubitatDevices();
           }
         });
         $('#node-input-deviceId').change(() => {

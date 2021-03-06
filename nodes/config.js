@@ -411,6 +411,14 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
     credentials: { token: { type: 'text' } },
   });
 
+  RED.httpAdmin.get('/hubitat/js/*', RED.auth.needsPermission('hubitat.read'), (req, res) => {
+    const options = {
+      root: `${__dirname}/static/`,
+      dotfiles: 'deny',
+    };
+    res.sendFile(req.params[0], options);
+  });
+
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
     if ((!req.query.host) || (!req.query.port) || (!req.query.appId) || (!req.query.token)) {
       console.log(`ERROR: ${req.originalUrl} missing parameters (required: host, port, appId, token)`);
