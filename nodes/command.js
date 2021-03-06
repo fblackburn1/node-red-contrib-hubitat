@@ -38,8 +38,7 @@ module.exports = function HubitatCommandModule(RED) {
         return;
       }
 
-      let { command } = node;
-      let { commandArgs } = node;
+      let { command, commandArgs } = node;
       if (msg.command !== undefined) {
         command = msg.command;
         commandArgs = msg.arguments;
