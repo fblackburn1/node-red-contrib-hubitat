@@ -70,7 +70,12 @@ module.exports = function HubitatCommandModule(RED) {
           doneWithId(node, done, message);
           return;
         }
-        const output = { ...msg, response: await response.json() };
+        const output = {
+          ...msg,
+          response: await response.json(),
+          requestCommand: command,
+          requestArguments: commandArgs,
+        };
         node.status(node.defaultStatus);
         send(output);
         done();

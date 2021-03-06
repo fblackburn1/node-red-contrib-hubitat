@@ -100,6 +100,29 @@ describe('Hubitat Command Node', () => {
     });
   });
 
+  it('should send message with all properties', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultCommandNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('response');
+          msg.should.have.property('requestCommand', defaultCommandNode.command);
+          msg.should.have.property('requestArguments', defaultCommandNode.commandArgs);
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({});
+    });
+  });
+
   it('should not send msg when server return error', (done) => {
     const flow = [
       defaultConfigNode,
