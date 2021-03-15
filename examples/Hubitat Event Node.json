@@ -1,0 +1,238 @@
+[
+    {
+        "id": "ee55ba22.c686d8",
+        "type": "tab",
+        "label": "Hubitat Event Node",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "ef65d728.dfa438",
+        "type": "hubitat event",
+        "z": "ee55ba22.c686d8",
+        "name": "",
+        "server": "3b6080dc.a2527",
+        "x": 150,
+        "y": 120,
+        "wires": [
+            [
+                "fab1b88e.d6b2f8",
+                "2d8c1b19.3c0f44",
+                "8d9c5040.58688"
+            ]
+        ]
+    },
+    {
+        "id": "fab1b88e.d6b2f8",
+        "type": "switch",
+        "z": "ee55ba22.c686d8",
+        "name": "Only Switch Events",
+        "property": "payload.name",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "switch",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 370,
+        "y": 120,
+        "wires": [
+            [
+                "a71d75d0.caf128"
+            ]
+        ]
+    },
+    {
+        "id": "a71d75d0.caf128",
+        "type": "debug",
+        "z": "ee55ba22.c686d8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "2d8c1b19.3c0f44",
+        "type": "switch",
+        "z": "ee55ba22.c686d8",
+        "name": "Only Motion Events",
+        "property": "payload.name",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "motion",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "c957a1d1.c663b",
+                "1ad80f80.0b99a1"
+            ]
+        ]
+    },
+    {
+        "id": "30003184.42cc0e",
+        "type": "debug",
+        "z": "ee55ba22.c686d8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "c957a1d1.c663b",
+        "type": "switch",
+        "z": "ee55ba22.c686d8",
+        "name": "Only Active Events",
+        "property": "payload.value",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "active",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 630,
+        "y": 200,
+        "wires": [
+            [
+                "30003184.42cc0e"
+            ]
+        ]
+    },
+    {
+        "id": "1ad80f80.0b99a1",
+        "type": "switch",
+        "z": "ee55ba22.c686d8",
+        "name": "Only Inactive Events",
+        "property": "payload.value",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "inactive",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 640,
+        "y": 260,
+        "wires": [
+            [
+                "3c502a6e.cb06a6"
+            ]
+        ]
+    },
+    {
+        "id": "3c502a6e.cb06a6",
+        "type": "debug",
+        "z": "ee55ba22.c686d8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "e5ab1874.715738",
+        "type": "comment",
+        "z": "ee55ba22.c686d8",
+        "name": "Hubitat Event Node passes all events for any device that is added to the Maker API instance.\\n  This can be useful for collecting/filtering for all motion events, or all temperature events, etc.",
+        "info": "",
+        "x": 420,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "8d9c5040.58688",
+        "type": "switch",
+        "z": "ee55ba22.c686d8",
+        "name": "Only Temperature Events",
+        "property": "payload.name",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "temperature",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 1,
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "649fb615.48ef38"
+            ]
+        ]
+    },
+    {
+        "id": "649fb615.48ef38",
+        "type": "debug",
+        "z": "ee55ba22.c686d8",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 610,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "3b6080dc.a2527",
+        "type": "hubitat config",
+        "name": "",
+        "usetls": false,
+        "host": "192.168.1.1",
+        "port": "80",
+        "appId": "1",
+        "nodeRedServer": "http://192.168.1.2:1880",
+        "webhookPath": "/hubitat/webhook",
+        "autoRefresh": true,
+        "useWebsocket": false
+    }
+]
