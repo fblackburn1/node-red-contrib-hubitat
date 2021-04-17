@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.7.0 (2021-04-17)
 
 * `command`: return command and arguments requested
 
