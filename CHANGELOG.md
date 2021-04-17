@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+* `command`: return command and arguments requested
+
 ## 1.6.2 (2021-03-01)
 
 * `mode`: fix dropdown when mode is already selected

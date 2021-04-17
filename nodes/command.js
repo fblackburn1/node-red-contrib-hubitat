@@ -38,8 +38,7 @@ module.exports = function HubitatCommandModule(RED) {
         return;
       }
 
-      let { command } = node;
-      let { commandArgs } = node;
+      let { command, commandArgs } = node;
       if (msg.command !== undefined) {
         command = msg.command;
         commandArgs = msg.arguments;
@@ -71,7 +70,12 @@ module.exports = function HubitatCommandModule(RED) {
           doneWithId(node, done, message);
           return;
         }
-        const output = { ...msg, response: await response.json() };
+        const output = {
+          ...msg,
+          response: await response.json(),
+          requestCommand: command,
+          requestArguments: commandArgs,
+        };
         node.status(node.defaultStatus);
         send(output);
         done();
