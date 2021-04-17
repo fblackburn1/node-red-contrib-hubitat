@@ -3,6 +3,7 @@
 ## 1.7.0 (2021-04-17)
 
 * `command`: return command and arguments requested
+* add flow example with event node
 
 ## 1.6.2 (2021-03-01)
 
