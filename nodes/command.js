@@ -63,19 +63,22 @@ module.exports = function HubitatCommandModule(RED) {
       try {
         await node.hubitat.acquireLock();
         node.debug(`Request: ${baseUrl}`);
-        const response = await fetch(url, options);
-        if (response.status >= 400) {
-          node.status({ fill: 'red', shape: 'ring', text: 'response error' });
-          const message = `${baseUrl}: ${await response.text()}`;
-          doneWithId(node, done, message);
-          return;
-        }
         const output = {
           ...msg,
-          response: await response.json(),
           requestCommand: command,
           requestArguments: commandArgs,
         };
+        const response = await fetch(url, options);
+        output.responseStatus = response.status;
+        if (response.status >= 400) {
+          node.status({ fill: 'red', shape: 'ring', text: 'response error' });
+          output.response = await response.text();
+          const message = `${baseUrl}: ${output.response}`;
+          send(output);
+          doneWithId(node, done, message);
+          return;
+        }
+        output.response = await response.json();
         node.status(node.defaultStatus);
         send(output);
         done();
