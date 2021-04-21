@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2 (2021-04-21)
+
+* `command`/`device`: fix empty device drop-down when `httpAdminRoot` option is used
+
 ## 1.7.1 (2021-04-21)
 
 * `command`/`device`: fix empty device drop-down when login is enabled
