@@ -411,12 +411,12 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
     credentials: { token: { type: 'text' } },
   });
 
-  RED.httpAdmin.get('/hubitat/js/*', (req, res) => {
+  RED.httpAdmin.get('/hubitat/js/common.js', (req, res) => {
     const options = {
       root: `${__dirname}/static/`,
       dotfiles: 'deny',
     };
-    res.sendFile(req.params[0], options);
+    res.sendFile('common.js', options);
   });
 
   RED.httpAdmin.get('/hubitat/devices', RED.auth.needsPermission('hubitat.read'), async (req, res) => {
