@@ -411,7 +411,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
     credentials: { token: { type: 'text' } },
   });
 
-  RED.httpAdmin.get('/hubitat/js/*', RED.auth.needsPermission('hubitat.read'), (req, res) => {
+  RED.httpAdmin.get('/hubitat/js/*', (req, res) => {
     const options = {
       root: `${__dirname}/static/`,
       dotfiles: 'deny',
