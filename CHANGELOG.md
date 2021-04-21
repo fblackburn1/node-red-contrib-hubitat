@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1 (2021-04-21)
+
+* `command`/`device`: fix empty device drop-down when login is enabled
+
 ## 1.7.0 (2021-04-17)
 
 * `command`: return command and arguments requested
