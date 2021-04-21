@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
   /* global cleanHubitatDevices, resetHubitatSelectMenu, listHubitatDevices,
-  loadCrendetials, paramsFromServer */
+  loadCredentials, paramsFromServer */
   let sendEventCheked = true;
 
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
@@ -72,7 +72,7 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server) {
-            loadCrendetials(server).then(() => { listHubitatDevices(server, this.deviceId); });
+            loadCredentials(server).then(() => { listHubitatDevices(server, this.deviceId); });
           } else {
             cleanHubitatDevices();
           }

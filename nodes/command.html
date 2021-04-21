@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
   /* global cleanHubitatSelectMenu, resetHubitatSelectMenu,
-  cleanHubitatDevices, listHubitatDevices, loadCrendetials, paramsFromServer */
+  cleanHubitatDevices, listHubitatDevices, loadCredentials, paramsFromServer */
 
   function listHubitatDeviceCommands(server, deviceId, command) {
     const selectMenu = resetHubitatSelectMenu('node-input-command', 'Choose command...');
@@ -50,7 +50,7 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server) {
-            loadCrendetials(server).then(() => { listHubitatDevices(server, this.deviceId); });
+            loadCredentials(server).then(() => { listHubitatDevices(server, this.deviceId); });
           } else {
             cleanHubitatDevices();
           }
@@ -67,7 +67,7 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server && deviceId) {
-            loadCrendetials(server).then(() => {
+            loadCredentials(server).then(() => {
               listHubitatDeviceCommands(server, deviceId, this.command);
             });
           } else {

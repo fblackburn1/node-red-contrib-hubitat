@@ -43,7 +43,7 @@ function listHubitatDevices(server, deviceId) {
   }).fail(() => cleanHubitatDevices());
 }
 
-function loadCrendetials(server) {
+function loadCredentials(server) {
   const def = $.Deferred();
   if (server.credentials) {
     def.resolve();

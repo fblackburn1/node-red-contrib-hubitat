@@ -1,7 +1,7 @@
 <script src="/hubitat/js/common.js"></script>
 
 <script type="text/javascript">
-  /* global cleanHubitatSelectMenu, resetHubitatSelectMenu, loadCrendetials, paramsFromServer */
+  /* global cleanHubitatSelectMenu, resetHubitatSelectMenu, loadCredentials, paramsFromServer */
   function cleanHubitatModes() {
     cleanHubitatSelectMenu('node-input-modeId', 'Choose mode...');
   }
@@ -39,7 +39,7 @@
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
           if (server) {
-            loadCrendetials(server).then(() => { listHubitatModes(server, this.modeId); });
+            loadCredentials(server).then(() => { listHubitatModes(server, this.modeId); });
           } else {
             cleanHubitatModes();
           }
