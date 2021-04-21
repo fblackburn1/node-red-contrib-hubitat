@@ -44,15 +44,15 @@ function listHubitatDevices(server, deviceId) {
 }
 
 function loadCredentials(server) {
-  const def = $.Deferred();
-  if (server.credentials) {
-    def.resolve();
-  } else {
-    $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
-      server.credentials = data;
-      server.credentials._ = $.extend(true, {}, data);
-      def.resolve();
-    });
-  }
-  return def.promise();
+  return new Promise((resolve, reject) => {
+    if (server.credentials) {
+      resolve();
+    } else {
+      $.getJSON(`credentials/hubitat-config/${server.id}`, (data) => {
+        server.credentials = data;
+        server.credentials._ = $.extend(true, {}, data);
+        resolve();
+      }).fail(() => reject());
+    }
+  });
 }
