@@ -168,8 +168,15 @@ module.exports = function HubitatDeviceModule(RED) {
         done();
         return;
       }
+      const device = node.hubitat.devices[deviceId];
+      if (!device) {
+        const errorMsg = `Device ID (${deviceId}) not found in global cache. Make sure that Maker API allows this device and restart flows`;
+        node.updateStatus('red', errorMsg);
+        doneWithId(node, done, errorMsg);
+        return;
+      }
 
-      const attribute = node.hubitat.devices[deviceId].attributes[attributeSearched];
+      const attribute = device.attributes[attributeSearched];
       if (!attribute) {
         const errorMsg = `Invalid attribute: ${attributeSearched}`;
         node.updateStatus('red', errorMsg);
