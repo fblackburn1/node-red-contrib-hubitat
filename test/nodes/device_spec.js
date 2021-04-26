@@ -439,4 +439,34 @@ describe('Hubitat Device Node', () => {
       }, 20);
     });
   });
+  it('should output an error when deviceId is not in global cache', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultDeviceNode,
+        deviceId: 1,
+        attribute: 'test',
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = {};
+      n1.hubitat.devicesInitialized = true;
+      let inError = false;
+      n2.on('input', (msg) => {
+        inError = true;
+      });
+      n1.receive({ deviceId: '1' });
+      setTimeout(() => {
+        if (inError) {
+          done(new Error('Uncached deviceId allowed though'));
+        } else {
+          done();
+        }
+      }, 20);
+    });
+  });
 });

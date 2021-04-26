@@ -20,8 +20,7 @@ The device (${event.deviceId}) sends an event (${event.name}) with non-official 
 The default behaviour is to leave the attribute value (${value}) as string. \
 It may result in a difference when getting attribute value with input vs event (e.g., json vs string). \
 You should report back this issue to the device driver maintainer. \
-Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object \
-        `);
+Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
         // eslint-disable-next-line no-param-reassign
         node.devicesWarning[event.deviceId] = true;
       }
