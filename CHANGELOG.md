@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3 (2021-04-26)
+
+* `device`: Handle error when deviceId is not in global cache
+
 ## 1.7.2 (2021-04-21)
 
 * `command`/`device`: fix empty device drop-down when `httpAdminRoot` option is used
