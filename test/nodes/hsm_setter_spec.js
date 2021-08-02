@@ -3,8 +3,8 @@ const express = require('express');
 const helper = require('node-red-node-test-helper');
 const http = require('http');
 const stoppable = require('stoppable');
-const hsmSetterNode = require('../../nodes/hsm-setter.js');
-const configNode = require('../../nodes/config.js');
+const hsmSetterNode = require('../../nodes/hsm-setter');
+const configNode = require('../../nodes/config');
 
 describe('Hubitat HSM Setter Node', () => {
   const testPort = 10234;

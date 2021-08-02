@@ -1,6 +1,6 @@
 const helper = require('node-red-node-test-helper');
-const configNode = require('../../nodes/config.js');
-const eventNode = require('../../nodes/event.js');
+const configNode = require('../../nodes/config');
+const eventNode = require('../../nodes/event');
 
 describe('Hubitat Event Node', () => {
   const defaultConfigNode = {

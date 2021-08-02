@@ -3,8 +3,8 @@ const express = require('express');
 const helper = require('node-red-node-test-helper');
 const http = require('http');
 const stoppable = require('stoppable');
-const requestNode = require('../../nodes/request.js');
-const configNode = require('../../nodes/config.js');
+const requestNode = require('../../nodes/request');
+const configNode = require('../../nodes/config');
 
 describe('Hubitat Request Node', () => {
   const testPort = 10234;

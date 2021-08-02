@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 const helper = require('node-red-node-test-helper');
-const configNode = require('../../nodes/config.js');
-const hsmNode = require('../../nodes/hsm.js');
+const configNode = require('../../nodes/config');
+const hsmNode = require('../../nodes/hsm');
 
 describe('Hubitat HSM Node', () => {
   const defaultConfigNode = {
