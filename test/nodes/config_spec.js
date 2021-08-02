@@ -4,7 +4,7 @@ const helper = require('node-red-node-test-helper');
 const http = require('http');
 const should = require('should');
 const stoppable = require('stoppable');
-const configNode = require('../../nodes/config.js');
+const configNode = require('../../nodes/config');
 
 describe('Hubitat Config Node', () => {
   const testPort = 10234;

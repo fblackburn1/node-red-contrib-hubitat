@@ -1,8 +1,8 @@
 /* eslint-disable no-param-reassign */
 /* eslint-disable no-unused-vars */
 const helper = require('node-red-node-test-helper');
-const configNode = require('../../nodes/config.js');
-const deviceNode = require('../../nodes/device.js');
+const configNode = require('../../nodes/config');
+const deviceNode = require('../../nodes/device');
 
 describe('Hubitat Device Node', () => {
   const defaultConfigNode = {
