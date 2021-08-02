@@ -8,7 +8,7 @@ This collection of nodes allows to facilitate the use of Hubitat's API
 
 ### Requirements
 
-* Node-RED version 1.X.X
+* Node-RED version >= 1.X.X
 * Hubitat with Maker API version >= 2.2.0.122
 * A **dedicated** Maker API instance with the following option enabled (for `mode` and `location` nodes):
 
