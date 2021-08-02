@@ -14,7 +14,7 @@
     "cookie-parser": "^1.4.5",
     "events": "^3.3.0",
     "node-fetch": "^2.6.1",
-    "ws": "^6.2.2"
+    "ws": "^7.5.1"
   },
   "keywords": [
     "node-red",
