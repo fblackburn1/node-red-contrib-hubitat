@@ -48,7 +48,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
         if (!value) {
           return value;
         }
-        const threeAxesRegexp = new RegExp(/^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/, 'i');
+        const threeAxesRegexp = /^\[([xyz]:.*),([xyz]:.*),([xyz]:.*)\]$/i;
         const threeAxesMatch = value.match(threeAxesRegexp);
         if (threeAxesMatch) {
           const result = {};
@@ -59,7 +59,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
           return result;
         }
         // Some devices use VECTOR3 for range (ex: Ecobee4 thermostat)
-        const rangeRegexp = new RegExp(/^\[(.*),(.*)\]$/);
+        const rangeRegexp = /^\[(.*),(.*)\]$/;
         const rangeMatch = value.match(rangeRegexp);
         if (rangeMatch) {
           const result = [];
@@ -99,7 +99,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
     this.requestPool = MAXSIMULTANEOUSREQUESTS;
 
     function sleep(ms) {
-      return new Promise((resolve) => setTimeout(resolve, ms));
+      return new Promise((resolve) => { setTimeout(resolve, ms); });
     }
 
     this.acquireLock = async () => {

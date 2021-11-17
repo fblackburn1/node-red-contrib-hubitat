@@ -218,7 +218,7 @@ describe('Hubitat HSM Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentHsm = 'disarmed';
-      n1.hubitat.getHsm = () => new Promise((res) => res({ hsm: 'armNight' }));
+      n1.hubitat.getHsm = () => new Promise((res) => { res({ hsm: 'armNight' }); });
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', 'armNight');
@@ -240,7 +240,7 @@ describe('Hubitat HSM Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentHsm = 'armNight';
-      n1.hubitat.getHsm = () => new Promise((res) => res({ hsm: 'armNight' }));
+      n1.hubitat.getHsm = () => new Promise((res) => { res({ hsm: 'armNight' }); });
       let inError = false;
       n2.on('input', () => {
         inError = true;
