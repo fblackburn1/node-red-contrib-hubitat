@@ -15,7 +15,7 @@
       value = `${value}_`;
       $('#node-config-input-webhookPath').val(value);
     }
-    const pattern = new RegExp('^(\\/[\\w%.~+-]*)*$');
+    const pattern = /^(\/[\w%.~+-]*)*$/;
     if (!pattern.test(value)) {
       return false;
     }
@@ -28,7 +28,7 @@
     return true;
   }
   function validatorNodeRedServer(rawValue) {
-    let value = rawValue.replace(new RegExp(' ', 'g'), '');
+    let value = rawValue.replace(/ /g, '');
     if (!value.startsWith('http://') && !value.startsWith('https://')) {
       value = `http://${value}`;
     }
@@ -36,7 +36,7 @@
     return true;
   }
   function validatorRemoveScheme(rawValue) {
-    const value = rawValue.replace(new RegExp('^http[s]?://'), '');
+    const value = rawValue.replace(/^http[s]?:\/\//, '');
     $('#node-config-input-host').val(value);
     return true;
   }

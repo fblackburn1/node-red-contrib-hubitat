@@ -100,7 +100,7 @@ describe('Hubitat Mode Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentMode = 'old-value';
-      n1.hubitat.getMode = () => new Promise((res) => res([{ name: 'new-value', active: true }]));
+      n1.hubitat.getMode = () => new Promise((res) => { res([{ name: 'new-value', active: true }]); });
       n2.on('input', (msg) => {
         try {
           msg.payload.should.have.property('value', 'new-value');
@@ -122,7 +122,7 @@ describe('Hubitat Mode Node', () => {
       const n1 = helper.getNode('n1');
       const n2 = helper.getNode('n2');
       n1.currentMode = 'old-value';
-      n1.hubitat.getMode = () => new Promise((res) => res([{ name: 'old-value', active: true }]));
+      n1.hubitat.getMode = () => new Promise((res) => { res([{ name: 'old-value', active: true }]); });
       let inError = false;
       n2.on('input', () => {
         inError = true;
