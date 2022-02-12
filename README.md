@@ -61,6 +61,9 @@ interface and `Examples` section in `Menu` -> `Import`
 Moreover, a lot of help can be found at the [hubitat community
 forum](https://community.hubitat.com/t/node-red-nodes-for-hubitat/34386)
 
+You can increase console log verbosity by changing log level from `info` to `debug`.
+See [Node-RED documentation](https://nodered.org/docs/user-guide/runtime/logging)
+
 ## Technical details
 
 ### Configure webhook button
