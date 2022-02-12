@@ -58,7 +58,7 @@ module.exports = function HubitatModeModule(RED) {
     const eventCallback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
       node.currentMode = event.value;
-      node.log(`Mode: ${node.currentMode}`);
+      node.debug(`Mode: ${node.currentMode}`);
 
       if (node.sendEvent) {
         const msg = {
