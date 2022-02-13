@@ -69,7 +69,7 @@ module.exports = function HubitatHsmModule(RED) {
         node.updateStatus('red', `Unknown event: ${event.name}`);
         return;
       }
-      node.log(`HSM: ${node.currentHsm}`);
+      node.debug(`HSM: ${node.currentHsm}`);
 
       if (node.sendEvent) {
         const msg = {

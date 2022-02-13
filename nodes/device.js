@@ -91,10 +91,10 @@ module.exports = function HubitatDeviceModule(RED) {
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
           node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
-          node.log(`${node.attribute}: ${attribute.value}`);
+          node.debug(`${node.attribute}: ${attribute.value}`);
         } else {
           node.updateStatus();
-          node.log(`${event.name}: ${attribute.value}`);
+          node.debug(`${event.name}: ${attribute.value}`);
         }
         if (node.sendEvent) {
           const msg = { ...event, ...attribute };

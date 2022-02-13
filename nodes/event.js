@@ -15,7 +15,7 @@ module.exports = function HubitatEventModule(RED) {
 
     const callback = async (event) => {
       node.debug(`Event received: ${JSON.stringify(event)}`);
-      node.log(`Event: ${event.name}`);
+      node.debug(`Event: ${event.name}`);
 
       const msg = {
         payload: { ...event },
