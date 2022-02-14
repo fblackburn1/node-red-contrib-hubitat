@@ -335,7 +335,9 @@
     <p><b>Server</b> field must not contains the scheme (<code>http://</code> or <code>https://</code>).</p>
     <p>
       The <b>Webhook configuration</b> section allow to configure the URL on which the Hubitat hub will send events.
-      Ensure that Node-RED is reachable by the Hubitat hub
+      Ensure that Node-RED is reachable by the Hubitat hub.
+      If Node-RED is configured to use authentication, the URL should be <code>http://username:password@node_red_ip</code>
+      with username/password URL encoded for special character.
     </p>
     <p>
       <b>Rebuild cache on Hubitat <code>systemStart</code> event</b> will rebuild the Node-RED cache for the Hubitat nodes.
