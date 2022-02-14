@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.8.0 (2022-02-14)
+
+* Reduce log verbosity to avoid to fill log file
+* `mode`: set name dynamically according the label. It will be updated when the node will be saved.
+* `config`: improve documentation when using authentication
+
 ## 1.7.3 (2021-04-26)
 
 * `device`: Handle error when deviceId is not in global cache
