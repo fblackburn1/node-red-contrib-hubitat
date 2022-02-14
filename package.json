@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/fblackburn1/node-red-contrib-hubitat#readme",
   "node-red": {
+    "version": ">=1.0.0",
     "nodes": {
       "command": "nodes/command.js",
       "config": "nodes/config.js",
@@ -37,6 +38,9 @@
       "mode-setter": "nodes/mode-setter.js",
       "request": "nodes/request.js"
     }
+  },
+  "engines": {
+    "node": ">=12.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.2",
