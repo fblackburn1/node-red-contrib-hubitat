@@ -23,6 +23,7 @@
     category: 'hubitat',
     color: '#ACE043',
     defaults: {
+      modeLabel: { value: '' },
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
       modeId: { value: '' },
@@ -31,10 +32,11 @@
     outputs: 1,
     align: 'right',
     icon: 'mode.svg',
-    label() { return this.name || 'set mode'; },
+    label() { return this.name || this.modeLabel || 'set mode'; },
     paletteLabel: 'set mode',
     oneditprepare() {
       $('document').ready(() => {
+        $('#node-input-modeLabel').hide();
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
@@ -42,6 +44,27 @@
             loadCredentials(server).then(() => { listHubitatModes(server, this.modeId); });
           } else {
             cleanHubitatModes();
+          }
+        });
+        $('#node-input-modeId').change(() => {
+          const modeLabel = $('#node-input-modeId option:selected').text();
+          const modeId = $('#node-input-modeId option:selected').val();
+          if (modeId) {
+            $('#node-input-name').attr('placeholder', modeLabel);
+            if (!this.name) {
+              $('#node-input-modeLabel').val(modeLabel);
+            }
+          } else {
+            $('#node-input-modeLabel').val('');
+            $('#node-input-name').attr('placeholder', 'set mode');
+          }
+        });
+        $('#node-input-name').change(() => {
+          const name = $('#node-input-name').val();
+          const modeId = $('#node-input-modeId option:selected').val();
+          if ((!name) && (modeId)) {
+            const modeLabel = $('#node-input-modeId option:selected').text();
+            $('#node-input-modeLabel').val(modeLabel);
           }
         });
       });
@@ -61,6 +84,11 @@
   <div class="form-row">
     <label for="node-input-modeId"><i class="fa fa-moon-o"></i> Mode</label>
     <select id="node-input-modeId"></select>
+  </div>
+  <!-- to be handled by NR framework-->
+  <div class="form-row">
+    <label for="node-input-modeLabel"></label>
+    <input type="text" id="node-input-modeLabel">
   </div>
 </script>
 
