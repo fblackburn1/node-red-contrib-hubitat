@@ -158,3 +158,7 @@ To run linters:
 To run unit tests:
 
 * `npm test`
+
+To validate node-red scorecard:
+
+* `node_modules/node-red-dev/bin/run validate -o hubitat-scorecard.json`
