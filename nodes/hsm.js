@@ -51,7 +51,7 @@ module.exports = function HubitatHsmModule(RED) {
         node.log(`Initialized. HSM: ${node.currentHsm}`);
         node.updateStatus('blue', node.currentHsm);
       }).catch((err) => {
-        node.warn(`Unable to initialize mode: ${err.message}`);
+        node.warn(`Unable to initialize HSM: ${err.message}`);
         node.updateStatus('red', 'Uninitialized');
         throw err;
       });
