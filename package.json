@@ -59,7 +59,7 @@
     "node-red-dev": "^0.1.5",
     "node-red-node-test-helper": "^0.3.0",
     "should": "^13.2.3",
-    "sinon": "^14.0.2",
+    "sinon": "^15.0.1",
     "stoppable": "^1.1.0"
   },
   "scripts": {
