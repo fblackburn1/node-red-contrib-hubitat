@@ -445,7 +445,7 @@ describe('Hubitat Device Node', () => {
       {
         ...defaultDeviceNode,
         deviceId: 1,
-        attribute: 'test',
+        attribute: null,
         wires: [['n2']],
       },
       { id: 'n2', type: 'helper' },

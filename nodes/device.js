@@ -159,20 +159,21 @@ module.exports = function HubitatDeviceModule(RED) {
         return;
       }
 
-      const attributeSearched = msg.attribute || node.attribute;
-      if (!attributeSearched) {
-        msg.payload = { ...node.hubitat.devices[deviceId].attributes };
-        msg.topic = node.topic;
-        send(msg);
-        node.updateStatus();
-        done();
-        return;
-      }
       const device = node.hubitat.devices[deviceId];
       if (!device) {
         const errorMsg = `Device ID (${deviceId}) not found in global cache. Make sure that Maker API allows this device and restart flows`;
         node.updateStatus('red', errorMsg);
         doneWithId(node, done, errorMsg);
+        return;
+      }
+
+      const attributeSearched = msg.attribute || node.attribute;
+      if (!attributeSearched) {
+        msg.payload = { ...device.attributes };
+        msg.topic = node.topic;
+        send(msg);
+        node.updateStatus();
+        done();
         return;
       }
 
