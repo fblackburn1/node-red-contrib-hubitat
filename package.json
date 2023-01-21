@@ -13,7 +13,7 @@
     "body-parser": "^1.20.1",
     "cookie-parser": "^1.4.6",
     "events": "^3.3.0",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^2.6.8",
     "ws": "^7.5.9"
   },
   "keywords": [
@@ -53,7 +53,7 @@
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-import": "^2.25.4",
     "express": "4.18.2",
-    "markdownlint-cli": "^0.32.2",
+    "markdownlint-cli": "^0.33.0",
     "mocha": "^10.1.0",
     "node-red": "^3.0.2",
     "node-red-dev": "^0.1.5",
