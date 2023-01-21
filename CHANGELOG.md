@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1 (2023-01-21)
+
+* `device`: fix uncaught exception when deviceId doesn't exist
+
 ## 1.8.0 (2022-02-14)
 
 * Reduce log verbosity to avoid to fill log file
