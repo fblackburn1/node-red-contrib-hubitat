@@ -123,7 +123,7 @@ describe('Hubitat Command Node', () => {
     });
   });
 
-  it('should not send msg when server return error', (done) => {
+  it('should send msg when server return error', (done) => {
     const flow = [
       defaultConfigNode,
       {
@@ -137,18 +137,18 @@ describe('Hubitat Command Node', () => {
     helper.load([commandNode, configNode], flow, () => {
       const n2 = helper.getNode('n2');
       const n1 = helper.getNode('n1');
-      let inError = false;
       n2.on('input', (msg) => {
-        inError = true;
+        try {
+          msg.should.have.property('responseStatus', 500);
+          msg.should.have.property('response');
+          msg.should.have.property('requestCommand', 'errorCommand');
+          msg.should.have.property('requestArguments', '');
+          done();
+        } catch (err) {
+          done(err);
+        }
       });
       n1.receive();
-      setTimeout(() => {
-        if (inError) {
-          done(new Error('server error allowed though'));
-        } else {
-          done();
-        }
-      }, 20);
     });
   });
 

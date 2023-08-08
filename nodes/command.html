@@ -151,8 +151,16 @@
 
   <h3>Output</h3>
     <dl class="message-properties">
+      <dt class="optional">msg.responseStatus <span class="property-type">integer</span></dt>
+      <dd>The HTTP response return code from the server.
+        Usually 200 if the command is executed and 500 if something went wrong on the server.
+        Other codes may be returned according to Hubitat implementation.
+      </dd>
+    </dl>
+    <dl class="message-properties">
       <dt class="optional">msg.response <span class="property-type">string</span></dt>
-      <dd>The raw response of the server</dd>
+      <dd>The raw response of the server. Usually the device object in json format if <code>msg.responseStatus</code> is 200.
+        Otherwise, a raw string of the error</dd>
     </dl>
     <dl class="message-properties">
       <dt class="optional">msg.requestCommand <span class="property-type">string</span></dt>

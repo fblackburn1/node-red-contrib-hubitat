@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.9.0 (2023-08-08)
+
+* `command`: A new field `msg.responseStatus` has been added to the response
+
 ## 1.8.1 (2023-01-21)
 
 * `device`: fix uncaught exception when deviceId doesn't exist
