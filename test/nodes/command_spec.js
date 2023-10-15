@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const helper = require('node-red-node-test-helper');
 const stoppable = require('stoppable');
+const { performance } = require('perf_hooks');
 const commandNode = require('../../nodes/command');
 const configNode = require('../../nodes/config');
 
@@ -307,6 +308,60 @@ describe('Hubitat Command Node', () => {
       n1.receive({ deviceId: 'slow' });
       n1.receive({ deviceId: 'slow' });
       n1.receive({ deviceId: 'fast' });
+    });
+  });
+  it('should have a delay between commands', (done) => {
+    const delayCommands = 50;
+    const flow = [
+      { ...defaultConfigNode, delayCommands },
+      { ...defaultCommandNode, wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    let startTime = null;
+    let firstCompletedTime = null;
+    let secondCompletedTime = null;
+    let thirdCompletedTime = null;
+    helper.load([commandNode, configNode], flow, () => {
+      const n0 = helper.getNode('n0');
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n2.on('input', (msg) => {
+        try {
+          const { deviceId } = msg.response;
+          if (deviceId === 'first') {
+            firstCompletedTime = performance.now();
+            if ((firstCompletedTime - startTime) > delayCommands) {
+              throw new Error(`Too much delay for first message (${firstCompletedTime - startTime} < ${delayCommands}ms)`);
+            }
+          }
+          if (deviceId === 'second') {
+            if (firstCompletedTime === null) {
+              throw new Error('First msg not completed');
+            }
+            secondCompletedTime = performance.now();
+            if ((secondCompletedTime - firstCompletedTime) < delayCommands) {
+              throw new Error(`Delay for second msg not respected: ${secondCompletedTime - firstCompletedTime} > ${delayCommands}ms`);
+            }
+          }
+          if (deviceId === 'third') {
+            if (secondCompletedTime === null) {
+              throw new Error('Second msg not completed');
+            }
+            thirdCompletedTime = performance.now();
+            if ((thirdCompletedTime - secondCompletedTime) < delayCommands) {
+              throw new Error(`Delay for third msg not respected: ${thirdCompletedTime - secondCompletedTime} > ${delayCommands}ms`);
+            }
+            done();
+          }
+        } catch (err) {
+          done(err);
+        }
+      });
+      n0.delayCommands = delayCommands;
+      startTime = performance.now();
+      n1.receive({ deviceId: 'first' });
+      n1.receive({ deviceId: 'second' });
+      n1.receive({ deviceId: 'third' });
     });
   });
 });

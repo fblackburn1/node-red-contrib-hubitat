@@ -86,7 +86,11 @@ module.exports = function HubitatCommandModule(RED) {
         node.status({ fill: 'red', shape: 'ring', text: err.code });
         done(err);
       } finally {
-        node.hubitat.releaseLock();
+        if (node.hubitat.delayCommands) {
+          setTimeout(() => { node.hubitat.releaseLock(); }, node.hubitat.delayCommands);
+        } else {
+          node.hubitat.releaseLock();
+        }
       }
     });
   }

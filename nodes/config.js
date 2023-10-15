@@ -86,6 +86,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
     this.nodeRedServer = config.nodeRedServer;
     this.webhookPath = config.webhookPath;
     this.autoRefresh = config.autoRefresh;
+    this.delayCommands = config.delayCommands;
     this.useWebsocket = config.useWebsocket;
     this.wsStatusOk = false;
     this.wsFirstInitPending = true;
@@ -96,7 +97,12 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
     this.expiredDevices = {};
     this.devicesInitialized = false;
 
-    this.requestPool = MAXSIMULTANEOUSREQUESTS;
+    if (this.delayCommands) {
+      this.maxRequestPool = 1;
+    } else {
+      this.maxRequestPool = MAXSIMULTANEOUSREQUESTS;
+    }
+    this.requestPool = this.maxRequestPool;
 
     function sleep(ms) {
       return new Promise((resolve) => { setTimeout(resolve, ms); });
@@ -108,7 +114,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
       while (true) {
         if (this.requestPool) {
           this.requestPool -= 1;
-          this.debug(`Lock acquired. Remaining: ${this.requestPool}/${MAXSIMULTANEOUSREQUESTS}`);
+          this.debug(`Lock acquired. Remaining: ${this.requestPool}/${this.maxRequestPool}`);
           return;
         }
         // eslint-disable-next-line no-await-in-loop
@@ -118,7 +124,7 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
 
     this.releaseLock = () => {
       this.requestPool += 1;
-      this.debug(`Lock released. Remaining: ${this.requestPool}/${MAXSIMULTANEOUSREQUESTS}`);
+      this.debug(`Lock released. Remaining: ${this.requestPool}/${this.maxRequestPool}`);
     };
 
     const scheme = ((this.usetls) ? 'https' : 'http');
