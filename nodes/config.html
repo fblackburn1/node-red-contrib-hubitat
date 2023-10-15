@@ -308,6 +308,10 @@
         <input type="checkbox" id="node-config-input-autoRefresh" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
       <div class="form-row">
+        <label for="node-config-input-delayCommands" style="width: auto; margin-right: 5px;">Add delay between commands (ms)</label>
+        <input type="text" id="node-config-input-delayCommands" style="display: inline-block; width: auto; vertical-align: top;">
+      </div>
+      <div class="form-row">
         <label for="node-config-input-useWebsocket" style="width: auto; margin-right: 5px;">Use websocket (<b>not recommended</b>)</label>
         <input type="checkbox" id="node-config-input-useWebsocket" style="display: inline-block; width: auto; vertical-align: top;">
       </div>
@@ -344,6 +348,11 @@
       During the rebuild, if a difference is found between the current Hubitat attribute value and the previous cached value a new event msg for each changed attribute will be sent from the applicable nodes.
       If the current Hubitat attribute value is unchanged from the previous cached value, then no event msg will be sent.
       The <code>systemStart</code> event is triggered any time a Hubitat hub starts up after a power cycle or reboot.
+    </p>
+    <p>
+      <b>Add delay between commands</b> will send commands sequentially with the delay added between commands.
+      When triggering many commands at the same time, some commands may be dropped depending of the mesh and devices used.
+      Sending them sequentially with a delay may help to improve reliability without needed to change flows.
     </p>
     <p>
       <b>Use websocket</b> will switch the internal update mechanism to use Hubitat's websocket instead of webhook.
