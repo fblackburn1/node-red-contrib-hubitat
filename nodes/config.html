@@ -98,6 +98,7 @@
       nodeRedServer: { value: '', validate: validatorNodeRedServer },
       webhookPath: { value: '/hubitat/webhook', validate: validatorWebhookPath },
       autoRefresh: { value: true },
+      delayCommands: { value: '' },
       useWebsocket: { value: false },
       colorEnabled: { value: false },
       color: { value: '#ACE043' },
@@ -353,6 +354,7 @@
       <b>Add delay between commands</b> will send commands sequentially with the delay added between commands.
       When triggering many commands at the same time, some commands may be dropped depending of the mesh and devices used.
       Sending them sequentially with a delay may help to improve reliability without needed to change flows.
+      Note: Using value 0 will send command sequentially without delay. To restore the default parallel behavior, remove the value.
     </p>
     <p>
       <b>Use websocket</b> will switch the internal update mechanism to use Hubitat's websocket instead of webhook.

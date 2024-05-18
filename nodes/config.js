@@ -97,11 +97,12 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
     this.expiredDevices = {};
     this.devicesInitialized = false;
 
-    if (this.delayCommands) {
+    if (this.delayCommands) { // value is a string and 0 will be '0' and true
       this.maxRequestPool = 1;
     } else {
       this.maxRequestPool = MAXSIMULTANEOUSREQUESTS;
     }
+    this.debug(`Setting maximum concurrent requests to ${this.maxRequestPool}`);
     this.requestPool = this.maxRequestPool;
 
     function sleep(ms) {
