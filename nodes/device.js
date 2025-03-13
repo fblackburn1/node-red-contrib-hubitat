@@ -90,7 +90,11 @@ module.exports = function HubitatDeviceModule(RED) {
       }
       if ((node.attribute === event.name) || (!node.attribute)) {
         if (node.attribute) {
-          node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)}`);
+          const now = new Date();
+          const options = {month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric'};
+          const locale = Intl?.DateTimeFormat()?.resolvedOptions()?.locale ?? 'en-US';
+          const nowFormatted = new Intl.DateTimeFormat(locale, options).format(now);
+          node.updateStatus('blue', `${node.attribute}: ${JSON.stringify(attribute.value)} (${nowFormatted})`);
           node.debug(`${node.attribute}: ${attribute.value}`);
         } else {
           node.updateStatus();
