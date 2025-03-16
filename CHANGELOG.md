@@ -2,6 +2,7 @@
 
 ## NEXT
 
+* `device`: show timestamp on status
 * `config`: Allow to configure a delay between commands
 
 ## 1.9.0 (2023-08-08)
