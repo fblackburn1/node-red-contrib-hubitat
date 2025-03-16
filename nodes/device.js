@@ -109,16 +109,16 @@ module.exports = function HubitatDeviceModule(RED) {
 
     const systemStartCallback = async () => {
       const previousDevice = node.hubitat.expiredDevices[node.deviceId];
-      const previousAttributes = previousDevice ? previousDevice.attributes : undefined;
+      const previousAttributes = previousDevice ? previousDevice.attributes : {};
       try {
         await initializeDevice();
       } catch (err) {
         return;
       }
       Object.values(node.hubitat.devices[node.deviceId].attributes)
-        .filter((attribute) => attribute.value !== previousAttributes[attribute.name].value)
+        .filter((attribute) => attribute.value !== previousAttributes[attribute.name]?.value)
         .forEach((attribute) => {
-          node.log(`Fix "${attribute.name}" attribute desynchronization: "${previousAttributes[attribute.name].value}" --> "${attribute.value}"`);
+          node.log(`Fix "${attribute.name}" attribute desynchronization: "${previousAttributes[attribute.name]?.value}" --> "${attribute.value}"`);
           const event = {
             name: attribute.name,
             value: attribute.value,

@@ -382,6 +382,42 @@ describe('Hubitat Device Node', () => {
       n1.hubitat.hubitatEvent.emit('systemStart');
     });
   });
+  it('should send event when systemStart received and no previous device', (done) => {
+    const flow = [
+      defaultConfigNode,
+      { ...defaultDeviceNode, attribute: '', wires: [['n2']] },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([deviceNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n1.hubitat.devices = {};
+      n1.hubitat.devices = {
+        42: {
+          attributes: {
+            desync: { name: 'desync', value: 'desync', dataType: 'STRING' },
+          },
+        },
+      };
+      n1.hubitat.devicesFetcher = () => new Promise((res) => {
+        n1.hubitat.devices['42'] = {
+          attributes: {
+            desync: { name: 'desync', value: 'sync', dataType: 'STRING' },
+          },
+        };
+        res();
+      });
+      n2.on('input', (msg) => {
+        try {
+          msg.payload.should.have.property('name', 'desync');
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.hubitat.hubitatEvent.emit('systemStart');
+    });
+  });
   it('should take deviceId from message', (done) => {
     const flow = [
       defaultConfigNode,
