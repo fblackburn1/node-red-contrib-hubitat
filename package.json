@@ -10,7 +10,7 @@
   "author": "Francois Blackburn",
   "license": "MIT",
   "dependencies": {
-    "body-parser": "^1.20.1",
+    "body-parser": "^1.20.3",
     "cookie-parser": "^1.4.7",
     "node-fetch": "^2.7.0",
     "ws": "^8.18.1"
