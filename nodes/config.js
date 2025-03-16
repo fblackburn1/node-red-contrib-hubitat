@@ -335,9 +335,10 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
             reconnect('close');
           }
         });
-        socket.on('message', (data) => {
+        socket.on('message', (data, isBinary) => {
+          const message = isBinary ? data : data.toString();
           try {
-            const event = JSON.parse(data);
+            const event = JSON.parse(message);
             if (event) {
               eventDispatcher(event);
             }
@@ -402,6 +403,9 @@ Supported dataType: https://docs.hubitat.com/index.php?title=Attribute_Object`);
         node.closing = true;
         clearTimeout(node.reconnectTimeout);
         node.wsServer.close();
+        for (const ws of node.wsServer.clients) {
+          ws.terminate();
+        }
       } else { // webhook
         // eslint-disable-next-line no-underscore-dangle
         RED.httpNode._router.stack.forEach((route, i, routes) => {
