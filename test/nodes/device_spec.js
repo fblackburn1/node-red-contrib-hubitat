@@ -363,14 +363,14 @@ describe('Hubitat Device Node', () => {
         };
         res();
       });
-      let eventRecevied = 0;
+      let eventReceived = 0;
       n2.on('input', (msg) => {
         try {
-          eventRecevied += 1;
-          if (eventRecevied === 1) {
+          eventReceived += 1;
+          if (eventReceived === 1) {
             msg.payload.should.have.property('name', 'desync1');
             msg.payload.should.have.property('value', 'sync');
-          } else if (eventRecevied === 2) {
+          } else if (eventReceived === 2) {
             msg.payload.should.have.property('name', 'desync2');
             msg.payload.should.have.property('value', 'sync');
             done();
