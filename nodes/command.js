@@ -10,6 +10,7 @@ module.exports = function HubitatCommandModule(RED) {
     this.deviceId = config.deviceId;
     this.command = config.command;
     this.commandArgs = config.commandArgs;
+    this.ignoreOverrides = config.ignoreOverrides;
     this.defaultStatus = {};
     if (this.command) {
       if (this.commandArgs) {
@@ -17,6 +18,11 @@ module.exports = function HubitatCommandModule(RED) {
       } else {
         this.defaultStatus = { text: `>> ${this.command}` };
       }
+    }
+
+    // Make explicit logic when migrated from old plugin version
+    if (this.ignoreOverrides === undefined) {
+      this.ignoreOverrides = false;
     }
 
     const node = this;
@@ -30,7 +36,12 @@ module.exports = function HubitatCommandModule(RED) {
     node.on('input', async (msg, send, done) => {
       node.status({ fill: 'blue', shape: 'dot', text: 'requesting' });
 
-      const deviceId = ((msg.deviceId !== undefined) ? msg.deviceId : node.deviceId);
+      let deviceId = node.deviceId
+      if (!node.ignoreOverrides) {
+        if(msg.deviceId !== undefined) {
+          deviceId = msg.deviceId
+        }
+      }
       if (!deviceId) {
         const errorMsg = 'undefined deviceId';
         node.status({ fill: 'red', shape: 'ring', text: errorMsg });
@@ -39,11 +50,13 @@ module.exports = function HubitatCommandModule(RED) {
       }
 
       let { command, commandArgs } = node;
-      if (msg.command !== undefined) {
-        command = msg.command;
-        commandArgs = msg.arguments;
-      } else if (msg.arguments !== undefined) {
-        commandArgs = msg.arguments;
+      if (!node.ignoreOverrides) {
+        if (msg.command !== undefined) {
+          command = msg.command;
+          commandArgs = msg.arguments;
+        } else if (msg.arguments !== undefined) {
+          commandArgs = msg.arguments;
+        }
       }
       if (!command) {
         const errorMsg = 'undefined command';
