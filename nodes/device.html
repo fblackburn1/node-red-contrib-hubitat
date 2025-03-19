@@ -3,7 +3,7 @@
 <script type="text/javascript">
   /* global cleanHubitatDevices, resetHubitatSelectMenu, listHubitatDevices,
   loadCredentials, paramsFromServer */
-  let sendEventCheked = true;
+  let sendEventChecked = true;
 
   function listHubitatDeviceAttributes(server, deviceId, attribute) {
     const selectMenu = resetHubitatSelectMenu('node-input-attribute', 'All');
@@ -39,13 +39,13 @@
   }
   function disableSendEventCheckbox() {
     const sendEventCheckbox = $('#node-input-sendEvent');
-    sendEventCheked = $('#node-input-sendEvent').is(':checked');
+    sendEventChecked = $('#node-input-sendEvent').is(':checked');
     sendEventCheckbox.prop('checked', false);
     sendEventCheckbox.prop('disabled', true);
   }
   function enableSendEventCheckbox() {
     const sendEventCheckbox = $('#node-input-sendEvent');
-    sendEventCheckbox.prop('checked', sendEventCheked);
+    sendEventCheckbox.prop('checked', sendEventChecked);
     sendEventCheckbox.prop('disabled', false);
   }
   RED.nodes.registerType('hubitat device', {
@@ -67,7 +67,7 @@
     oneditprepare() {
       $('document').ready(() => {
         $('#node-input-deviceLabel').hide();
-        sendEventCheked = $('#node-input-sendEvent').is(':checked');
+        sendEventChecked = $('#node-input-sendEvent').is(':checked');
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
