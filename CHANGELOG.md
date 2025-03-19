@@ -1,6 +1,6 @@
 # Changelog
 
-## NEXT
+## 1.10.0 (2025-03-19)
 
 - `command`: Add *Ignore Input Overrides* configuration option
 - `device`: show timestamp on status
