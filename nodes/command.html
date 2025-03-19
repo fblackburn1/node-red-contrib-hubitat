@@ -3,6 +3,7 @@
 <script type="text/javascript">
   /* global cleanHubitatSelectMenu, resetHubitatSelectMenu,
   cleanHubitatDevices, listHubitatDevices, loadCredentials, paramsFromServer */
+  /* eslint no-underscore-dangle: ["error", { "allow": ["_config", "_def"] }] */
 
   function listHubitatDeviceCommands(server, deviceId, command) {
     const selectMenu = resetHubitatSelectMenu('node-input-command', 'Choose command...');
@@ -25,6 +26,15 @@
       }
     });
   }
+  function migrateFromVersionsPriorTo1_10_0(node) { // eslint-disable-line camelcase
+    if (!node._config) { // new node
+      return false;
+    }
+    if (node._config.ignoreOverrides === undefined && !node.changed) {
+      return true;
+    }
+    return false;
+  }
 
   RED.nodes.registerType('hubitat command', {
     category: 'hubitat',
@@ -33,9 +43,10 @@
       deviceLabel: { value: '' },
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
-      deviceId: { value: '' },
-      command: { value: '' },
+      deviceId: { value: '', required: true },
+      command: { value: '', required: true },
       commandArgs: { value: '' },
+      ignoreOverrides: { value: true },
     },
     inputs: 1,
     outputs: 1,
@@ -46,6 +57,7 @@
     oneditprepare() {
       $('document').ready(() => {
         $('#node-input-deviceLabel').hide();
+
         $('#node-input-server').change(() => {
           const serverId = $('#node-input-server option:selected').val();
           const server = RED.nodes.node(serverId);
@@ -98,6 +110,24 @@
           }
           commandArgsInput.attr('placeholder', placeholder);
         });
+        $('#node-input-ignoreOverrides').change(() => {
+          const ignoreOverridesChecked = $('#node-input-ignoreOverrides').prop('checked');
+          if (ignoreOverridesChecked) {
+            this._def.defaults.deviceId.required = true;
+            this._def.defaults.command.required = true;
+          } else {
+            this._def.defaults.deviceId.required = false;
+            this._def.defaults.command.required = false;
+          }
+          // Trigger change on random input to force to re-validate all fields and apply required
+          $('#node-input-deviceLabel').trigger('change');
+        });
+
+        const ignoreOverrides = $('#node-input-ignoreOverrides');
+        if (migrateFromVersionsPriorTo1_10_0(this)) {
+          console.log('MIGRATE TO DEFAULT CONFIG');
+          ignoreOverrides.prop('checked', false);
+        }
       });
     },
   });
@@ -123,6 +153,10 @@
   <div class="form-row">
     <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-ignoreOverrides" style="width: auto"><i class="fa fa-ban"></i> Ignore Input Overrides </label>
+    <input type="checkbox" id="node-input-ignoreOverrides" style="display: inline-block; width: auto; vertical-align: top;" checked>
   </div>
   <!-- to be handled by NR framework-->
   <div class="form-row">
@@ -179,5 +213,7 @@
       If not specified, input message must define <code>arguments</code> property.
       To send many arguments, use the following syntax: <code>{"hue":88,"saturation":50,"level":90}</code>.
     </p>
+    <p><b>Ignore Input Overrides</b> ignore input message properties
+      (i.e. <code>msg.deviceId</code>, <code>msg.command</code> and <code>msg.arguments</code>).</p>
     <p>This node is not compatible with Node-RED 0.x</p>
 </script>

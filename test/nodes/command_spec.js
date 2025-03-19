@@ -28,6 +28,7 @@ describe('Hubitat Command Node', () => {
     deviceId: '42',
     command: 'testCommand',
     commandArgs: 'test,args',
+    ignoreOverrides: true,
   };
   const testApp = express();
   const testServer = stoppable(http.createServer(testApp));
@@ -176,10 +177,38 @@ describe('Hubitat Command Node', () => {
     });
   });
 
+  it('should ignore message input when enable ignore overrides', (done) => {
+    const flow = [
+      defaultConfigNode,
+      {
+        ...defaultCommandNode,
+        deviceId: '42',
+        command: 'testCommand',
+        commandArgs: 'test,args',
+        ignoreOverrides: true,
+        wires: [['n2']],
+      },
+      { id: 'n2', type: 'helper' },
+    ];
+    helper.load([commandNode, configNode], flow, () => {
+      const n1 = helper.getNode('n1');
+      const n2 = helper.getNode('n2');
+      n2.on('input', (msg) => {
+        try {
+          msg.should.have.property('response', { deviceId: '42', command: 'testCommand', arguments: 'test,args' });
+          done();
+        } catch (err) {
+          done(err);
+        }
+      });
+      n1.receive({ deviceId: '1', command: 'otherCommand', arguments: '75' });
+    });
+  });
+
   it('should take arguments from message', (done) => {
     const flow = [
       defaultConfigNode,
-      { ...defaultCommandNode, wires: [['n2']] },
+      { ...defaultCommandNode, ignoreOverrides: false, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
     helper.load([commandNode, configNode], flow, () => {
@@ -200,7 +229,7 @@ describe('Hubitat Command Node', () => {
   it('should take arguments from message when command comes from message', (done) => {
     const flow = [
       defaultConfigNode,
-      { ...defaultCommandNode, wires: [['n2']] },
+      { ...defaultCommandNode, ignoreOverrides: false, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
     helper.load([commandNode, configNode], flow, () => {
@@ -221,7 +250,7 @@ describe('Hubitat Command Node', () => {
   it('should not take arguments from node when command comes from message without arguments', (done) => {
     const flow = [
       defaultConfigNode,
-      { ...defaultCommandNode, wires: [['n2']] },
+      { ...defaultCommandNode, ignoreOverrides: false, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
     helper.load([commandNode, configNode], flow, () => {
@@ -242,7 +271,12 @@ describe('Hubitat Command Node', () => {
   it('should take deviceId from message', (done) => {
     const flow = [
       defaultConfigNode,
-      { ...defaultCommandNode, deviceId: '1', wires: [['n2']] },
+      {
+        ...defaultCommandNode,
+        ignoreOverrides: false,
+        deviceId: '1',
+        wires: [['n2']],
+      },
       { id: 'n2', type: 'helper' },
     ];
     helper.load([commandNode, configNode], flow, () => {
@@ -282,10 +316,11 @@ describe('Hubitat Command Node', () => {
       }, 20);
     });
   });
+
   it('should throttling requests', (done) => {
     const flow = [
       defaultConfigNode,
-      { ...defaultCommandNode, wires: [['n2']] },
+      { ...defaultCommandNode, ignoreOverrides: false, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
     const expected = ['fast', 'slow', 'slow'];
@@ -314,7 +349,7 @@ describe('Hubitat Command Node', () => {
     const delayCommands = 50;
     const flow = [
       { ...defaultConfigNode, delayCommands },
-      { ...defaultCommandNode, wires: [['n2']] },
+      { ...defaultCommandNode, ignoreOverrides: false, wires: [['n2']] },
       { id: 'n2', type: 'helper' },
     ];
     let startTime = null;

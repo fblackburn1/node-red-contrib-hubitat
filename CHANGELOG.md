@@ -2,6 +2,7 @@
 
 ## NEXT
 
+- `command`: Add *Ignore Input Overrides* configuration option
 - `device`: show timestamp on status
 - `config`: Allow to configure a delay between commands
 
