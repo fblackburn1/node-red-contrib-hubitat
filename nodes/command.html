@@ -3,7 +3,7 @@
 <script type="text/javascript">
   /* global cleanHubitatSelectMenu, resetHubitatSelectMenu,
   cleanHubitatDevices, listHubitatDevices, loadCredentials, paramsFromServer */
-  /* eslint no-underscore-dangle: ["error", { "allow": ["_config", "_def"] }] */
+  /* eslint no-underscore-dangle: ["error", { "allow": ["_config"] }] */
 
   function listHubitatDeviceCommands(server, deviceId, command) {
     const selectMenu = resetHubitatSelectMenu('node-input-command', 'Choose command...');
@@ -43,8 +43,8 @@
       deviceLabel: { value: '' },
       name: { value: '' },
       server: { type: 'hubitat config', required: true },
-      deviceId: { value: '', required: true },
-      command: { value: '', required: true },
+      deviceId: { value: '' },
+      command: { value: '' },
       commandArgs: { value: '' },
       ignoreOverrides: { value: true },
     },
@@ -110,22 +110,9 @@
           }
           commandArgsInput.attr('placeholder', placeholder);
         });
-        $('#node-input-ignoreOverrides').change(() => {
-          const ignoreOverridesChecked = $('#node-input-ignoreOverrides').prop('checked');
-          if (ignoreOverridesChecked) {
-            this._def.defaults.deviceId.required = true;
-            this._def.defaults.command.required = true;
-          } else {
-            this._def.defaults.deviceId.required = false;
-            this._def.defaults.command.required = false;
-          }
-          // Trigger change on random input to force to re-validate all fields and apply required
-          $('#node-input-deviceLabel').trigger('change');
-        });
 
         const ignoreOverrides = $('#node-input-ignoreOverrides');
         if (migrateFromVersionsPriorTo1_10_0(this)) {
-          console.log('MIGRATE TO DEFAULT CONFIG');
           ignoreOverrides.prop('checked', false);
         }
       });

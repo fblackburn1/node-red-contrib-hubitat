@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.10.1 (2025-03-20)
+
+- `command`: Fix visual validation issue when no deviceId/command
+
 ## 1.10.0 (2025-03-19)
 
 - `command`: Add *Ignore Input Overrides* configuration option
