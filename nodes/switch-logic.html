@@ -1,0 +1,173 @@
+<script type="text/javascript">
+(function () {
+  let currentRequestId = 0;
+
+  function listSwitchDevices(server, selectedIds, requestId) {
+    const selectMenu = $('#node-input-deviceId');
+    selectMenu.empty();
+
+    $.getJSON('hubitat/devices/all', paramsFromServer(server))
+      .done((res) => {
+        if (requestId !== currentRequestId) return;
+        if (!Array.isArray(res)) {
+          console.warn("hubitat/devices/all returned non-array:", res);
+          return;
+        }
+
+        const deviceId = res.filter((device) => {
+          const hasCapability = Array.isArray(device.capabilities) && device.capabilities.includes('Switch');
+          const hasSwitchAttr = (
+            device.attributes &&
+            device.attributes.switch !== undefined &&
+            device.attributes.switch !== null
+          );
+          return hasCapability || hasSwitchAttr;
+        });
+
+        deviceId.sort((a, b) => {
+          const la = (a.label || a.name || a.id).toString().toLowerCase();
+          const lb = (b.label || b.name || b.id).toString().toLowerCase();
+          return la.localeCompare(lb);
+        });
+
+        deviceId.forEach((device) => {
+          const val = String(device.id);
+          if (selectMenu.find(`option[value="${val}"]`).length === 0) {
+            const option = $('<option>', {
+              value: val,
+              text: device.label || device.name || device.id
+            });
+            if (selectedIds && selectedIds.map(String).includes(val)) {
+              option.prop('selected', true);
+            }
+            selectMenu.append(option);
+          }
+        });
+
+        if (typeof selectMenu.data('initialized') === 'undefined') {
+          selectMenu.data('initialized', true);
+        }
+      })
+      .fail((jqXHR, textStatus, errorThrown) => {
+        console.error("hubitat/devices/all request failed:", textStatus, errorThrown);
+      });
+  }
+
+  RED.nodes.registerType('hubitat switch logic', {
+    category: 'hubitat',
+    color: '#ACE043',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      deviceId: { value: [] },
+      targetValue: { value: 'on' },
+      mode: { value: 'all' },
+      sendEvents: { value: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-gears',
+    label() { return this.name || 'switch logic'; },
+    paletteLabel: 'switch logic',
+
+    oneditprepare() {
+      const node = this;
+      let initialized = false;
+
+      function refreshDeviceList() {
+        const serverId = $('#node-input-server option:selected').val();
+        const server = RED.nodes.node(serverId);
+
+        currentRequestId += 1;
+        const requestId = currentRequestId;
+        $('#node-input-deviceId').empty();
+
+        if (server) {
+          loadCredentials(server).then(() => {
+            listSwitchDevices(server, node.deviceId, requestId);
+            initialized = true; // now user changes trigger updates
+          }).catch(() => {
+            $('#node-input-deviceId').empty();
+          });
+        } else {
+          cleanHubitatDevices();
+        }
+      }
+
+      $('#node-input-server').off('change').on('change', refreshDeviceList);
+      $('#node-input-deviceId').empty();
+      refreshDeviceList();
+
+      // Only update name when device selection changes by user
+      $('#node-input-deviceId').off('.count').on('change.count', function () {
+        if (initialized) updateNameWithCount(node);
+      });
+    },
+
+    oneditsave() {
+      const selected = $('#node-input-deviceId').val() || [];
+      this.deviceId = Array.isArray(selected) ? selected : [selected];
+      this.targetValue = $('#node-input-targetValue').val();
+      this.mode = $('#node-input-mode').val();
+      this.sendEvents = $('#node-input-sendEvents').prop('checked');
+
+      if (this.deviceId.length > 0) {
+        updateNameWithCount(this, { force: true });
+      }
+    }
+  });
+
+  function updateNameWithCount(node, opts) {
+    opts = opts || {};
+    const sel = $('#node-input-deviceId').val();
+    if (!sel || sel.length === 0) return;
+
+    const chosen = Array.isArray(sel) ? sel : [sel];
+    const count = chosen.length;
+
+    let base = $('#node-input-name').val() || (node && node.name) || 'switch logic';
+    base = base.replace(/\s*\(\d+\)$/, '');
+
+    $('#node-input-name').val(base + ' (' + count + ')');
+    return count;
+  }
+})();
+</script>
+
+<script type="text/x-red" data-template-name="hubitat switch logic">
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Hub</label>
+    <select id="node-input-server"></select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-toggle-on"></i> Devices</label>
+    <select id="node-input-deviceId" multiple size="8" style="width:100%;"></select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-targetValue"><i class="fa fa-bullseye"></i> Target Value</label>
+    <select id="node-input-targetValue">
+      <option value="on">On</option>
+      <option value="off">Off</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-mode"><i class="fa fa-sliders"></i> Mode</label>
+    <select id="node-input-mode">
+      <option value="all">All</option>
+      <option value="any">Any</option>
+    </select>
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-sendEvents"><i class="fa fa-bell"></i> Send events</label>
+    <input type="checkbox" id="node-input-sendEvents">
+  </div>
+</script>

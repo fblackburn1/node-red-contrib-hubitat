@@ -1,0 +1,166 @@
+</script>
+
+<script type="text/x-red" data-help-name="hubitat capture">
+<p><b>Capture Node</b></p>
+<ul>
+  <li><b>Name</b>: Custom name for this node instance.</li>
+  <li><b>Hub</b>: Select the Hubitat hub to connect to.</li>
+  <li><b>Devices</b>: Choose one or more devices whose state will be captured and stored in flow context.</li>
+  <li><b>Clear data on edit/restart</b>: If checked, all stored states owned by this node will be cleared when the node is edited, redeployed, or Node-RED restarts.</li>
+</ul>
+</script>
+<script type="text/javascript">
+(function () {
+  let currentRequestId = 0;
+
+  function listSwitchDevices(server, selectedIds, requestId) {
+    const selectMenu = $('#node-input-deviceId');
+    selectMenu.empty();
+
+    $.getJSON('hubitat/devices/all', paramsFromServer(server))
+      .done((res) => {
+        if (requestId !== currentRequestId) return;
+        if (!Array.isArray(res)) {
+          console.warn("hubitat/devices/all returned non-array:", res);
+          return;
+        }
+
+        const deviceId = res.filter((device) => {
+          const hasCapability = Array.isArray(device.capabilities) && device.capabilities.includes('Switch');
+          const hasSwitchAttr = (
+            device.attributes &&
+            device.attributes.switch !== undefined &&
+            device.attributes.switch !== null
+          );
+          return hasCapability || hasSwitchAttr;
+        });
+
+        deviceId.sort((a, b) => {
+          const la = (a.label || a.name || a.id).toString().toLowerCase();
+          const lb = (b.label || b.name || b.id).toString().toLowerCase();
+          return la.localeCompare(lb);
+        });
+
+        deviceId.forEach((device) => {
+          const val = String(device.id);
+          if (selectMenu.find(`option[value="${val}"]`).length === 0) {
+            const option = $('<option>', {
+              value: val,
+              text: device.label || device.name || device.id
+            });
+            if (selectedIds && selectedIds.map(String).includes(val)) {
+              option.prop('selected', true);
+            }
+            selectMenu.append(option);
+          }
+        });
+
+        if (typeof selectMenu.data('initialized') === 'undefined') {
+          selectMenu.data('initialized', true);
+        }
+      })
+      .fail((jqXHR, textStatus, errorThrown) => {
+        console.error("hubitat/devices/all request failed:", textStatus, errorThrown);
+      });
+  }
+
+  RED.nodes.registerType('hubitat capture', {
+    category: 'hubitat',
+    color: '#ACE043',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      deviceId: { value: [] },
+      clearOnEditRestart: { value: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-camera',
+    label() { return this.name || 'capture'; },
+    paletteLabel: 'capture',
+
+    oneditprepare() {
+      const node = this;
+      let initialized = false;
+
+      function refreshDeviceList() {
+        const serverId = $('#node-input-server option:selected').val();
+        const server = RED.nodes.node(serverId);
+
+        currentRequestId += 1;
+        const requestId = currentRequestId;
+        $('#node-input-deviceId').empty();
+
+        if (server) {
+          loadCredentials(server).then(() => {
+            listSwitchDevices(server, node.deviceId, requestId);
+            initialized = true; // now user changes can trigger updates
+          }).catch(() => {
+            $('#node-input-deviceId').empty();
+          });
+        } else {
+          cleanHubitatDevices();
+        }
+      }
+
+      $('#node-input-server').off('change').on('change', refreshDeviceList);
+      $('#node-input-deviceId').empty();
+      refreshDeviceList();
+
+      // Only update name when device selection changes by user
+      $('#node-input-deviceId').off('.count').on('change.count', function () {
+        if (initialized) updateNameWithCount(node);
+      });
+    },
+
+    oneditsave() {
+      const selected = $('#node-input-deviceId').val() || [];
+      this.deviceId = Array.isArray(selected) ? selected : [selected];
+      this.clearOnEditRestart = $('#node-input-clearOnEditRestart').prop('checked');
+
+      if (this.deviceId.length > 0) {
+        updateNameWithCount(this, { force: true });
+      }
+    }
+  });
+
+  function updateNameWithCount(node, opts) {
+    opts = opts || {};
+    const sel = $('#node-input-deviceId').val();
+    if (!sel || sel.length === 0) return;
+
+    const chosen = Array.isArray(sel) ? sel : [sel];
+    const count = chosen.length;
+
+    let base = $('#node-input-name').val() || (node && node.name) || 'capture';
+    base = base.replace(/\s*\(\d+\)$/, '');
+
+    $('#node-input-name').val(base + ' (' + count + ')');
+    return count;
+  }
+})();
+</script>
+
+<script type="text/x-red" data-template-name="hubitat capture">
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Hub</label>
+    <input type="text" id="node-input-server">
+  </div>
+
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-toggle-on"></i> Devices</label>
+    <select id="node-input-deviceId" multiple size="8" style="width:100%;"></select>
+  </div>
+  <div class="form-row">
+    <label>&nbsp;</label>
+    <label style="white-space:nowrap; vertical-align:middle;">
+      <input type="checkbox" id="node-input-clearOnEditRestart" style="vertical-align:middle; margin-top:-2px;">
+      <span style="vertical-align:middle; margin-left:6px;">Clear data on edit/restart</span>
+    </label>
+  </div>
+</script>

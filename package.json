@@ -35,7 +35,11 @@
       "location": "nodes/location.js",
       "mode": "nodes/mode.js",
       "mode-setter": "nodes/mode-setter.js",
-      "request": "nodes/request.js"
+      "request": "nodes/request.js",
+      "switch-logic": "nodes/switch-logic.js",
+      "capture": "nodes/capture.js",
+      "restore": "nodes/restore.js",
+      "logic": "nodes/logic.js"
     }
   },
   "engines": {

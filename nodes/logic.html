@@ -1,0 +1,233 @@
+<script type="text/x-red" data-help-name="hubitat logic">
+<p><b>Logic Node</b></p>
+<ul>
+  <li><b>Name</b>: Custom name for this node instance.</li>
+  <li><b>Hub</b>: Select the Hubitat hub to connect to.</li>
+  <li><b>Device Type</b>: Choose the type of device to evaluate (Switch, Motion, Lock, Contact, Presence).</li>
+  <li><b>Devices</b>: Choose one or more devices to evaluate.</li>
+  <li><b>Target Value</b>: The value to compare against device states (e.g., On/Off, Active/Inactive).</li>
+  <li><b>Mode</b>: 'All' requires all devices to match the target value; 'Any' requires at least one device to match.</li>
+  <li><b>Send events</b>: If checked, the node will send events when the logic condition is met.</li>
+</ul>
+</script>
+<script type="text/javascript">
+(function () {
+  let currentRequestId = 0;
+
+  const DEVICE_TYPES = [
+    { value: 'contact', label: 'Contact' },
+    { value: 'lock', label: 'Lock' },
+    { value: 'motion', label: 'Motion' },
+    { value: 'presence', label: 'Presence' },
+    { value: 'switch', label: 'Switch' }
+  ];
+
+  const TARGET_VALUES = {
+    switch: [
+      { value: 'on', label: 'On' },
+      { value: 'off', label: 'Off' }
+    ],
+    motion: [
+      { value: 'active', label: 'Active' },
+      { value: 'inactive', label: 'Inactive' }
+    ],
+    lock: [
+      { value: 'locked', label: 'Locked' },
+      { value: 'unlocked', label: 'Unlocked' },
+      { value: 'unlocked with timeout', label: 'Unlocked with Timeout' },
+      { value: 'unknown', label: 'Unknown' }
+    ],
+    contact: [
+      { value: 'open', label: 'Open' },
+      { value: 'closed', label: 'Closed' }
+    ],
+    presence: [
+      { value: 'present', label: 'Present' },
+      { value: 'not present', label: 'Not Present' }
+    ]
+  };
+
+  function listDevices(server, deviceType, selectedIds, requestId) {
+    const selectMenu = $('#node-input-deviceId');
+    selectMenu.empty();
+    if (!server || !deviceType) return;
+    $.getJSON('hubitat/devices/all', paramsFromServer(server))
+      .done((res) => {
+        if (requestId !== currentRequestId) return;
+        if (!Array.isArray(res)) {
+          console.warn("hubitat/devices/all returned non-array:", res);
+          return;
+        }
+        const capabilityMap = {
+          switch: 'Switch',
+          presence: 'PresenceSensor',
+          motion: 'MotionSensor',
+          lock: 'Lock',
+          contact: 'ContactSensor'
+        };
+        const filtered = res.filter((device) => {
+          const cap = capabilityMap[deviceType];
+          return Array.isArray(device.capabilities) && device.capabilities.includes(cap);
+        });
+        filtered.sort((a, b) => {
+          const la = (a.label || a.name || a.id).toString().toLowerCase();
+          const lb = (b.label || b.name || b.id).toString().toLowerCase();
+          return la.localeCompare(lb);
+        });
+        filtered.forEach((device) => {
+          const val = String(device.id);
+          if (selectMenu.find(`option[value="${val}"]`).length === 0) {
+            const option = $('<option>', {
+              value: val,
+              text: device.label || device.name || device.id
+            });
+            if (selectedIds && selectedIds.map(String).includes(val)) {
+              option.prop('selected', true);
+            }
+            selectMenu.append(option);
+          }
+        });
+        if (typeof selectMenu.data('initialized') === 'undefined') {
+          selectMenu.data('initialized', true);
+        }
+      })
+      .fail((jqXHR, textStatus, errorThrown) => {
+        console.error("hubitat/devices/all request failed:", textStatus, errorThrown);
+      });
+  }
+
+  function updateTargetValues(deviceType, selectedValue) {
+    const selectMenu = $('#node-input-targetValue');
+    selectMenu.empty();
+    if (!deviceType || !TARGET_VALUES[deviceType]) return;
+    TARGET_VALUES[deviceType].forEach(opt => {
+      const option = $('<option>', {
+        value: opt.value,
+        text: opt.label
+      });
+      if (selectedValue === opt.value) {
+        option.prop('selected', true);
+      }
+      selectMenu.append(option);
+    });
+  }
+
+  RED.nodes.registerType('hubitat logic', {
+    category: 'hubitat',
+    color: '#ACE043',
+    defaults: {
+      name: { value: '' },
+      server: { type: 'hubitat config', required: true },
+      deviceType: { value: '' },
+      deviceId: { value: [] },
+      targetValue: { value: '' },
+      mode: { value: 'all' },
+      sendEvents: { value: false }
+    },
+    inputs: 1,
+    outputs: 1,
+    icon: 'font-awesome/fa-gears',
+    label() { return this.name || 'logic'; },
+    paletteLabel: 'logic',
+
+    oneditprepare() {
+      const node = this;
+      let initialized = false;
+      // Populate device type dropdown
+      const deviceTypeMenu = $('#node-input-deviceType');
+      deviceTypeMenu.empty();
+      DEVICE_TYPES.forEach(type => {
+        deviceTypeMenu.append($('<option>', { value: type.value, text: type.label }));
+      });
+      if (node.deviceType) {
+        deviceTypeMenu.val(node.deviceType);
+      }
+      function refreshDeviceList() {
+        const serverId = $('#node-input-server option:selected').val();
+        const server = RED.nodes.node(serverId);
+        const deviceType = $('#node-input-deviceType').val();
+        currentRequestId += 1;
+        const requestId = currentRequestId;
+        $('#node-input-deviceId').empty();
+        if (server && deviceType) {
+          loadCredentials(server).then(() => {
+            listDevices(server, deviceType, node.deviceId, requestId);
+            updateTargetValues(deviceType, node.targetValue);
+            initialized = true;
+          }).catch(() => {
+            $('#node-input-deviceId').empty();
+            updateTargetValues(deviceType, node.targetValue);
+          });
+        } else {
+          $('#node-input-deviceId').empty();
+          updateTargetValues(deviceType, node.targetValue);
+        }
+      }
+      $('#node-input-server').off('change').on('change', refreshDeviceList);
+      $('#node-input-deviceType').off('change').on('change', refreshDeviceList);
+      $('#node-input-deviceId').empty();
+      refreshDeviceList();
+      $('#node-input-deviceId').off('.count').on('change.count', function () {
+        if (initialized) updateNameWithCount(node);
+      });
+    },
+    oneditsave() {
+      const selected = $('#node-input-deviceId').val() || [];
+      this.deviceId = Array.isArray(selected) ? selected : [selected];
+      this.deviceType = $('#node-input-deviceType').val();
+      this.targetValue = $('#node-input-targetValue').val();
+      this.mode = $('#node-input-mode').val();
+      this.sendEvents = $('#node-input-sendEvents').prop('checked');
+      if (this.deviceId.length > 0) {
+        updateNameWithCount(this, { force: true });
+      }
+    }
+  });
+
+  function updateNameWithCount(node, opts) {
+  opts = opts || {};
+  const sel = $('#node-input-deviceId').val();
+  if (!sel || sel.length === 0) return;
+  const chosen = Array.isArray(sel) ? sel : [sel];
+  const count = chosen.length;
+  let base = $('#node-input-name').val() || (node && node.name) || 'logic';
+  base = base.replace(/\s*\(\d+\)$/, '');
+  $('#node-input-name').val(base + ' (' + count + ')');
+  return count;
+  }
+})();
+</script>
+
+<script type="text/x-red" data-template-name="hubitat logic">
+  <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-server"><i class="fa fa-globe"></i> Hub</label>
+    <select id="node-input-server"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceType"><i class="fa fa-list"></i> Device Type</label>
+    <select id="node-input-deviceType"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-deviceId"><i class="fa fa-toggle-on"></i> Devices</label>
+    <select id="node-input-deviceId" multiple size="8" style="width:100%;"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-targetValue"><i class="fa fa-bullseye"></i> Target Value</label>
+    <select id="node-input-targetValue"></select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-mode"><i class="fa fa-sliders"></i> Mode</label>
+    <select id="node-input-mode">
+      <option value="all">All</option>
+      <option value="any">Any</option>
+    </select>
+  </div>
+  <div class="form-row">
+    <label for="node-input-sendEvents"><i class="fa fa-bell"></i> Send events</label>
+    <input type="checkbox" id="node-input-sendEvents">
+  </div>
+</script>

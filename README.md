@@ -45,12 +45,17 @@ npm install node-red-contrib-hubitat
 * `location`: To receive global location events (ex: systemStart, sunrise, sunset)
 * `event`: A generic node to receive all events.
 * `request`: A generic node to request any Hubitat's endpoints.
-
+* `capture`: To persist the current state of selected Hubitat devices into Node-RED flow context so they can be restored later. 
+* `restore`: Retrieves previously captured device states from flow context and sends commands to return devices to their saved state.
+* `logic`: The **logic** node can be used as a logic gate or as a trigger for one or more contact, lock, motion, presence, or switch devices.
 * `config`: To setup Hubitat connection information. It also listen for webhook from Hubitat
   to dispatch events to other nodes.
 
 **Note**: `config` node is a configuration node type, which means that it cannot be used directly,
 but used by other nodes.
+
+See the `examples/` folder for importable Node-RED flows demonstrating these nodes in action.
+
 
 ## Documentation
 
